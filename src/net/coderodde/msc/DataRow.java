@@ -23,7 +23,7 @@ public final class DataRow<C> {
         
         this.explanatoryVariableList = 
                 new ArrayList<>(Arrays.asList(variables));
-        
+        // Remove the last char because it is supposed to be the response char.
         this.explanatoryVariableList.remove(
                 this.explanatoryVariableList.size() - 1);
         this.responseVariable = variables[variables.length - 1];

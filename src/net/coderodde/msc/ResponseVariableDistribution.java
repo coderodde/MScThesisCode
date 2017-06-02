@@ -5,7 +5,7 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * This class implements the a probability distribution of characters.
+ * This class implements a probability distribution of characters.
  * 
  * @author Rodion Efremov
  * @version 1.6 (Jun 1, 2017)
@@ -29,7 +29,7 @@ public final class ResponseVariableDistribution<C> {
      * Associates {@code character} with {@code probability}.
      * 
      * @param character   the character.
-     * @param probability the probability of character.
+     * @param probability the probability of the character.
      */
     public void putResponseVariableProbability(C character, 
                                                double probability) {
@@ -46,6 +46,7 @@ public final class ResponseVariableDistribution<C> {
      */
     public double getResponseVariableProbability(C character) {
         Objects.requireNonNull(character, "The input character is null.");
+        checkProbabilitySumEqualsOne();
         return distributionMap.get(character);
     }
     
@@ -68,6 +69,14 @@ public final class ResponseVariableDistribution<C> {
             throw new IllegalArgumentException(
                     "The input probability is fine, but makes the sum of " +
                     "probabilities too large: " + probabilitySum);
+        }
+    }
+
+    private void checkProbabilitySumEqualsOne() {
+        if (Math.abs(probabilitySum - 1.0) < EPSILON) {
+            throw new IllegalStateException(
+                    "The sum of probabilities is not sufficiently close to " +
+                    "1.0");
         }
     }
 }
