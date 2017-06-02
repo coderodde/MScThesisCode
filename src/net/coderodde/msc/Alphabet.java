@@ -20,6 +20,10 @@ public class Alphabet<C> implements Iterable<C> {
         }
     }
     
+    public int size() {
+        return this.alphabet.size();
+    }
+    
     public boolean containsCharacter(C ch) {
         return this.alphabet.contains(ch);
     }
