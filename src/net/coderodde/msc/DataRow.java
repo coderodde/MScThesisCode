@@ -29,6 +29,10 @@ public final class DataRow<C> {
         this.responseVariable = variables[variables.length - 1];
     }
     
+    public int getNumberOfExplanatoryVariables() {
+        return this.explanatoryVariableList.size();
+    }
+    
     public C getExplanatoryVariable(int index) {
         return this.explanatoryVariableList.get(index);
     }

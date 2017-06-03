@@ -1,8 +1,7 @@
 package net.coderodde.msc;
 
-import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Deque;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -17,7 +16,7 @@ import java.util.Set;
  * @version 1.6 (Jun 2, 2017)
  * @param <C> the character type.
  */
-public final class ParsimoniusContextTree<C> {
+public final class ParsimoniousContextTree<C> {
 
     /**
      * This static inner class holds all the data needed for representing a 
@@ -49,23 +48,31 @@ public final class ParsimoniusContextTree<C> {
          */
         private double score;
         
-        @Override
-        public String toString() {
-            StringBuilder sb = new StringBuilder();
-            sb.append("[{");
-            String separator = "";
+        void convertToTextualRepresentation(String indentation, 
+                                            String singleSeparator,
+                                            StringBuilder stringBuilder) {
+            stringBuilder.append(indentation)
+                         .append("[{");
+            String sep = "";
             
             for (C ch : label) {
-                sb.append(separator);
-                separator = ",";
-                sb.append(ch);
+                stringBuilder.append(sep)
+                             .append(ch);
+                sep = ",";
             }
             
-            sb.append("} -> ")
-              .append(score)
-              .append("]");
+            stringBuilder.append("} score ")
+                         .append(score)
+                         .append("]\n");
             
-            return sb.toString();
+            if (children != null) {
+                for (ParsimoniousContextTreeNode<C> child : children) {
+                    child.convertToTextualRepresentation(
+                            indentation + singleSeparator,
+                            singleSeparator,
+                            stringBuilder);
+                }
+            }
         }
     }
     
@@ -77,51 +84,85 @@ public final class ParsimoniusContextTree<C> {
     private final boolean[] combinationFlags;
     
     /**
+     * The list containing all possible subsets of the given alphabet.
+     */
+    private final List<Set<C>> listOfAllNodeLabels;
+    
+    /**
      * The alphabet of this tree.
      */
-    private final Alphabet alphabet;
+    private final Alphabet<C> alphabet;
     
     /**
      * The root node of this tree.
      */
     private ParsimoniousContextTreeNode<C> root;
     
-    public ParsimoniusContextTree(Alphabet<C> alphabet, 
-                                  List<DataRow<C>> dataRowList) {
+    public ParsimoniousContextTree(Alphabet<C> alphabet, 
+                                   List<DataRow<C>> dataRowList) {
         this.alphabet = 
                 Objects.requireNonNull(
                         alphabet, 
                         "The input alphabet is null.");
-        this.combinationFlags = new boolean[this.alphabet.size()];
+        Objects.requireNonNull(dataRowList, "The data row list is null.");
+        checkDataRowListNotEmpty(dataRowList);
+        checkDataRowListHasConstantNumberOfExplanatoryVariables(dataRowList);
+        
+        this.listOfAllNodeLabels = 
+                new ArrayList<>(
+                        alphabet.getNumberOfNonemptyCharacterCombinations());
+        this.combinationFlags = new boolean[alphabet.size()];
+        
+        loadListOfAllPossibleSubsetsOfAlphabet();
+        
+        int depth = dataRowList.get(0).getNumberOfExplanatoryVariables();
         root = new ParsimoniousContextTreeNode<>();
-        findOptimalSubtree(root);
+        
+        for (Set<C> set : listOfAllNodeLabels) {
+            System.out.println(set);
+        }
+        
     }
     
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        Deque<ParsimoniousContextTreeNode<C>> queue = new ArrayDeque<>();
-        ParsimoniousContextTreeNode<C> lastNodeOfCurrentLevel = root;
-        queue.addLast(root);
-        String step = "";
+        root.convertToTextualRepresentation("", "  ", sb);
+        return sb.toString();
+    }
+    
+    
+    private void loadListOfAllPossibleSubsetsOfAlphabet() {
+        while (incrementCombinationFlags()) {
+            loadCharacterCombination();
+        }
+    }
+    
+    private void loadCharacterCombination() {
+        Set<C> characterSet = new HashSet<>();
         
-        while (!queue.isEmpty()) {
-            ParsimoniousContextTreeNode<C> current = queue.removeFirst();
-            sb.append(step).append(current.toString());
-            
-            if (current.children != null) {
-                for (ParsimoniousContextTreeNode<C> child : current.children) {
-                    queue.addLast(child);
-                }
-            }
-            
-            if (lastNodeOfCurrentLevel == current) {
-                lastNodeOfCurrentLevel = queue.getLast();
-                step += "    ";
+        for (int i = 0; i < combinationFlags.length; ++i) {
+            if (combinationFlags[i] == true) {
+                characterSet.add(alphabet.get(i));
             }
         }
         
-        return sb.toString();
+        this.listOfAllNodeLabels.add(characterSet);
+    }
+    
+    private boolean incrementCombinationFlags() {
+        int alphabetSize = combinationFlags.length;
+        
+        for (int i = 0; i < alphabetSize; ++i) {
+            if (combinationFlags[i] == false) {
+                combinationFlags[i] = true;
+                return true;
+            } else {
+                combinationFlags[i] = false;
+            }
+        }
+        
+        return false;
     }
     
     private Set<ParsimoniousContextTreeNode<C>> getAllChildren() {
@@ -179,5 +220,28 @@ public final class ParsimoniusContextTree<C> {
         }
         
         return set;
+    }
+    
+    private void checkDataRowListNotEmpty(List<DataRow<C>> dataRowList) {
+        if (dataRowList.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "There is no data rows in the list.");
+        }
+    }
+    
+    private void checkDataRowListHasConstantNumberOfExplanatoryVariables(
+            List<DataRow<C>> dataRowList) {
+        int expectedNumberOfExplanatoryVariables = 
+                dataRowList.get(0).getNumberOfExplanatoryVariables();
+        
+        for (int i = 1; i < dataRowList.size(); ++i) {
+            if (dataRowList.get(i).getNumberOfExplanatoryVariables() !=
+                    expectedNumberOfExplanatoryVariables) {
+                throw new IllegalArgumentException(
+                        "The data row " + i + " does not have " +
+                                expectedNumberOfExplanatoryVariables + 
+                                " explanatory variables.");
+            }
+        }
     }
 }
