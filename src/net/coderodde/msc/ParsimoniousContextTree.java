@@ -117,11 +117,26 @@ public final class ParsimoniousContextTree<C> {
         
         int depth = dataRowList.get(0).getNumberOfExplanatoryVariables();
         root = new ParsimoniousContextTreeNode<>();
-        
-        for (Set<C> set : listOfAllNodeLabels) {
-            System.out.println(set);
+        buildTree(root, depth);
+    }
+    
+    private void buildTree(ParsimoniousContextTreeNode<C> node, int depth) {
+        if (depth == 0) {
+            return;
         }
         
+        Set<ParsimoniousContextTreeNode<C>> children = 
+                new HashSet<>(this.listOfAllNodeLabels.size());
+        
+        for (Set<C> label : this.listOfAllNodeLabels) {
+            ParsimoniousContextTreeNode<C> childNode = 
+                    new ParsimoniousContextTreeNode<>();
+            childNode.label = label;
+            children.add(childNode);
+            buildTree(childNode, depth - 1);
+        }
+        
+        node.children = children;
     }
     
     @Override
