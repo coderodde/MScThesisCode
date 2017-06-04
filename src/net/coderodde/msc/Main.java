@@ -23,5 +23,6 @@ public class Main {
         ParsimoniousContextTree<Character> tree =
             new ParsimoniousContextTree<Character>(alphabet,
                                                    dataRowList);
+        System.out.println(tree);
     }
 }

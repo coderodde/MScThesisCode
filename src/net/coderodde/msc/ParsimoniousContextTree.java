@@ -2,6 +2,7 @@ package net.coderodde.msc;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -98,7 +99,8 @@ public final class ParsimoniousContextTree<C> {
     /**
      * The root node of this tree.
      */
-    private ParsimoniousContextTreeNode<C> root;
+    private final ParsimoniousContextTreeNode<C> root =
+            new ParsimoniousContextTreeNode<>();
     
     /**
      * Holds the list of actual data rows.
@@ -138,9 +140,9 @@ public final class ParsimoniousContextTree<C> {
         loadListOfAllPossibleSubsetsOfAlphabet();
         
         int depth = dataRowList.get(0).getNumberOfExplanatoryVariables();
-        root = new ParsimoniousContextTreeNode<>();
         K = 0.5 * ((alphabet.size() - 1) * Math.log(dataRowList.size()));
         buildTree(root, depth);
+        root.label = Collections.<C>emptySet();
     }
     
     private void buildTree(ParsimoniousContextTreeNode<C> node, int depth) {
@@ -152,6 +154,8 @@ public final class ParsimoniousContextTree<C> {
         Set<ParsimoniousContextTreeNode<C>> children = 
                 new HashSet<>(this.listOfAllNodeLabels.size());
         
+        node.children = children;
+        
         for (Set<C> label : this.listOfAllNodeLabels) {
             ParsimoniousContextTreeNode<C> childNode = 
                     new ParsimoniousContextTreeNode<>();
@@ -159,8 +163,6 @@ public final class ParsimoniousContextTree<C> {
             children.add(childNode);
             buildTree(childNode, depth - 1);
         }
-        
-        node.children = children;
     }
     
     @Override
