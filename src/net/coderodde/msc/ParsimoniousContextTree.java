@@ -117,6 +117,8 @@ public final class ParsimoniousContextTree<C> {
      */
     private final double K;
     
+    private final Set<C> auxSet = new HashSet<>();
+    
     public ParsimoniousContextTree(Alphabet<C> alphabet, 
                                    List<DataRow<C>> dataRowList) {
         this.alphabet = 
@@ -163,6 +165,41 @@ public final class ParsimoniousContextTree<C> {
             children.add(childNode);
             buildTree(childNode, depth - 1);
         }
+        
+        // Check all possible alphabet partitions.
+        for (int blocks = 1; 
+                blocks <= this.listOfAllNodeLabels.size(); 
+                blocks++) {
+            PartitionIterable<Set<C>> partitionIterable = 
+                    new PartitionIterable<>(this.listOfAllNodeLabels, blocks);
+            
+            for (List<List<Set<C>>> partitionCandidate : partitionIterable) {
+                if (partitionIsValid(partitionCandidate)) {
+                    
+                }
+            }
+        }
+    }
+    
+    private boolean partitionIsValid(List<List<Set<C>>> partitionCandidate) {
+        int alphabetSize = alphabet.size();
+        
+        for (List<Set<C>> partitionBlock : partitionCandidate) {
+            for (Set<C> label : partitionBlock) {
+                this.auxSet.addAll(label);
+                
+                if (this.auxSet.size() > alphabetSize) {
+                    return false;
+                }
+            }
+        }
+        
+        if (this.auxSet.size() < alphabetSize) {
+            return false;
+        }
+        
+        
+        this.auxSet.clear();
     }
     
     @Override
