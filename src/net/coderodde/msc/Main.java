@@ -7,11 +7,21 @@ public class Main {
 
     public static void main(String[] args) {
         List<DataRow<Character>> dataRowList = new ArrayList<>();
-        Alphabet<Character> smallAlphabet = new Alphabet<>('0', '1');
-        dataRowList.add(new DataRow('0', '1', '1'));
+        DNAAlphabet alphabet = new DNAAlphabet();
+        
+        dataRowList.add(new DataRow('A', 'A'));
+        dataRowList.add(new DataRow('T', 'A'));
+        dataRowList.add(new DataRow('A', 'A'));
+        dataRowList.add(new DataRow('C', 'G'));
+        dataRowList.add(new DataRow('C', 'T'));
+        dataRowList.add(new DataRow('C', 'A'));
+        dataRowList.add(new DataRow('T', 'A'));
+        dataRowList.add(new DataRow('T', 'A'));
+        dataRowList.add(new DataRow('T', 'C'));
+        dataRowList.add(new DataRow('C', 'T'));
+        
         ParsimoniousContextTree<Character> tree =
-            new ParsimoniousContextTree<Character>(smallAlphabet,
+            new ParsimoniousContextTree<Character>(alphabet,
                                                    dataRowList);
-        System.out.println("yo");
     }
 }

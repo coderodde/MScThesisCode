@@ -2,9 +2,11 @@ package net.coderodde.msc;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
@@ -98,13 +100,33 @@ public final class ParsimoniousContextTree<C> {
      */
     private ParsimoniousContextTreeNode<C> root;
     
+    /**
+     * Holds the list of actual data rows.
+     */
+    private final List<DataRow<C>> dataRowList;
+    
+    /**
+     * Used for counting character frequencies.
+     */
+    private final Map<C, Integer> characterCountMap = new HashMap<>();
+    
+    /**
+     * The penalty contribution to a single leaf.
+     */
+    private final double K;
+    
     public ParsimoniousContextTree(Alphabet<C> alphabet, 
                                    List<DataRow<C>> dataRowList) {
         this.alphabet = 
                 Objects.requireNonNull(
                         alphabet, 
                         "The input alphabet is null.");
-        Objects.requireNonNull(dataRowList, "The data row list is null.");
+        
+        this.dataRowList = 
+                Objects.requireNonNull(
+                        dataRowList,
+                        "The data row list is null.");
+        
         checkDataRowListNotEmpty(dataRowList);
         checkDataRowListHasConstantNumberOfExplanatoryVariables(dataRowList);
         
@@ -117,11 +139,13 @@ public final class ParsimoniousContextTree<C> {
         
         int depth = dataRowList.get(0).getNumberOfExplanatoryVariables();
         root = new ParsimoniousContextTreeNode<>();
+        K = 0.5 * ((alphabet.size() - 1) * Math.log(dataRowList.size()));
         buildTree(root, depth);
     }
     
     private void buildTree(ParsimoniousContextTreeNode<C> node, int depth) {
         if (depth == 0) {
+            node.score = computeBayesianInformationCriterion(node);
             return;
         }
         
@@ -146,6 +170,51 @@ public final class ParsimoniousContextTree<C> {
         return sb.toString();
     }
     
+    private double computeBayesianInformationCriterion(
+            ParsimoniousContextTreeNode<C> node) {
+        this.characterCountMap.clear();
+        int totalCounts = 0;
+        
+        for (DataRow<C> dataRow : this.dataRowList) {
+            if (getNodeOfDataRow(dataRow) == node) {
+                totalCounts++;
+                C lastChar = dataRow.getExplanatoryVariable(
+                        dataRow.getNumberOfExplanatoryVariables() - 1);
+                Integer count = this.characterCountMap.get(lastChar);
+                
+                if (count != null) {
+                    this.characterCountMap.put(lastChar, count + 1);
+                } else {
+                    this.characterCountMap.put(lastChar, 1);
+                }
+            }
+        }
+        
+        double score = -K;
+        
+        for (Map.Entry<C, Integer> e : this.characterCountMap.entrySet()) {
+            score += e.getValue() * Math.log(e.getValue() / totalCounts);
+        }
+        
+        return score;
+    }
+    
+    private ParsimoniousContextTreeNode<C> getNodeOfDataRow(DataRow dataRow) {
+        int length = dataRow.getNumberOfExplanatoryVariables();
+        ParsimoniousContextTreeNode<C> node = root;
+        
+        outer:
+        for (int i = 0; i < length; ++i) {
+            for (ParsimoniousContextTreeNode<C> child : node.children) {
+                if (child.label.contains(dataRow.getExplanatoryVariable(i))) {
+                    node = child;
+                    continue outer;
+                }
+            }
+        }
+        
+        return node;
+    }
     
     private void loadListOfAllPossibleSubsetsOfAlphabet() {
         while (incrementCombinationFlags()) {
