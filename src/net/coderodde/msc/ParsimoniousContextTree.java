@@ -117,6 +117,9 @@ public final class ParsimoniousContextTree<C> {
      */
     private final double K;
     
+    /**
+     * Used to assure that a set of node labels comprise an entire alphabet.
+     */
     private final Set<C> characterFilterSet = new HashSet<>();
     
     public ParsimoniousContextTree(Alphabet<C> alphabet, 
@@ -157,11 +160,16 @@ public final class ParsimoniousContextTree<C> {
                 new HashSet<>(this.listOfAllNodeLabels.size());
         
         node.children = children;
+        Map<Set<C>, ParsimoniousContextTreeNode<C>> nodeMap = 
+                new HashMap<>(
+                        this.alphabet
+                            .getNumberOfNonemptyCharacterCombinations());
         
         for (Set<C> label : this.listOfAllNodeLabels) {
             ParsimoniousContextTreeNode<C> childNode = 
                     new ParsimoniousContextTreeNode<>();
             childNode.label = label;
+            nodeMap.put(label, childNode);
             children.add(childNode);
             buildTree(childNode, depth - 1);
         }
@@ -169,8 +177,27 @@ public final class ParsimoniousContextTree<C> {
         for (List<Set<C>> labelCombination : 
                 new CombinationIterable<Set<C>>(this.listOfAllNodeLabels)) {
             if (!isPartitionOfAlphabet(labelCombination)) {
-                
+                continue;
             }
+            
+            // We need a node having as its label 'labelCombination':
+            Set<C> childLabel = new HashSet<>();
+           
+            for (Set<C> label : labelCombination) {
+                childLabel.addAll(label);
+            }
+            
+            ParsimoniousContextTreeNode<C> currentChildTree = 
+                    nodeMap.get(childLabel);
+            
+            double score = 0.0;
+            
+            for (Set<C> label : labelCombination) {
+                ParsimoniousContextTreeNode<C> childNode = nodeMap.get(label);
+                score += childNode.score;
+            }
+            
+            currentChildTree.score = score;
         }
     }
     
@@ -281,63 +308,6 @@ public final class ParsimoniousContextTree<C> {
         }
         
         return false;
-    }
-    
-    private Set<ParsimoniousContextTreeNode<C>> getAllChildren() {
-        Set<ParsimoniousContextTreeNode<C>> childSet = new HashSet<>(
-                alphabet.getNumberOfNonemptyCharacterCombinations());
-        final int alphabetSize = alphabet.size();
-        
-        Arrays.fill(combinationFlags, false);
-        int iterated = 0;
-        
-        outer:
-        while (iterated < combinationFlags.length) {
-            iterated = 0;
-            
-            for (int i = 0; i < alphabetSize; ++i) {
-                ++iterated;
-                if (combinationFlags[i] == false) {
-                    combinationFlags[i] = true;
-                    /*
-                    for (int j = 0; j < i; ++j) {
-                        combinationFlags[j] = false;
-                    }*/
-                    
-                    Set<C> childNodeLabel = 
-                            loadChildNodeLabel(combinationFlags);
-                    ParsimoniousContextTreeNode<C> childTree = 
-                            new ParsimoniousContextTreeNode<C>();
-                    childTree.label = childNodeLabel;
-                    childSet.add(childTree);
-                    continue outer;
-                } else {
-                    combinationFlags[i] = false;
-                }
-            }
-        }
-        
-        return childSet;
-    }
-    
-    private void findOptimalSubtree(ParsimoniousContextTreeNode<C> node) {
-        
-    }
-    
-    private Set<C> loadChildNodeLabel(boolean[] combinationFlags) {
-        Set<C> set = new HashSet<>();
-        Iterator<C> iterator = alphabet.iterator();
-        
-        for (int i = 0; i < combinationFlags.length; ++i) {
-            if (combinationFlags[i]) {
-                set.add(iterator.next());
-            } else {
-                // Omit the current character:
-                iterator.next();
-            }
-        }
-        
-        return set;
     }
     
     private void checkDataRowListNotEmpty(List<DataRow<C>> dataRowList) {
