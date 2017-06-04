@@ -179,6 +179,9 @@ public final class ParsimoniousContextTree<C> {
             buildTree(childNode, depth - 1);
         }
         
+        List<ParsimoniousContextTreeNode<C>> listOfValidChildren = 
+                new ArrayList<>();
+        
         for (List<Set<C>> labelCombination : 
                 new CombinationIterable<Set<C>>(this.listOfAllNodeLabels)) {
             if (!isPartitionOfAlphabet(labelCombination)) {
@@ -192,8 +195,10 @@ public final class ParsimoniousContextTree<C> {
                 childLabel.addAll(label);
             }
             
+            // v in pseudocode
             ParsimoniousContextTreeNode<C> currentChildTree = 
                     nodeMap.get(childLabel);
+            listOfValidChildren.add(currentChildTree);
             
             if (currentChildTree.children != null) {
                 double score = 0.0;
@@ -204,9 +209,23 @@ public final class ParsimoniousContextTree<C> {
                 }
                 
                 currentChildTree.score = score;
-                System.out.println("Setting " + score);
             }
         }
+        
+        ParsimoniousContextTreeNode<C> bestTree = listOfValidChildren.get(0);
+        double bestCost = Double.NEGATIVE_INFINITY;
+        
+        for (int i = 1; i < listOfValidChildren.size(); ++i) {
+            ParsimoniousContextTreeNode<C> currentTree =
+                    listOfValidChildren.get(i);
+            
+            if (bestCost < currentTree.score) {
+                bestCost = currentTree.score;
+                bestTree = currentTree;
+            }
+        }
+        
+        node.score = bestTree.score;
     }
     
     private boolean isPartitionOfAlphabet(List<Set<C>> labelCombination) {
@@ -266,6 +285,7 @@ public final class ParsimoniousContextTree<C> {
             score += e.getValue() * Math.log(e.getValue() / totalCounts);
         }
         
+        //System.out.println(score == -K);
         return score;
     }
     
