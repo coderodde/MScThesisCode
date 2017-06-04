@@ -117,7 +117,7 @@ public final class ParsimoniousContextTree<C> {
      */
     private final double K;
     
-    private final Set<C> auxSet = new HashSet<>();
+    private final Set<C> characterFilterSet = new HashSet<>();
     
     public ParsimoniousContextTree(Alphabet<C> alphabet, 
                                    List<DataRow<C>> dataRowList) {
@@ -166,40 +166,35 @@ public final class ParsimoniousContextTree<C> {
             buildTree(childNode, depth - 1);
         }
         
-        // Check all possible alphabet partitions.
-        for (int blocks = 1; 
-                blocks <= this.listOfAllNodeLabels.size(); 
-                blocks++) {
-            PartitionIterable<Set<C>> partitionIterable = 
-                    new PartitionIterable<>(this.listOfAllNodeLabels, blocks);
-            
-            for (List<List<Set<C>>> partitionCandidate : partitionIterable) {
-                if (partitionIsValid(partitionCandidate)) {
-                    
-                }
+        for (List<Set<C>> labelCombination : 
+                new CombinationIterable<Set<C>>(this.listOfAllNodeLabels)) {
+            if (!isPartitionOfAlphabet(labelCombination)) {
+                
             }
         }
     }
     
-    private boolean partitionIsValid(List<List<Set<C>>> partitionCandidate) {
-        int alphabetSize = alphabet.size();
+    private boolean isPartitionOfAlphabet(List<Set<C>> labelCombination) {
+        int labels = labelCombination.size();
         
-        for (List<Set<C>> partitionBlock : partitionCandidate) {
-            for (Set<C> label : partitionBlock) {
-                this.auxSet.addAll(label);
+        for (int i = 0; i < labels; ++i) {
+            Set<C> set1 = labelCombination.get(i);
+            
+            for (int j = i + 1; j < labels; ++j) {
+                Set<C> set2 = labelCombination.get(j);
                 
-                if (this.auxSet.size() > alphabetSize) {
+                if (!Collections.<C>disjoint(set1, set2)) {
                     return false;
                 }
             }
         }
         
-        if (this.auxSet.size() < alphabetSize) {
-            return false;
+        for (Set<C> label : labelCombination) {
+            this.characterFilterSet.addAll(label);
         }
-        
-        
-        this.auxSet.clear();
+            
+        characterFilterSet.clear();
+        return this.characterFilterSet.size() == this.alphabet.size();
     }
     
     @Override
