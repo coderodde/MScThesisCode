@@ -1,11 +1,9 @@
 package net.coderodde.msc;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -122,6 +120,13 @@ public final class ParsimoniousContextTree<C> {
      */
     private final Set<C> characterFilterSet = new HashSet<>();
     
+    /**
+     * Constructs a parsimonious context tree from the given data over the input
+     * alphabet.
+     * 
+     * @param alphabet    the alphabet to use.
+     * @param dataRowList a list of data rows.
+     */
     public ParsimoniousContextTree(Alphabet<C> alphabet, 
                                    List<DataRow<C>> dataRowList) {
         this.alphabet = 
@@ -190,14 +195,17 @@ public final class ParsimoniousContextTree<C> {
             ParsimoniousContextTreeNode<C> currentChildTree = 
                     nodeMap.get(childLabel);
             
-            double score = 0.0;
-            
-            for (Set<C> label : labelCombination) {
-                ParsimoniousContextTreeNode<C> childNode = nodeMap.get(label);
-                score += childNode.score;
+            if (currentChildTree.children != null) {
+                double score = 0.0;
+
+                for (ParsimoniousContextTreeNode<C> m 
+                        : currentChildTree.children) {
+                    score += m.score;
+                }
+                
+                currentChildTree.score = score;
+                System.out.println("Setting " + score);
             }
-            
-            currentChildTree.score = score;
         }
     }
     
@@ -216,11 +224,12 @@ public final class ParsimoniousContextTree<C> {
             }
         }
         
+        this.characterFilterSet.clear();
+        
         for (Set<C> label : labelCombination) {
             this.characterFilterSet.addAll(label);
         }
             
-        characterFilterSet.clear();
         return this.characterFilterSet.size() == this.alphabet.size();
     }
     
