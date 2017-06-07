@@ -53,8 +53,7 @@ public class Main {
 //                dataRowList.add(new DataRow<Character>('C', 'C', 'A'));
 
         ParsimoniousContextTree<Character> tree =
-            new ParsimoniousContextTree<Character>(alphabet,
-                                                   dataRowList);
+            new ParsimoniousContextTree<>(alphabet, dataRowList);
         System.out.println(tree);
     }
 }

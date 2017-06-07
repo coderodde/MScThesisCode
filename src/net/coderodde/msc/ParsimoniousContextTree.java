@@ -180,9 +180,6 @@ public final class ParsimoniousContextTree<C> {
             buildTree(childNode, depth - 1);
         }
         
-        List<ParsimoniousContextTreeNode<C>> listOfValidChildren = 
-                new ArrayList<>();
-        
         Map<List<Set<C>>, Double> mapPartitionToScore = new HashMap<>();
         
         for (List<Set<C>> labelCombination : 
@@ -198,32 +195,12 @@ public final class ParsimoniousContextTree<C> {
             }
             
             mapPartitionToScore.put(labelCombination, score);
-            
-            
-//            
-//            // We need a node having as its label 'labelCombination':
-//            Set<C> childLabel = new HashSet<>();
-//           
-//            for (Set<C> label : labelCombination) {
-//                childLabel.addAll(label);
-//            }
-//            
-//            // v in pseudocode
-//            ParsimoniousContextTreeNode<C> currentChildTree = 
-//                    nodeMap.get(childLabel);
-//            listOfValidChildren.add(currentChildTree);
-//            
-//            if (currentChildTree.children != null) {
-//                double score = 0.0;
-//
-//                for (ParsimoniousContextTreeNode<C> m 
-//                        : currentChildTree.children) {
-//                    score += m.score;
-//                }
-//                
-//                currentChildTree.score = score;
-//            }
         }
+        
+//        if (node == root) {
+//            System.out.println("---");
+//            System.out.println(mapPartitionToScore);
+//        }
         
         double bestScore = Double.NEGATIVE_INFINITY;
         List<Set<C>> bestPartition = null;
@@ -236,6 +213,11 @@ public final class ParsimoniousContextTree<C> {
             }
         }
         
+//        if (node == root) {
+//            System.out.println("root score: " + bestScore);
+//            System.out.println("children: " + bestPartition);
+//        }
+        
         node.score = bestScore;
         Set<Set<C>> bestPartitionFilter = new HashSet<>(bestPartition);
         
@@ -245,10 +227,12 @@ public final class ParsimoniousContextTree<C> {
         while (iterator.hasNext()) {
             ParsimoniousContextTreeNode<C> currentChildNode = iterator.next();
             
-            if (!bestPartitionFilter.contains(currentChildNode)) {
+            if (!bestPartitionFilter.contains(currentChildNode.label)) {
                 iterator.remove();
             }
         }
+//        
+//        System.out.println("yeah");
     }
     
     private boolean isPartitionOfAlphabet(List<Set<C>> labelCombination) {
@@ -308,7 +292,6 @@ public final class ParsimoniousContextTree<C> {
             score += e.getValue() * Math.log((1.0 * e.getValue()) / totalCounts);
         }
         
-//        System.out.println(score == -K);
         return score;
     }
     
