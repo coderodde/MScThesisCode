@@ -19,7 +19,7 @@ public class Main {
         dataRowList.add(new DataRow<Character>('T', 'A'));
         dataRowList.add(new DataRow<Character>('T', 'C'));
         dataRowList.add(new DataRow<Character>('C', 'T'));
-//        // ---
+//        // ---x
 //        dataRowList.add(new DataRow<Character>('C', 'A'));
 //        dataRowList.add(new DataRow<Character>('A', 'C'));
 //        dataRowList.add(new DataRow<Character>('T', 'G'));
@@ -52,8 +52,12 @@ public class Main {
 //                dataRowList.add(new DataRow<Character>('C', 'G', 'T'));
 //                dataRowList.add(new DataRow<Character>('C', 'C', 'A'));
 
+        long startTime = System.currentTimeMillis();
         ParsimoniousContextTree<Character> tree =
             new ParsimoniousContextTree<>(alphabet, dataRowList);
+        long endTime = System.currentTimeMillis();
+        
+        System.out.println("Computed in " + (endTime - startTime) + " ms.");
         System.out.println(tree);
     }
 }

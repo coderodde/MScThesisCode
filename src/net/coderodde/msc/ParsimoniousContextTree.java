@@ -1,7 +1,9 @@
 package net.coderodde.msc;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -151,9 +153,9 @@ public final class ParsimoniousContextTree<C> {
         loadListOfAllPossibleSubsetsOfAlphabet();
         
         int depth = dataRowList.get(0).getNumberOfExplanatoryVariables();
-        K = 0.5 * ((alphabet.size() - 1) * Math.log(dataRowList.size()));
+        this.K = 0.5 * ((alphabet.size() - 1) * Math.log(dataRowList.size()));
+        root.label = Collections.<C>emptySet(); // for the sake of toString()
         buildTree(root, depth);
-        root.label = Collections.<C>emptySet();
     }
     
     private void buildTree(ParsimoniousContextTreeNode<C> node, int depth) {
@@ -177,6 +179,7 @@ public final class ParsimoniousContextTree<C> {
             childNode.label = label;
             nodeMap.put(label, childNode);
             children.add(childNode);
+            System.out.println("YEAH: " + label);
             buildTree(childNode, depth - 1);
         }
         
@@ -197,10 +200,13 @@ public final class ParsimoniousContextTree<C> {
             mapPartitionToScore.put(labelCombination, score);
         }
         
-//        if (node == root) {
-//            System.out.println("---");
-//            System.out.println(mapPartitionToScore);
-//        }
+        if (node == root) {
+            System.out.println("---");
+            
+            for (Map.Entry<List<Set<C>>, Double> e : mapPartitionToScore.entrySet()) {
+                System.out.println(e);
+            }
+        }
         
         double bestScore = Double.NEGATIVE_INFINITY;
         List<Set<C>> bestPartition = null;
@@ -220,6 +226,9 @@ public final class ParsimoniousContextTree<C> {
         
         node.score = bestScore;
         Set<Set<C>> bestPartitionFilter = new HashSet<>(bestPartition);
+        
+        System.out.println("list: " + bestPartition);
+        System.out.println("set:  " + bestPartitionFilter);
         
         Iterator<ParsimoniousContextTreeNode<C>> iterator = 
                 node.children.iterator();
@@ -271,8 +280,12 @@ public final class ParsimoniousContextTree<C> {
         this.characterCountMap.clear();
         int totalCounts = 0;
         
+        if (node.label.size() == 3) {
+            System.out.println(node.label);
+        }
+        
         for (DataRow<C> dataRow : this.dataRowList) {
-            if (getNodeOfDataRow(dataRow) == node) {
+            if (dataRowMatchesLeafNode(dataRow, node)) {
                 totalCounts++;
                 C lastChar = dataRow.getExplanatoryVariable(
                         dataRow.getNumberOfExplanatoryVariables() - 1);
@@ -286,13 +299,19 @@ public final class ParsimoniousContextTree<C> {
             }
         }
         
-        double score = -K;
+        double score = 0.0;
         
         for (Map.Entry<C, Integer> e : this.characterCountMap.entrySet()) {
-            score += e.getValue() * Math.log((1.0 * e.getValue()) / totalCounts);
+            score += e.getValue() * 
+                    Math.log((1.0 * e.getValue()) / totalCounts);
         }
         
-        return score;
+        System.out.println("--------");
+        System.out.println(score);
+        System.out.println(this.characterCountMap);
+        System.out.println(totalCounts);
+        
+        return score - K;
     }
     
     private ParsimoniousContextTreeNode<C> getNodeOfDataRow(DataRow dataRow) {
@@ -339,6 +358,44 @@ public final class ParsimoniousContextTree<C> {
                 return true;
             } else {
                 combinationFlags[i] = false;
+            }
+        }
+        
+        return false;
+    }
+    
+    private boolean dataRowMatchesLeafNode(
+            DataRow<C> dataRow, 
+            ParsimoniousContextTreeNode<C> leafNode) {
+        Deque<ParsimoniousContextTreeNode<C>> queue = new ArrayDeque<>();
+        Map<ParsimoniousContextTreeNode<C>, Integer> depthMap = new HashMap<>();
+        int treeDepth = 
+                this.dataRowList.get(0).getNumberOfExplanatoryVariables();
+        
+        for (ParsimoniousContextTreeNode<C> childOfRoot : root.children) {
+            if (childOfRoot.label.contains(dataRow.getExplanatoryVariable(0))) {
+                queue.addLast(childOfRoot);
+                depthMap.put(childOfRoot, 0);
+            }
+        }
+        
+        while (!queue.isEmpty()) {
+            ParsimoniousContextTreeNode<C> currentNode = queue.removeFirst();
+            int currentNodeDepth = depthMap.get(currentNode);
+            
+            if (currentNodeDepth + 1 == treeDepth && currentNode == leafNode) {
+                return true;
+            } 
+            
+            C targetChar = dataRow.getExplanatoryVariable(currentNodeDepth);
+            
+            if (currentNode.children != null) {
+                for (ParsimoniousContextTreeNode<C> child : currentNode.children) {
+                    if (child.label.contains(targetChar)) {
+                        queue.addLast(child);
+                        depthMap.put(child, treeDepth + 1);
+                    }
+                }
             }
         }
         
