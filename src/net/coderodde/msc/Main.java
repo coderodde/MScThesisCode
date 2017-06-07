@@ -19,17 +19,17 @@ public class Main {
         dataRowList.add(new DataRow<Character>('T', 'A'));
         dataRowList.add(new DataRow<Character>('T', 'C'));
         dataRowList.add(new DataRow<Character>('C', 'T'));
-        // ---
-        dataRowList.add(new DataRow<Character>('C', 'A'));
-        dataRowList.add(new DataRow<Character>('A', 'C'));
-        dataRowList.add(new DataRow<Character>('T', 'G'));
-        dataRowList.add(new DataRow<Character>('C', 'G'));
-        dataRowList.add(new DataRow<Character>('C', 'T'));
-        dataRowList.add(new DataRow<Character>('C', 'A'));
-        dataRowList.add(new DataRow<Character>('T', 'T'));
-        dataRowList.add(new DataRow<Character>('T', 'A'));
-        dataRowList.add(new DataRow<Character>('A', 'C'));
-        dataRowList.add(new DataRow<Character>('C', 'G'));
+//        // ---
+//        dataRowList.add(new DataRow<Character>('C', 'A'));
+//        dataRowList.add(new DataRow<Character>('A', 'C'));
+//        dataRowList.add(new DataRow<Character>('T', 'G'));
+//        dataRowList.add(new DataRow<Character>('C', 'G'));
+//        dataRowList.add(new DataRow<Character>('C', 'T'));
+//        dataRowList.add(new DataRow<Character>('C', 'A'));
+//        dataRowList.add(new DataRow<Character>('T', 'T'));
+//        dataRowList.add(new DataRow<Character>('T', 'A'));
+//        dataRowList.add(new DataRow<Character>('A', 'C'));
+//        dataRowList.add(new DataRow<Character>('C', 'G'));
         
         
 //        dataRowList.add(new DataRow('A', 'A', 'C'));
@@ -39,18 +39,18 @@ public class Main {
 //        dataRowList.add(new DataRow('T', 'T', 'G'));
 //        dataRowList.add(new DataRow('G', 'A', 'C'));
 
-//        dataRowList.add(new DataRow<Character>('A', 'A', 'C'));
-//        dataRowList.add(new DataRow<Character>('A', 'C', 'C'));
-//        dataRowList.add(new DataRow<Character>('A', 'T', 'C'));
-//        dataRowList.add(new DataRow<Character>('T', 'A', 'C'));
-//        dataRowList.add(new DataRow<Character>('T', 'T', 'G'));
-//        dataRowList.add(new DataRow<Character>('G', 'A', 'C'));
-//        dataRowList.add(new DataRow<Character>('C', 'C', 'T'));
-//        dataRowList.add(new DataRow<Character>('C', 'A', 'T'));
-//        dataRowList.add(new DataRow<Character>('C', 'G', 'G'));
-//        dataRowList.add(new DataRow<Character>('T', 'C', 'A'));
-//        dataRowList.add(new DataRow<Character>('C', 'G', 'T'));
-//        dataRowList.add(new DataRow<Character>('C', 'C', 'A'));
+//                dataRowList.add(new DataRow<Character>('A', 'A', 'C'));
+//                dataRowList.add(new DataRow<Character>('A', 'C', 'C'));
+//                dataRowList.add(new DataRow<Character>('A', 'T', 'C'));
+//                dataRowList.add(new DataRow<Character>('T', 'A', 'C'));
+//                dataRowList.add(new DataRow<Character>('T', 'T', 'G'));
+//                dataRowList.add(new DataRow<Character>('G', 'A', 'C'));
+//                dataRowList.add(new DataRow<Character>('C', 'C', 'T'));
+//                dataRowList.add(new DataRow<Character>('C', 'A', 'T'));
+//                dataRowList.add(new DataRow<Character>('C', 'G', 'G'));
+//                dataRowList.add(new DataRow<Character>('T', 'C', 'A'));
+//                dataRowList.add(new DataRow<Character>('C', 'G', 'T'));
+//                dataRowList.add(new DataRow<Character>('C', 'C', 'A'));
 
         ParsimoniousContextTree<Character> tree =
             new ParsimoniousContextTree<Character>(alphabet,

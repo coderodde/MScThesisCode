@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -182,50 +183,72 @@ public final class ParsimoniousContextTree<C> {
         List<ParsimoniousContextTreeNode<C>> listOfValidChildren = 
                 new ArrayList<>();
         
+        Map<List<Set<C>>, Double> mapPartitionToScore = new HashMap<>();
+        
         for (List<Set<C>> labelCombination : 
                 new CombinationIterable<Set<C>>(this.listOfAllNodeLabels)) {
             if (!isPartitionOfAlphabet(labelCombination)) {
                 continue;
             }
             
-            // We need a node having as its label 'labelCombination':
-            Set<C> childLabel = new HashSet<>();
-           
+            double score = 0.0;
+            
             for (Set<C> label : labelCombination) {
-                childLabel.addAll(label);
+                score += nodeMap.get(label).score;
             }
             
-            // v in pseudocode
-            ParsimoniousContextTreeNode<C> currentChildTree = 
-                    nodeMap.get(childLabel);
-            listOfValidChildren.add(currentChildTree);
+            mapPartitionToScore.put(labelCombination, score);
             
-            if (currentChildTree.children != null) {
-                double score = 0.0;
-
-                for (ParsimoniousContextTreeNode<C> m 
-                        : currentChildTree.children) {
-                    score += m.score;
-                }
-                
-                currentChildTree.score = score;
+            
+//            
+//            // We need a node having as its label 'labelCombination':
+//            Set<C> childLabel = new HashSet<>();
+//           
+//            for (Set<C> label : labelCombination) {
+//                childLabel.addAll(label);
+//            }
+//            
+//            // v in pseudocode
+//            ParsimoniousContextTreeNode<C> currentChildTree = 
+//                    nodeMap.get(childLabel);
+//            listOfValidChildren.add(currentChildTree);
+//            
+//            if (currentChildTree.children != null) {
+//                double score = 0.0;
+//
+//                for (ParsimoniousContextTreeNode<C> m 
+//                        : currentChildTree.children) {
+//                    score += m.score;
+//                }
+//                
+//                currentChildTree.score = score;
+//            }
+        }
+        
+        double bestScore = Double.NEGATIVE_INFINITY;
+        List<Set<C>> bestPartition = null;
+        
+        for (Map.Entry<List<Set<C>>, Double> entry : 
+                mapPartitionToScore.entrySet()) {
+            if (bestScore < entry.getValue()) {
+                bestScore = entry.getValue();
+                bestPartition = entry.getKey();
             }
         }
         
-        ParsimoniousContextTreeNode<C> bestTree = listOfValidChildren.get(0);
-        double bestCost = Double.NEGATIVE_INFINITY;
+        node.score = bestScore;
+        Set<Set<C>> bestPartitionFilter = new HashSet<>(bestPartition);
         
-        for (int i = 1; i < listOfValidChildren.size(); ++i) {
-            ParsimoniousContextTreeNode<C> currentTree =
-                    listOfValidChildren.get(i);
+        Iterator<ParsimoniousContextTreeNode<C>> iterator = 
+                node.children.iterator();
+        
+        while (iterator.hasNext()) {
+            ParsimoniousContextTreeNode<C> currentChildNode = iterator.next();
             
-            if (bestCost < currentTree.score) {
-                bestCost = currentTree.score;
-                bestTree = currentTree;
+            if (!bestPartitionFilter.contains(currentChildNode)) {
+                iterator.remove();
             }
         }
-        
-        node.score = bestTree.score;
     }
     
     private boolean isPartitionOfAlphabet(List<Set<C>> labelCombination) {
@@ -282,10 +305,10 @@ public final class ParsimoniousContextTree<C> {
         double score = -K;
         
         for (Map.Entry<C, Integer> e : this.characterCountMap.entrySet()) {
-            score += e.getValue() * Math.log(e.getValue() / totalCounts);
+            score += e.getValue() * Math.log((1.0 * e.getValue()) / totalCounts);
         }
         
-        //System.out.println(score == -K);
+//        System.out.println(score == -K);
         return score;
     }
     
