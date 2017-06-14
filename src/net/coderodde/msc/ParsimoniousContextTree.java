@@ -179,7 +179,6 @@ public final class ParsimoniousContextTree<C> {
             childNode.label = label;
             nodeMap.put(label, childNode);
             children.add(childNode);
-            System.out.println("YEAH: " + label);
             buildTree(childNode, depth - 1);
         }
         
@@ -200,14 +199,6 @@ public final class ParsimoniousContextTree<C> {
             mapPartitionToScore.put(labelCombination, score);
         }
         
-        if (node == root) {
-            System.out.println("---");
-            
-            for (Map.Entry<List<Set<C>>, Double> e : mapPartitionToScore.entrySet()) {
-                System.out.println(e);
-            }
-        }
-        
         double bestScore = Double.NEGATIVE_INFINITY;
         List<Set<C>> bestPartition = null;
         
@@ -219,17 +210,8 @@ public final class ParsimoniousContextTree<C> {
             }
         }
         
-//        if (node == root) {
-//            System.out.println("root score: " + bestScore);
-//            System.out.println("children: " + bestPartition);
-//        }
-        
         node.score = bestScore;
         Set<Set<C>> bestPartitionFilter = new HashSet<>(bestPartition);
-        
-        System.out.println("list: " + bestPartition);
-        System.out.println("set:  " + bestPartitionFilter);
-        
         Iterator<ParsimoniousContextTreeNode<C>> iterator = 
                 node.children.iterator();
         
@@ -240,8 +222,6 @@ public final class ParsimoniousContextTree<C> {
                 iterator.remove();
             }
         }
-//        
-//        System.out.println("yeah");
     }
     
     private boolean isPartitionOfAlphabet(List<Set<C>> labelCombination) {
@@ -280,7 +260,7 @@ public final class ParsimoniousContextTree<C> {
         this.characterCountMap.clear();
         int totalCounts = 0;
         
-        if (node.label.size() == 3) {
+        if (node.label.size() == 2) {
             System.out.println(node.label);
         }
         
@@ -299,36 +279,20 @@ public final class ParsimoniousContextTree<C> {
             }
         }
         
-        double score = 0.0;
+        double score = -K;
         
         for (Map.Entry<C, Integer> e : this.characterCountMap.entrySet()) {
             score += e.getValue() * 
                     Math.log((1.0 * e.getValue()) / totalCounts);
         }
         
-        System.out.println("--------");
-        System.out.println(score);
-        System.out.println(this.characterCountMap);
-        System.out.println(totalCounts);
+//        System.out.println("--------");
+//        System.out.println("Label: " + node.label);
+//        System.out.println("Score: " + score);
+//        System.out.println("Counts: " + this.characterCountMap);
+//        System.out.println("Total count: " + totalCounts);
         
-        return score - K;
-    }
-    
-    private ParsimoniousContextTreeNode<C> getNodeOfDataRow(DataRow dataRow) {
-        int length = dataRow.getNumberOfExplanatoryVariables();
-        ParsimoniousContextTreeNode<C> node = root;
-        
-        outer:
-        for (int i = 0; i < length; ++i) {
-            for (ParsimoniousContextTreeNode<C> child : node.children) {
-                if (child.label.contains(dataRow.getExplanatoryVariable(i))) {
-                    node = child;
-                    continue outer;
-                }
-            }
-        }
-        
-        return node;
+        return score;
     }
     
     private void loadListOfAllPossibleSubsetsOfAlphabet() {
@@ -364,6 +328,7 @@ public final class ParsimoniousContextTree<C> {
         return false;
     }
     
+    // BFS from the topmost non-root internal nodes towards the leaf nodes:
     private boolean dataRowMatchesLeafNode(
             DataRow<C> dataRow, 
             ParsimoniousContextTreeNode<C> leafNode) {
@@ -393,7 +358,7 @@ public final class ParsimoniousContextTree<C> {
                 for (ParsimoniousContextTreeNode<C> child : currentNode.children) {
                     if (child.label.contains(targetChar)) {
                         queue.addLast(child);
-                        depthMap.put(child, treeDepth + 1);
+                        depthMap.put(child, currentNodeDepth + 1);
                     }
                 }
             }
