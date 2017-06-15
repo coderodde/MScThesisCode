@@ -161,6 +161,7 @@ public final class ParsimoniousContextTree<C> {
     private void buildTree(ParsimoniousContextTreeNode<C> node, int depth) {
         if (depth == 0) {
             node.score = computeBayesianInformationCriterion(node);
+            System.out.println("score: " + node.score + "; label = " + node.label);
             return;
         }
         
@@ -267,8 +268,9 @@ public final class ParsimoniousContextTree<C> {
         for (DataRow<C> dataRow : this.dataRowList) {
             if (dataRowMatchesLeafNode(dataRow, node)) {
                 totalCounts++;
-                C lastChar = dataRow.getExplanatoryVariable(
-                        dataRow.getNumberOfExplanatoryVariables() - 1);
+//                C lastChar = dataRow.getExplanatoryVariable(
+//                        dataRow.getNumberOfExplanatoryVariables() - 1);
+                C lastChar = dataRow.getResponseVariable();
                 Integer count = this.characterCountMap.get(lastChar);
                 
                 if (count != null) {
