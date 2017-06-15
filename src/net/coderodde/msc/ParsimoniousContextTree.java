@@ -1,5 +1,6 @@
 package net.coderodde.msc;
 
+import net.coderodde.msc.util.CombinationIterable;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -161,7 +162,6 @@ public final class ParsimoniousContextTree<C> {
     private void buildTree(ParsimoniousContextTreeNode<C> node, int depth) {
         if (depth == 0) {
             node.score = computeBayesianInformationCriterion(node);
-            System.out.println("score: " + node.score + "; label = " + node.label);
             return;
         }
         
@@ -261,15 +261,9 @@ public final class ParsimoniousContextTree<C> {
         this.characterCountMap.clear();
         int totalCounts = 0;
         
-        if (node.label.size() == 2) {
-            System.out.println(node.label);
-        }
-        
         for (DataRow<C> dataRow : this.dataRowList) {
             if (dataRowMatchesLeafNode(dataRow, node)) {
                 totalCounts++;
-//                C lastChar = dataRow.getExplanatoryVariable(
-//                        dataRow.getNumberOfExplanatoryVariables() - 1);
                 C lastChar = dataRow.getResponseVariable();
                 Integer count = this.characterCountMap.get(lastChar);
                 
@@ -287,12 +281,6 @@ public final class ParsimoniousContextTree<C> {
             score += e.getValue() * 
                     Math.log((1.0 * e.getValue()) / totalCounts);
         }
-        
-//        System.out.println("--------");
-//        System.out.println("Label: " + node.label);
-//        System.out.println("Score: " + score);
-//        System.out.println("Counts: " + this.characterCountMap);
-//        System.out.println("Total count: " + totalCounts);
         
         return score;
     }

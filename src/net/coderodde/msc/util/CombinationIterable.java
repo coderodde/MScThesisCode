@@ -1,4 +1,4 @@
-package net.coderodde.msc;
+package net.coderodde.msc.util;
 
 import java.util.ArrayList;
 import java.util.Iterator;

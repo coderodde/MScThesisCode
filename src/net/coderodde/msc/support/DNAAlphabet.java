@@ -1,4 +1,6 @@
-package net.coderodde.msc;
+package net.coderodde.msc.support;
+
+import net.coderodde.msc.Alphabet;
 
 public final class DNAAlphabet extends Alphabet<Character> {
 
