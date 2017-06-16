@@ -11,12 +11,24 @@ import java.util.Set;
  */
 public final class ParsimoniousContextTreeNode<C> {
 
+    /**
+     * The labels of this node.
+     */
     private Set<C> label;
     
+    /**
+     * The set of child nodes.
+     */
     private Set<ParsimoniousContextTreeNode<C>> children;
     
+    /**
+     * The conditional probability distribution of the response variable.
+     */
     private ResponseVariableDistribution<C> responseVariableDistribution;
     
+    /**
+     * The score of this tree node.
+     */
     private double score;
     
     public void setLabel(Set<C> label) {
@@ -50,5 +62,31 @@ public final class ParsimoniousContextTreeNode<C> {
     
     public double getScore() {
         return this.score;
+    }
+    
+    public void convertToTextualRepresentation(StringBuilder stringBuilder,
+                                               String indentation,
+                                               String separator) {
+        stringBuilder.append(indentation)
+                     .append("[{");
+        String tokenSeparator = "";
+        
+        for (C ch : getLabel()) {
+            stringBuilder.append(tokenSeparator)
+                         .append(ch);
+            tokenSeparator = ",";
+        }
+        
+        stringBuilder.append("} score ")
+                     .append(getScore())
+                     .append("]\n");
+        
+        if (getChildren() != null) {
+            for (ParsimoniousContextTreeNode<C> child : getChildren()) {
+                child.convertToTextualRepresentation(stringBuilder, 
+                                                     separator + indentation, 
+                                                     separator);
+            }
+        }
     }
 }

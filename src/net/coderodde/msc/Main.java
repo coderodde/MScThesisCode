@@ -3,6 +3,7 @@ package net.coderodde.msc;
 import net.coderodde.msc.support.DNAAlphabet;
 import java.util.ArrayList;
 import java.util.List;
+import net.coderodde.msc.support.BasicParsimoniousContextTreeLearner;
 
 public class Main {
 
@@ -51,6 +52,9 @@ public class Main {
 //        dataRowList.add(new DataRow('T', 'T', 'G'));
 //        dataRowList.add(new DataRow('G', 'A', 'C'));
 
+        AbstractParsimoniousContextTreeLearner<Character> learner1 =
+                new BasicParsimoniousContextTreeLearner<>();
+
         dataRowList.add(new DataRow<Character>('A', 'A', 'C'));
         dataRowList.add(new DataRow<Character>('A', 'C', 'C'));
         dataRowList.add(new DataRow<Character>('A', 'T', 'C'));
@@ -66,7 +70,7 @@ public class Main {
 
         long startTime = System.currentTimeMillis();
         ParsimoniousContextTree<Character> tree =
-            new ParsimoniousContextTree<>(alphabet, dataRowList);
+                learner1.learn(alphabet, dataRowList);
         long endTime = System.currentTimeMillis();
         
         System.out.println("Computed in " + (endTime - startTime) + " ms.");
