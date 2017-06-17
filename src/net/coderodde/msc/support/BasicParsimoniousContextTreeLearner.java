@@ -288,7 +288,7 @@ extends AbstractParsimoniousContextTreeLearner<C> {
             if (childOfRoot.getLabel()
                            .contains(dataRow.getExplanatoryVariable(0))) {
                 this.queue.addLast(childOfRoot);
-                this.depthMap.put(childOfRoot, 0);
+                this.depthMap.put(childOfRoot, 1);
             }
         }
 
@@ -297,17 +297,14 @@ extends AbstractParsimoniousContextTreeLearner<C> {
                     this.queue.removeFirst();
             int currentNodeDepth = this.depthMap.get(currentNode);
 
-            if (currentNodeDepth + 1 == treeDepth 
-                    && currentNode == leafNode) {
-                this.queue.clear();
-                this.depthMap.clear();
-                return true;
-            }
-
-            C targetChar = dataRow.getExplanatoryVariable(currentNodeDepth);
-
-            if (currentNode.getChildren() != null) {
-                for (ParsimoniousContextTreeNode<C> child : 
+            if (currentNodeDepth == treeDepth) {
+                if (currentNode == leafNode) {
+                    return true;
+                }
+            } else {
+                C targetChar = dataRow.getExplanatoryVariable(currentNodeDepth);
+                
+                for (ParsimoniousContextTreeNode<C> child :
                         currentNode.getChildren()) {
                     if (child.getLabel().contains(targetChar)) {
                         this.queue.addLast(child);
@@ -316,9 +313,7 @@ extends AbstractParsimoniousContextTreeLearner<C> {
                 }
             }
         }
-
-        this.queue.clear();
-        this.depthMap.clear();
+        
         return false;
     }
     
