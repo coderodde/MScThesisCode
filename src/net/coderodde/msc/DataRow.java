@@ -29,6 +29,18 @@ public final class DataRow<C> {
         this.responseVariable = variables[variables.length - 1];
     }
     
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("[");
+        
+        for (C c : explanatoryVariableList) {
+            sb.append(c);
+        }
+        
+        sb.append(" -> ").append(responseVariable);
+        return sb.append("]").toString();
+    }
+    
     public int getNumberOfExplanatoryVariables() {
         return this.explanatoryVariableList.size();
     }

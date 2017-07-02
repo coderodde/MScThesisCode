@@ -2,6 +2,7 @@ package net.coderodde.msc.support;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.HashMap;
@@ -80,7 +81,9 @@ extends AbstractParsimoniousContextTreeLearner<C> {
      * Whenever validating a partition candidate, this set is used to make sure 
      * that all characters are present in the candidate.
      */
-    private Set<C> characterFilterSet = new HashSet<>();
+    private Set<C> characterFilterSet;
+    
+    private Deque<ParsimoniousContextTreeNode<C>> debugStack = new ArrayDeque();
     
     @Override
     public ParsimoniousContextTree<C> 
@@ -100,17 +103,19 @@ extends AbstractParsimoniousContextTreeLearner<C> {
         checkDataRowListHasConstantNumberOfExplanatoryVariables(listOfDataRows);
         
         state.loadAllPossibleNodeLabels(alphabet);
-        state.characterCountMap = new HashMap<>();
         state.characterFilterSet = new HashSet<>();
         state.depthMap = new HashMap<>();
+        state.characterCountMap = new HashMap<>();
         state.mapPartitionToScore = new HashMap<>();
-        state.queue = new ArrayDeque<>();
-        
-        int depth = listOfDataRows.get(0).getNumberOfExplanatoryVariables();
+        state.queue = new ArrayDeque<>();   
         state.k = 0.5 * (alphabet.size() - 1) * Math.log(listOfDataRows.size());
         state.root = new ParsimoniousContextTreeNode<>();
         state.root.setLabel(Collections.<C>emptySet());
+        
+        int depth = listOfDataRows.get(0).getNumberOfExplanatoryVariables();
+        
         state.buildTree(state.root, depth);
+        
         return new ParsimoniousContextTree<>(state.root);
     }
         
@@ -156,10 +161,16 @@ extends AbstractParsimoniousContextTreeLearner<C> {
     }
     
     private void buildTree(ParsimoniousContextTreeNode<C> node, int depth) {
+        debugStack.addLast(node);
+        
         if (depth == 0) {
             node.setScore(computeBayesianInformationCriterion(node));
+            debugStack.removeLast();
             return;
         }
+        
+        System.out.println("In buildTree for node \"" + node.getLabel() +
+                "\" on depth " + depth);
         
         Set<ParsimoniousContextTreeNode<C>> children = 
                 new HashSet<>(this.alphabet
@@ -182,6 +193,8 @@ extends AbstractParsimoniousContextTreeLearner<C> {
         
         this.mapPartitionToScore.clear();
         
+        System.out.println("Start partitioning " + node.getLabel());
+        
         for (List<Set<C>> labelCombination :
                 new CombinationIterable<Set<C>>(
                         this.listOfAllPossibleNodeLabels)) {
@@ -196,6 +209,8 @@ extends AbstractParsimoniousContextTreeLearner<C> {
             }
             
             this.mapPartitionToScore.put(labelCombination, score);
+            System.out.println("Partition " + labelCombination + " has score " +
+                    score);
         }
         
         double bestScore = Double.NEGATIVE_INFINITY;
@@ -209,7 +224,14 @@ extends AbstractParsimoniousContextTreeLearner<C> {
             }
         }   
         
+        System.out.println("Best partition chosen is " + bestPartition + " with " + 
+                "score " + bestScore);
+//        System.out.println("Non-leaf score: " + bestScore);
+        
         node.setScore(bestScore);
+        
+        System.out.println("Score for internal node " + bestPartition + ": " + bestScore);
+        
         Set<Set<C>> bestPartitionAsSet = new HashSet<>(bestPartition);
         Iterator<ParsimoniousContextTreeNode<C>> iterator =
                 node.getChildren().iterator();
@@ -221,6 +243,8 @@ extends AbstractParsimoniousContextTreeLearner<C> {
                 iterator.remove();
             }
         }
+        
+        debugStack.removeLast();
     }
     
     private boolean isPartitionOfAlphabet(List<Set<C>> labelCombination) {
@@ -256,6 +280,9 @@ extends AbstractParsimoniousContextTreeLearner<C> {
             if (dataRowMatchesLeafNode(dataRow, node)) {
                 totalCount++;
                 C responseVariable = dataRow.getResponseVariable();
+                
+                System.out.println("In BIC: choosing data row " + dataRow + " for " + debugStack);
+                
                 Integer count = this.characterCountMap.get(responseVariable);
                 
                 if (count != null) {
@@ -273,6 +300,10 @@ extends AbstractParsimoniousContextTreeLearner<C> {
                     Math.log((1.0 * e.getValue()) / totalCount);
         }
         
+        System.out.println("Computing leaf \"" + debugStack + "\", counts: " + characterCountMap + "; the score is " + score);
+//        System.out.println("K = " + this.k);
+//        System.out.println("BIC for " + node.getLabel() + ": " + score);
+//        System.out.println("Leaf score: " + score);
         return score;
     }
     

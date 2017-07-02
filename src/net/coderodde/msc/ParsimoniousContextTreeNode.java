@@ -64,6 +64,11 @@ public final class ParsimoniousContextTreeNode<C> {
         return this.score;
     }
     
+    @Override
+    public String toString() {
+        return getLabel().toString();
+    }
+    
     public void convertToTextualRepresentation(StringBuilder stringBuilder,
                                                String indentation,
                                                String separator) {
