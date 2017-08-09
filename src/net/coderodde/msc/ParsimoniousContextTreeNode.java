@@ -1,5 +1,7 @@
 package net.coderodde.msc;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -25,6 +27,17 @@ public final class ParsimoniousContextTreeNode<C> {
      * The conditional probability distribution of the response variable.
      */
     private ResponseVariableDistribution<C> responseVariableDistribution;
+    
+    // USED FOR DEBUGGING:
+    private Map<C, Integer> characterCountMap;
+    
+    public void createCharacterCountMap() {
+        this.characterCountMap = new HashMap<>();
+    }
+    
+    public void addToCharacterCountMap(C c) {
+        this.characterCountMap.put(c, this.characterCountMap.getOrDefault(c, 0) + 1);
+    }
     
     /**
      * The score of this tree node.

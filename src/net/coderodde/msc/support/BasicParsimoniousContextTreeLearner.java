@@ -2,7 +2,6 @@ package net.coderodde.msc.support;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.HashMap;
@@ -164,6 +163,7 @@ extends AbstractParsimoniousContextTreeLearner<C> {
         debugStack.addLast(node);
         
         if (depth == 0) {
+            node.createCharacterCountMap();
             node.setScore(computeBayesianInformationCriterion(node));
             debugStack.removeLast();
             return;
@@ -280,7 +280,7 @@ extends AbstractParsimoniousContextTreeLearner<C> {
             if (dataRowMatchesLeafNode(dataRow, node)) {
                 totalCount++;
                 C responseVariable = dataRow.getResponseVariable();
-                
+                node.addToCharacterCountMap(responseVariable);
                 System.out.println("In BIC: choosing data row " + dataRow + " for " + debugStack);
                 
                 Integer count = this.characterCountMap.get(responseVariable);
@@ -308,7 +308,8 @@ extends AbstractParsimoniousContextTreeLearner<C> {
     }
     
     private boolean dataRowMatchesLeafNode(
-            DataRow<C> dataRow, ParsimoniousContextTreeNode<C> leafNode) {
+            DataRow<C> dataRow, 
+            ParsimoniousContextTreeNode<C> leafNode) {
         this.queue.clear();
         this.depthMap.clear();
         int treeDepth = this.listOfDataRows
@@ -348,26 +349,4 @@ extends AbstractParsimoniousContextTreeLearner<C> {
         return false;
     }
     
-    private void checkDataRowListNotEmpty(List<DataRow<C>> dataRowList) {
-        if (dataRowList.isEmpty()) {
-            throw new IllegalArgumentException(
-                    "There is no data rows in the list.");
-        }
-    }
-    
-    private void checkDataRowListHasConstantNumberOfExplanatoryVariables(
-            List<DataRow<C>> dataRowList) {
-        int expectedNumberOfExplanatoryVariables = 
-                dataRowList.get(0).getNumberOfExplanatoryVariables();
-        
-        for (int i = 1; i < dataRowList.size(); ++i) {
-            if (dataRowList.get(i).getNumberOfExplanatoryVariables() !=
-                    expectedNumberOfExplanatoryVariables) {
-                throw new IllegalArgumentException(
-                        "The data row " + i + " does not have " +
-                                expectedNumberOfExplanatoryVariables + 
-                                " explanatory variables.");
-            }
-        }
-    }
 }

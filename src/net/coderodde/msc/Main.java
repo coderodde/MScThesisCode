@@ -4,6 +4,7 @@ import net.coderodde.msc.support.DNAAlphabet;
 import java.util.ArrayList;
 import java.util.List;
 import net.coderodde.msc.support.BasicParsimoniousContextTreeLearner;
+import net.coderodde.msc.support.BasicParsimoniousContextTreeLearnerV2;
 
 public class Main {
 
@@ -60,7 +61,7 @@ public class Main {
 //        dataRowList.add(new DataRow<Character>('T', 'C', 'G', 'T'));
 //        dataRowList.add(new DataRow<Character>('A', 'T', 'G', 'C'));
 
-        // test_file_4.txt
+        // test_file_4.txt (Disagrees with Ralf!)
         dataRowList.add(new DataRow<Character>('A', 'C', 'T'));
         dataRowList.add(new DataRow<Character>('T', 'A', 'A'));
         dataRowList.add(new DataRow<Character>('G', 'C', 'C'));
@@ -75,6 +76,10 @@ public class Main {
 //        dataRowList.add(new DataRow<Character>('T', 'T', 'C', 'G', 'G'));
 //        dataRowList.add(new DataRow<Character>('C', 'A', 'C', 'C', 'T'));
 //        dataRowList.add(new DataRow<Character>('C', 'G', 'A', 'T', 'A'));
+
+        ParsimoniousContextTree<Character> debugTree = 
+                new BasicParsimoniousContextTreeLearnerV2<Character>()
+                        .learn(alphabet, dataRowList);
 
         long startTime = System.currentTimeMillis();
         ParsimoniousContextTree<Character> tree =
