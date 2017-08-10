@@ -62,12 +62,12 @@ public class Main {
 //        dataRowList.add(new DataRow<Character>('A', 'T', 'G', 'C'));
 
         // test_file_4.txt (Disagrees with Ralf!)
-        dataRowList.add(new DataRow<Character>('A', 'C', 'T'));
-        dataRowList.add(new DataRow<Character>('T', 'A', 'A'));
-        dataRowList.add(new DataRow<Character>('G', 'C', 'C'));
-        dataRowList.add(new DataRow<Character>('T', 'C', 'G'));
-        dataRowList.add(new DataRow<Character>('C', 'C', 'T'));
-        dataRowList.add(new DataRow<Character>('C', 'A', 'A'));
+        dataRowList.add(new DataRow<>('A', 'C', 'T'));
+        dataRowList.add(new DataRow<>('T', 'A', 'A'));
+        dataRowList.add(new DataRow<>('G', 'C', 'C'));
+        dataRowList.add(new DataRow<>('T', 'C', 'G'));
+        dataRowList.add(new DataRow<>('C', 'C', 'T'));
+        dataRowList.add(new DataRow<>('C', 'A', 'A'));
         
         // test_file_4b.txt
 //        dataRowList.add(new DataRow<Character>('A', 'C', 'C', 'G', 'T'));

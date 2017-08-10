@@ -87,7 +87,7 @@ extends AbstractParsimoniousContextTreeLearner<C> {
         
         // First, just build the entire extended PCT:
         buildExtendedPCT();
-        
+        computeLeafNodeScores();
         return new ParsimoniousContextTree<>(root);
     }
     
@@ -101,13 +101,46 @@ extends AbstractParsimoniousContextTreeLearner<C> {
                 this.listOfDataRows.get(0).getNumberOfExplanatoryVariables();
         
         buildExtendedPCT(root, depth);
+        computeLeafNodeScores();
     }
     
+    /**
+     * Recurs to each leaf in order to compute their scores.
+     */
+    private void computeLeafNodeScores() {
+        for (ParsimoniousContextTreeNode<C> childOfRoot : root.getChildren()) {
+            computeLeafNodeScores(childOfRoot);
+        }
+    }
+    
+    /**
+     * Implements the leaf score computing routine. If {@code node} is a leaf
+     * node, computes its BIC-score. Otherwise, recurs to the children of the
+     * node.
+     * 
+     * @param node the current node.
+     */
+    private void computeLeafNodeScores(ParsimoniousContextTreeNode<C> node) {
+        if (node.getChildren() == null) {
+            node.setScore(computeBayesianInformationCriterion(node));
+            return;
+        }
+        
+        for (ParsimoniousContextTreeNode<C> child : node.getChildren()) {
+            computeLeafNodeScores(child);
+        }
+    }
+    
+    /**
+     * Implements the extended PCT construction algorithm.
+     * 
+     * @param node the node from which to start constructing the subtree.
+     * @param depth the current depth of the input node.
+     */
     private void buildExtendedPCT(
             ParsimoniousContextTreeNode<C> node, 
             int depth) {
         if (depth == 0) {
-            computeBayesianInformationCriterion(node);
             // 'node' is a leaf terminate the depth-first traversal.
             return;
         }
@@ -137,7 +170,7 @@ extends AbstractParsimoniousContextTreeLearner<C> {
      * 
      * @param node the node whose BIC to compute; expected to be a leaf node.
      */
-    private void computeBayesianInformationCriterion(
+    private double computeBayesianInformationCriterion(
             ParsimoniousContextTreeNode<C> node) {
         int totalCount = 0;
         
@@ -161,9 +194,18 @@ extends AbstractParsimoniousContextTreeLearner<C> {
         
         // Clear for the next possible leaf node:
         this.characterCountMap.clear();
-        node.setScore(score);
+        return score;
     }
     
+    /**
+     * Returns {@code true} only if the input data row leads along the labels
+     * towards the given leaf node.
+     * 
+     * @param dataRow the data row to test.
+     * @param leafNode the target leaf node.
+     * @return {@code true} if it is possible to get into {@code leafNode} by 
+     *                      using the characters of the {@code dataRow}.
+     */
     private boolean dataRowMatchesLeafNode(
             DataRow<C> dataRow,
             ParsimoniousContextTreeNode<C> leafNode) {
