@@ -3,8 +3,10 @@ package net.coderodde.msc.support;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import net.coderodde.msc.AbstractParsimoniousContextTreeLearner;
@@ -44,6 +46,27 @@ extends AbstractParsimoniousContextTreeLearner<C> {
      */
     private List<DataRow<C>> listOfDataRows;
     
+    /**
+     * Reused every time we compute a BIC-score for each leaf node.
+     */
+    private Map<C, Integer> characterCountMap = new HashMap<>();
+    
+    /**
+     * The frontier queue for the breadth-first search. We need this whenever
+     * asking whether a data row leads to a particular leaf node.
+     */
+    private Deque<ParsimoniousContextTreeNode<C>> queue = new ArrayDeque<>();
+    
+    /**
+     * Maps each node to its depth in the breadth-first search.
+     */
+    private Map<ParsimoniousContextTreeNode<C>, Integer> depthMap = new HashMap<>();
+    
+    /**
+     * The penalty score.
+     */
+    private double k;
+    
     @Override
     public ParsimoniousContextTree<C> learn(Alphabet<C> alphabet,
                                             List<DataRow<C>> listOfDataRows) {
@@ -57,14 +80,20 @@ extends AbstractParsimoniousContextTreeLearner<C> {
         checkDataRowListNotEmpty(listOfDataRows);
         checkDataRowListHasConstantNumberOfExplanatoryVariables(listOfDataRows);
         
-        root =  new ParsimoniousContextTreeNode<>();
+        root = new ParsimoniousContextTreeNode<>();
         root.setLabel(new HashSet<>()); // The root's label is empty.
         
+        this.k = computeK();
+        
+        // First, just build the entire extended PCT:
         buildExtendedPCT();
         
         return new ParsimoniousContextTree<>(root);
     }
     
+    /**
+     * Recursively builds the entire PCT.
+     */
     private void buildExtendedPCT() {
         createListOfAllPossibleLabels();
         
@@ -78,6 +107,7 @@ extends AbstractParsimoniousContextTreeLearner<C> {
             ParsimoniousContextTreeNode<C> node, 
             int depth) {
         if (depth == 0) {
+            computeBayesianInformationCriterion(node);
             // 'node' is a leaf terminate the depth-first traversal.
             return;
         }
@@ -102,17 +132,115 @@ extends AbstractParsimoniousContextTreeLearner<C> {
         }
     }
     
+    /**
+     * Computes the Bayesian information criterion (BIC) score for {@code node}.
+     * 
+     * @param node the node whose BIC to compute; expected to be a leaf node.
+     */
+    private void computeBayesianInformationCriterion(
+            ParsimoniousContextTreeNode<C> node) {
+        int totalCount = 0;
+        
+        for (DataRow<C> dataRow : this.listOfDataRows) {
+            if (dataRowMatchesLeafNode(dataRow, node)) {
+                totalCount++;
+                C responseVariable = dataRow.getResponseVariable();
+                this.characterCountMap.put(
+                        responseVariable, 
+                        this.characterCountMap
+                            .getOrDefault(responseVariable, 0) + 1);
+            }
+        }
+        
+        double score = -this.k;
+        
+        for (Map.Entry<C, Integer> e : this.characterCountMap.entrySet()) {
+            score += e.getValue() * 
+                    Math.log((1.0 * e.getValue()) / totalCount);
+        }
+        
+        // Clear for the next possible leaf node:
+        this.characterCountMap.clear();
+        node.setScore(score);
+    }
+    
+    private boolean dataRowMatchesLeafNode(
+            DataRow<C> dataRow,
+            ParsimoniousContextTreeNode<C> leafNode) {
+        int treeDepth = this.listOfDataRows
+                            .get(0)
+                            .getNumberOfExplanatoryVariables();
+        
+        for (ParsimoniousContextTreeNode<C> childOfRoot :
+                root.getChildren()) {
+            if (childOfRoot.getLabel()
+                           .contains(dataRow.getExplanatoryVariable(0))) {
+                this.queue.addLast(childOfRoot);
+                this.depthMap.put(childOfRoot, 1);
+            }
+        }
+        
+        while (!this.queue.isEmpty()) {
+            ParsimoniousContextTreeNode<C> currentNode = 
+                    this.queue.removeFirst();
+            
+            int currentNodeDepth = this.depthMap.get(currentNode);
+            
+            if (currentNodeDepth == treeDepth) {
+                if (currentNode == leafNode) {
+                    // Clear the data structures for future possible reuse:
+                    this.queue.clear();
+                    this.depthMap.clear();
+
+                    return true;
+                }
+            } else {
+                C targetCharacter = 
+                        dataRow.getExplanatoryVariable(currentNodeDepth);
+                
+                for (ParsimoniousContextTreeNode<C> child :
+                        currentNode.getChildren()) {
+                    if (child.getLabel().contains(targetCharacter)) {
+                        this.queue.addLast(child);
+                        this.depthMap.put(child, currentNodeDepth + 1);
+                    }
+                }
+            }
+        }
+        
+        // Clear the data structures for future possible reuse:
+        this.queue.clear();
+        this.depthMap.clear();
+        
+        return false;
+    }
+    
+    /**
+     * Creates and populates the list of all possible, non-empty character 
+     * combinations. These are used as node labels.
+     */
     private void createListOfAllPossibleLabels() {
         this.listOfAllPossibleNodeLabels = 
-                new ArrayList<>(alphabet.getNumberOfNonemptyCharacterCombinations());
+                new ArrayList<>(
+                        alphabet.getNumberOfNonemptyCharacterCombinations());
         
+        // Used for generating the combinations.
         boolean[] flags = new boolean[alphabet.size()];
         
+        // Keep populating the labels until they are all there:
         while (incrementCombinationFlags(flags)) {
-            this.listOfAllPossibleNodeLabels.add(loadCharacterCombination(alphabet, flags));
+            this.listOfAllPossibleNodeLabels
+                    .add(loadCharacterCombination(alphabet, flags));
         }
     }
     
+    /**
+     * Produces the next combination.
+     * 
+     * @param flags the flag arrary.
+     * @return {@code true} if a new combination was created; {@code false} 
+     * indicates that all possible combinations where generated.
+     */
     private static boolean incrementCombinationFlags(boolean[] flags) {
         int alphabetSize = flags.length;
         
@@ -128,6 +256,14 @@ extends AbstractParsimoniousContextTreeLearner<C> {
         return false;
     }
     
+    /**
+     * Creates and returns a new combination.
+     * 
+     * @param <C> the character type.
+     * @param alphabet the alphabet.
+     * @param flags the flag array.
+     * @return a new set containing a character combination.
+     */
     private static <C> Set<C> loadCharacterCombination(Alphabet<C> alphabet,
                                                        boolean[] flags) {
         Set<C> characterCombination = new HashSet<>();
@@ -139,5 +275,14 @@ extends AbstractParsimoniousContextTreeLearner<C> {
         }
         
         return characterCombination;
+    }
+    
+    /**
+     * Computes the penalty score.
+     * 
+     * @return the penalty score.
+     */
+    private double computeK() {
+        return 0.5 * (alphabet.size() - 1) * Math.log(listOfDataRows.size());
     }
 }
