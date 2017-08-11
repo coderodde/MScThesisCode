@@ -2,9 +2,12 @@ package net.coderodde.msc.support;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -67,6 +70,26 @@ extends AbstractParsimoniousContextTreeLearner<C> {
      */
     private double k;
     
+    /**
+     * Used for holding a combination of labels while pruning.
+     */
+    private List<Set<C>> labelCombination = new ArrayList<>();
+    
+    /**
+     * Used for verifying that the labels cover the entire alphabet.
+     */
+    private Set<C> characterFilterSet = new HashSet<>();
+    
+    /**
+     * Maps each partition of the alphabet to its score.
+     */
+    private Map<List<Set<C>>, Double> mapPartitionToScore = new HashMap<>();
+    
+    /**
+     * Used for computing combinations of labels.
+     */
+    private boolean[] labelFlags;
+    
     @Override
     public ParsimoniousContextTree<C> learn(Alphabet<C> alphabet,
                                             List<DataRow<C>> listOfDataRows) {
@@ -88,6 +111,7 @@ extends AbstractParsimoniousContextTreeLearner<C> {
         // First, just build the entire extended PCT:
         buildExtendedPCT();
         computeLeafNodeScores();
+        pruneExtendedPCT();
         return new ParsimoniousContextTree<>(root);
     }
     
@@ -101,7 +125,138 @@ extends AbstractParsimoniousContextTreeLearner<C> {
                 this.listOfDataRows.get(0).getNumberOfExplanatoryVariables();
         
         buildExtendedPCT(root, depth);
-        computeLeafNodeScores();
+    }
+    
+    /**
+     * Prunes the extended PCT into an ordinary PCT.
+     */
+    private void pruneExtendedPCT() {
+        this.labelFlags = new boolean[this.listOfAllPossibleNodeLabels.size()];
+        pruneExtendedPCT(root);
+    }
+    
+    /**
+     * Turns off all flags.
+     */
+    private void wipeOutLabelFlags() {
+        Arrays.fill(labelFlags, 0, labelFlags.length, false);
+    }
+    
+    /**
+     * Unless {@code node} is a leaf node, prunes this node.
+     * 
+     * @param node the node to prune.
+     */
+    private void pruneExtendedPCT(ParsimoniousContextTreeNode<C> node) {
+        if (node.getChildren() == null) {
+            // Terminate the recursion:
+            return;
+        }
+        
+        wipeOutLabelFlags();
+        Map<Set<C>, ParsimoniousContextTreeNode<C>> nodeMap = 
+                new HashMap<>(
+                this.alphabet.getNumberOfNonemptyCharacterCombinations());
+        
+        for (ParsimoniousContextTreeNode<C> child : node.getChildren()) {
+            nodeMap.put(child.getLabel(), node);
+        }
+        
+        while (incrementCombinationFlags(labelFlags)) {
+            loadCombinationList(labelFlags);
+            
+            if (!isPartitionOfAlphabet(this.labelCombination)) {
+                this.labelCombination.clear();
+                continue;
+            }
+            
+            double score = 0.0;
+            
+            for (Set<C> label : this.labelCombination) {
+                score += nodeMap.get(label).getScore();
+            }
+            
+            this.mapPartitionToScore.put(labelCombination, score);
+            this.labelCombination.clear();
+        }
+        
+        double bestScore = Double.NEGATIVE_INFINITY;
+        List<Set<C>> bestPartition = null;
+        
+        for (Map.Entry<List<Set<C>>, Double> entry :
+                this.mapPartitionToScore.entrySet()) {
+            if (bestScore < entry.getValue()) {
+                bestScore = entry.getValue();
+                bestPartition = entry.getKey();
+            }
+        }
+        
+        node.setScore(bestScore);
+        
+        Set<Set<C>> bestPartitionAsSet = new HashSet<>(bestPartition);
+        Iterator<ParsimoniousContextTreeNode<C>> iterator = 
+                node.getChildren().iterator();
+        
+        while (iterator.hasNext()) {
+            ParsimoniousContextTreeNode<C> currentChildNode = iterator.next();
+            
+            if (!bestPartitionAsSet.contains(currentChildNode.getLabel())) {
+                iterator.remove();
+            }
+        }
+    }
+    
+    /**
+     * Returns {@code true} if and only if all sets in {@code labelCombination} 
+     * are disjoint, and their union equals the alphabet.
+     * 
+     * @param labelCombination the label combination.
+     * @return {@code true} only if the label combination partitions the 
+     *         alphabet.
+     */
+    private boolean isPartitionOfAlphabet(List<Set<C>> labelCombination) {
+        int labels = labelCombination.size();
+        
+        // All distinct labels are disjoint?
+        for (int i = 0; i != labels; ++i) {
+            Set<C> label1 = labelCombination.get(i);
+            
+            for (int j = i + 1; j < labels; ++j) {
+                Set<C> label2 = labelCombination.get(j);
+                
+                if (!Collections.<C>disjoint(label1, label2)) {
+                    return false;
+                }
+            }
+        }
+        
+        // Once here, the labels are disjoint, but do they cover the entire
+        // alphabet?
+        for (Set<C> label : labelCombination) {
+            this.characterFilterSet.addAll(label);
+        }
+        
+        boolean isPartition = 
+                this.characterFilterSet.size() == this.alphabet.size();
+        
+        this.characterFilterSet.clear();
+        return isPartition;
+    }
+    
+    /**
+     * Loads the labels into {@code this.labelCombination}.
+     * 
+     * @param flags the flag array. If {@code flags[i]} is {@code true}, 
+     *              {@code listOfAllPossibleNodeLabels.get(i)} is added to the
+     *              {@code labelCombination}.
+     */
+    private void loadCombinationList(boolean[] flags) {
+        for (int i = 0; i != flags.length; ++i) {
+            if (flags[i]) {
+                this.labelCombination.add(
+                        this.listOfAllPossibleNodeLabels.get(i));
+            }
+        }
     }
     
     /**
@@ -284,9 +439,7 @@ extends AbstractParsimoniousContextTreeLearner<C> {
      * indicates that all possible combinations where generated.
      */
     private static boolean incrementCombinationFlags(boolean[] flags) {
-        int alphabetSize = flags.length;
-        
-        for (int i = 0; i < alphabetSize; ++i) {
+        for (int i = 0; i < flags.length; ++i) {
             if (flags[i] == false) {
                 flags[i] = true;
                 return true;

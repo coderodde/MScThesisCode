@@ -88,5 +88,6 @@ public class Main {
         
         System.out.println("Computed in " + (endTime - startTime) + " ms.");
         System.out.println(tree);
+        System.out.println("debugTree score: " + debugTree.getScore());
     }
 }
