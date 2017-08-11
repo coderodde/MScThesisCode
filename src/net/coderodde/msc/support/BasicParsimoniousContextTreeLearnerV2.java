@@ -153,13 +153,18 @@ extends AbstractParsimoniousContextTreeLearner<C> {
             return;
         }
         
+        // We need to know the optimal scores of the children first:
+        for (ParsimoniousContextTreeNode<C> child : node.getChildren()) {
+            pruneExtendedPCT(child);
+        }
+        
         wipeOutLabelFlags();
         Map<Set<C>, ParsimoniousContextTreeNode<C>> nodeMap = 
                 new HashMap<>(
                 this.alphabet.getNumberOfNonemptyCharacterCombinations());
         
         for (ParsimoniousContextTreeNode<C> child : node.getChildren()) {
-            nodeMap.put(child.getLabel(), node);
+            nodeMap.put(child.getLabel(), child);
         }
         
         while (incrementCombinationFlags(labelFlags)) {

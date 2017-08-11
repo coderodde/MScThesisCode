@@ -77,10 +77,13 @@ public class Main {
 //        dataRowList.add(new DataRow<Character>('C', 'A', 'C', 'C', 'T'));
 //        dataRowList.add(new DataRow<Character>('C', 'G', 'A', 'T', 'A'));
 
+        long a = System.currentTimeMillis();
         ParsimoniousContextTree<Character> debugTree = 
                 new BasicParsimoniousContextTreeLearnerV2<Character>()
                         .learn(alphabet, dataRowList);
-
+        long b = System.currentTimeMillis();
+        System.out.println(debugTree);
+        System.out.println("Debug tree in " + (b - a) + " ms.");
         long startTime = System.currentTimeMillis();
         ParsimoniousContextTree<Character> tree =
                 learner1.learn(alphabet, dataRowList);
