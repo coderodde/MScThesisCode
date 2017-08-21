@@ -169,8 +169,8 @@ extends AbstractParsimoniousContextTreeLearner<C> {
             return;
         }
         
-        System.out.println("In buildTree for node \"" + node.getLabel() +
-                "\" on depth " + depth);
+        //System.out.println("In buildTree for node \"" + node.getLabel() +
+        //        "\" on depth " + depth);
         
         Set<ParsimoniousContextTreeNode<C>> children = 
                 new HashSet<>(this.alphabet
@@ -193,7 +193,7 @@ extends AbstractParsimoniousContextTreeLearner<C> {
         
         this.mapPartitionToScore.clear();
         
-        System.out.println("Start partitioning " + node.getLabel());
+        //System.out.println("Start partitioning " + node.getLabel());
         
         for (List<Set<C>> labelCombination :
                 new CombinationIterable<Set<C>>(
@@ -209,8 +209,8 @@ extends AbstractParsimoniousContextTreeLearner<C> {
             }
             
             this.mapPartitionToScore.put(labelCombination, score);
-            System.out.println("Partition " + labelCombination + " has score " +
-                    score);
+            //System.out.println("Partition " + labelCombination + " has score " +
+            //        score);
         }
         
         double bestScore = Double.NEGATIVE_INFINITY;
@@ -224,13 +224,13 @@ extends AbstractParsimoniousContextTreeLearner<C> {
             }
         }   
         
-        System.out.println("Best partition chosen is " + bestPartition + " with " + 
-                "score " + bestScore);
+        //System.out.println("Best partition chosen is " + bestPartition + " with " + 
+         //       "score " + bestScore);
 //        System.out.println("Non-leaf score: " + bestScore);
         
         node.setScore(bestScore);
         
-        System.out.println("Score for internal node " + bestPartition + ": " + bestScore);
+        //System.out.println("Score for internal node " + bestPartition + ": " + bestScore);
         
         Set<Set<C>> bestPartitionAsSet = new HashSet<>(bestPartition);
         Iterator<ParsimoniousContextTreeNode<C>> iterator =
@@ -281,7 +281,7 @@ extends AbstractParsimoniousContextTreeLearner<C> {
                 totalCount++;
                 C responseVariable = dataRow.getResponseVariable();
                 node.addToCharacterCountMap(responseVariable);
-                System.out.println("In BIC: choosing data row " + dataRow + " for " + debugStack);
+                //System.out.println("In BIC: choosing data row " + dataRow + " for " + debugStack);
                 
                 Integer count = this.characterCountMap.get(responseVariable);
                 
@@ -300,7 +300,7 @@ extends AbstractParsimoniousContextTreeLearner<C> {
                     Math.log((1.0 * e.getValue()) / totalCount);
         }
         
-        System.out.println("Computing leaf \"" + debugStack + "\", counts: " + characterCountMap + "; the score is " + score);
+        // System.out.println("Computing leaf \"" + debugStack + "\", counts: " + characterCountMap + "; the score is " + score);
 //        System.out.println("K = " + this.k);
 //        System.out.println("BIC for " + node.getLabel() + ": " + score);
 //        System.out.println("Leaf score: " + score);

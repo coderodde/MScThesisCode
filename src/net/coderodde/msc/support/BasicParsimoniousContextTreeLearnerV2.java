@@ -181,7 +181,9 @@ extends AbstractParsimoniousContextTreeLearner<C> {
                 score += nodeMap.get(label).getScore();
             }
             
-            this.mapPartitionToScore.put(labelCombination, score);
+            List<Set<C>> newLabelCombination = 
+                    new ArrayList<>(this.labelCombination);
+            this.mapPartitionToScore.put(newLabelCombination, score);
             this.labelCombination.clear();
         }
         
