@@ -2,6 +2,7 @@ package net.coderodde.msc;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -39,9 +40,48 @@ public class Alphabet<C> implements Iterable<C> {
     public int getNumberOfNonemptyCharacterCombinations() {
         return 1 << this.alphabet.size() - 1;
     }
+    
+    public List<Set<C>> getAllPossibleLabels() {
+        List<Set<C>> labels = 
+                new ArrayList<>(getNumberOfNonemptyCharacterCombinations());
+        
+        boolean[] flags = new boolean[characterList.size()];
+        
+        while (incrementFlags(flags)) {
+            labels.add(createNewLabelFromFlags(flags, this.characterList));
+        }
+        
+        return labels;
+    }
 
     @Override
     public Iterator<C> iterator() {
         return Collections.<C>unmodifiableSet(this.alphabet).iterator();
+    }
+    
+    private static boolean incrementFlags(boolean[] flags) {
+        for (int i = 0; i < flags.length; ++i) {
+            if (flags[i] == false) {
+                flags[i] = true;
+                return true;
+            } else {
+                flags[i] = false;
+            }
+        }
+        
+        return false;
+    }
+    
+    private static <C> Set<C> createNewLabelFromFlags(boolean[] flags,
+                                                  List<C> characterList) {
+        Set<C> label = new HashSet<>();
+        
+        for (int i = 0; i < flags.length; ++i) {
+            if (flags[i] == true) {
+                label.add(characterList.get(i));
+            }
+        }
+        
+        return label;
     }
 }

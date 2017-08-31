@@ -1,6 +1,10 @@
 package net.coderodde.msc;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * This abstract class defines the API for parsimonious context tree learners.
@@ -18,8 +22,8 @@ public abstract class AbstractParsimoniousContextTreeLearner<C> {
      * @param listOfDataRows the list of data rows.
      * @return a parsimonious context tree.
      */
-    public abstract ParsimoniousContextTree<C> 
-        learn(Alphabet<C> alphabet, List<DataRow<C>> listOfDataRows);
+    public abstract ParsimoniousContextTree<C>
+        learn(List<DataRow<C>> listOfDataRows);
         
     /**
      * Checks that the data row list is not empty.
@@ -53,5 +57,15 @@ public abstract class AbstractParsimoniousContextTreeLearner<C> {
                                 " explanatory variables.");
             }
         }
+    }
+    
+    protected Alphabet<C> getAlphabet(List<DataRow<C>> dataRows) {
+        Set<C> filter = new HashSet<>();
+        
+        for (DataRow<C> dataRow : dataRows) {
+            filter.addAll(dataRow.getAllExplantoryVariables());
+        }
+        
+        return new Alphabet<C>((C[]) filter.toArray());
     }
 }

@@ -86,14 +86,13 @@ extends AbstractParsimoniousContextTreeLearner<C> {
     
     @Override
     public ParsimoniousContextTree<C> 
-        learn(Alphabet<C> alphabet, List<DataRow<C>> listOfDataRows) {
+        learn(List<DataRow<C>> listOfDataRows) {
            
         // Build internals:
         BasicParsimoniousContextTreeLearner<C> state = 
                 new BasicParsimoniousContextTreeLearner<>();
         
-        state.alphabet = Objects.requireNonNull(
-                alphabet, "The input alphabet is null.");
+        state.alphabet = getAlphabet(listOfDataRows);
         state.listOfDataRows = 
                 Objects.requireNonNull(listOfDataRows, 
                                        "The list of data rows is null.");
@@ -101,15 +100,18 @@ extends AbstractParsimoniousContextTreeLearner<C> {
         checkDataRowListNotEmpty(listOfDataRows);
         checkDataRowListHasConstantNumberOfExplanatoryVariables(listOfDataRows);
         
-        state.loadAllPossibleNodeLabels(alphabet);
+        state.listOfAllPossibleNodeLabels =
+                state.alphabet.getAllPossibleLabels();
+        
         state.characterFilterSet = new HashSet<>();
         state.depthMap = new HashMap<>();
         state.characterCountMap = new HashMap<>();
         state.mapPartitionToScore = new HashMap<>();
-        state.queue = new ArrayDeque<>();   
-        state.k = 0.5 * (alphabet.size() - 1) * Math.log(listOfDataRows.size());
+        state.queue = new ArrayDeque<>();
         state.root = new ParsimoniousContextTreeNode<>();
         state.root.setLabel(Collections.<C>emptySet());
+        state.k = 0.5 * (state.alphabet.size() - 1) * 
+                         Math.log(listOfDataRows.size());
         
         int depth = listOfDataRows.get(0).getNumberOfExplanatoryVariables();
         
@@ -118,47 +120,6 @@ extends AbstractParsimoniousContextTreeLearner<C> {
         return new ParsimoniousContextTree<>(state.root);
     }
         
-    private void loadAllPossibleNodeLabels(Alphabet<C> alphabet) {
-        this.listOfAllPossibleNodeLabels =
-                new ArrayList<>(
-                        alphabet.getNumberOfNonemptyCharacterCombinations());
-        
-        boolean[] flags = new boolean[alphabet.size()];
-        
-        while (incrementCombinationFlags(flags)) {
-            this.listOfAllPossibleNodeLabels
-                .add(loadCharacterCombination(alphabet, flags));
-        }
-    }
-    
-    private static boolean incrementCombinationFlags(boolean[] flags) {
-        int alphabetSize = flags.length;
-        
-        for (int i = 0; i < alphabetSize; ++i) {
-            if (flags[i] == false) {
-                flags[i] = true;
-                return true;
-            } else {
-                flags[i] = false;
-            }
-        }
-        
-        return false;
-    }
-    
-    private static <C> Set<C> loadCharacterCombination(Alphabet<C> alphabet,
-                                                       boolean[] flags) {
-        Set<C> characterCombination = new HashSet<>();
-        
-        for (int i = 0; i < flags.length; ++i) {
-            if (flags[i]) {
-                characterCombination.add(alphabet.get(i));
-            }
-        }
-        
-        return characterCombination;
-    }
-    
     private void buildTree(ParsimoniousContextTreeNode<C> node, int depth) {
         debugStack.addLast(node);
         
@@ -168,9 +129,6 @@ extends AbstractParsimoniousContextTreeLearner<C> {
             debugStack.removeLast();
             return;
         }
-        
-        //System.out.println("In buildTree for node \"" + node.getLabel() +
-        //        "\" on depth " + depth);
         
         Set<ParsimoniousContextTreeNode<C>> children = 
                 new HashSet<>(this.alphabet
@@ -193,8 +151,6 @@ extends AbstractParsimoniousContextTreeLearner<C> {
         
         this.mapPartitionToScore.clear();
         
-        //System.out.println("Start partitioning " + node.getLabel());
-        
         for (List<Set<C>> labelCombination :
                 new CombinationIterable<Set<C>>(
                         this.listOfAllPossibleNodeLabels)) {
@@ -209,8 +165,6 @@ extends AbstractParsimoniousContextTreeLearner<C> {
             }
             
             this.mapPartitionToScore.put(labelCombination, score);
-            //System.out.println("Partition " + labelCombination + " has score " +
-            //        score);
         }
         
         double bestScore = Double.NEGATIVE_INFINITY;
@@ -224,13 +178,7 @@ extends AbstractParsimoniousContextTreeLearner<C> {
             }
         }   
         
-        //System.out.println("Best partition chosen is " + bestPartition + " with " + 
-         //       "score " + bestScore);
-//        System.out.println("Non-leaf score: " + bestScore);
-        
         node.setScore(bestScore);
-        
-        //System.out.println("Score for internal node " + bestPartition + ": " + bestScore);
         
         Set<Set<C>> bestPartitionAsSet = new HashSet<>(bestPartition);
         Iterator<ParsimoniousContextTreeNode<C>> iterator =
@@ -299,11 +247,7 @@ extends AbstractParsimoniousContextTreeLearner<C> {
             score += e.getValue() * 
                     Math.log((1.0 * e.getValue()) / totalCount);
         }
-        
-        // System.out.println("Computing leaf \"" + debugStack + "\", counts: " + characterCountMap + "; the score is " + score);
-//        System.out.println("K = " + this.k);
-//        System.out.println("BIC for " + node.getLabel() + ": " + score);
-//        System.out.println("Leaf score: " + score);
+
         return score;
     }
     
@@ -348,5 +292,4 @@ extends AbstractParsimoniousContextTreeLearner<C> {
         
         return false;
     }
-    
 }

@@ -4,7 +4,7 @@ import net.coderodde.msc.support.DNAAlphabet;
 import java.util.ArrayList;
 import java.util.List;
 import net.coderodde.msc.support.BasicParsimoniousContextTreeLearner;
-import net.coderodde.msc.support.BasicParsimoniousContextTreeLearnerV2;
+//import net.coderodde.msc.support.BasicParsimoniousContextTreeLearnerV2;
 
 public class Main {
 
@@ -12,17 +12,17 @@ public class Main {
         List<DataRow<Character>> dataRowList = new ArrayList<>();
         DNAAlphabet alphabet = new DNAAlphabet();
         
-        // 
-        dataRowList.add(new DataRow<Character>('A', 'A'));
-        dataRowList.add(new DataRow<Character>('T', 'A'));
-        dataRowList.add(new DataRow<Character>('A', 'A'));
-        dataRowList.add(new DataRow<Character>('C', 'G'));
-        dataRowList.add(new DataRow<Character>('C', 'T'));
-        dataRowList.add(new DataRow<Character>('C', 'A'));
-        dataRowList.add(new DataRow<Character>('T', 'A'));
-        dataRowList.add(new DataRow<Character>('T', 'A'));
-        dataRowList.add(new DataRow<Character>('T', 'C'));
-        dataRowList.add(new DataRow<Character>('C', 'T'));
+        // test_file.txt (same score, same tree)
+//        dataRowList.add(new DataRow<Character>('A', 'A'));
+//        dataRowList.add(new DataRow<Character>('T', 'A'));
+//        dataRowList.add(new DataRow<Character>('A', 'A'));
+//        dataRowList.add(new DataRow<Character>('C', 'G'));
+//        dataRowList.add(new DataRow<Character>('C', 'T'));
+//        dataRowList.add(new DataRow<Character>('C', 'A'));
+//        dataRowList.add(new DataRow<Character>('T', 'A'));
+//        dataRowList.add(new DataRow<Character>('T', 'A'));
+//        dataRowList.add(new DataRow<Character>('T', 'C'));
+//        dataRowList.add(new DataRow<Character>('C', 'T'));
        
         AbstractParsimoniousContextTreeLearner<Character> learner1 =
                 new BasicParsimoniousContextTreeLearner<>();
@@ -65,12 +65,12 @@ public class Main {
 //        dataRowList.add(new DataRow<Character>('A', 'T', 'G', 'C'));
 
         // test_file_4.txt (Disagrees with Ralf!) Fixed!
-//        dataRowList.add(new DataRow<>('A', 'C', 'T'));
-//        dataRowList.add(new DataRow<>('T', 'A', 'A'));
-//        dataRowList.add(new DataRow<>('G', 'C', 'C'));
-//        dataRowList.add(new DataRow<>('T', 'C', 'G'));
-//        dataRowList.add(new DataRow<>('C', 'C', 'T'));
-//        dataRowList.add(new DataRow<>('C', 'A', 'A'));
+        dataRowList.add(new DataRow<>('A', 'C', 'T'));
+        dataRowList.add(new DataRow<>('T', 'A', 'A'));
+        dataRowList.add(new DataRow<>('G', 'C', 'C'));
+        dataRowList.add(new DataRow<>('T', 'C', 'G'));
+        dataRowList.add(new DataRow<>('C', 'C', 'T'));
+        dataRowList.add(new DataRow<>('C', 'A', 'A'));
         
         // test_file_4b.txt (takes eternity).
 //        dataRowList.add(new DataRow<Character>('A', 'C', 'C', 'G', 'T'));
@@ -81,19 +81,18 @@ public class Main {
 //        dataRowList.add(new DataRow<Character>('C', 'G', 'A', 'T', 'A'));
 
         long a = System.currentTimeMillis();
-        ParsimoniousContextTree<Character> debugTree = 
-                new BasicParsimoniousContextTreeLearnerV2<Character>()
-                        .learn(alphabet, dataRowList);
+//        ParsimoniousContextTree<Character> debugTree = 
+//                new BasicParsimoniousContextTreeLearnerV2<Character>()
+//                        .learn(alphabet, dataRowList);
         long b = System.currentTimeMillis();
-        System.out.println(debugTree);
+//        System.out.println(debugTree);
         System.out.println("Debug tree in " + (b - a) + " ms.");
         long startTime = System.currentTimeMillis();
-        ParsimoniousContextTree<Character> tree =
-                learner1.learn(alphabet, dataRowList);
+        ParsimoniousContextTree<Character> tree = learner1.learn(dataRowList);
         long endTime = System.currentTimeMillis();
         
         System.out.println("Computed in " + (endTime - startTime) + " ms.");
         System.out.println(tree);
-        System.out.println("debugTree score: " + debugTree.getScore());
+//        System.out.println("debugTree score: " + debugTree.getScore());
     }
 }

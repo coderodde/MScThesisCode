@@ -10,7 +10,7 @@ public class DynamicProgrammingParsimoniousContextTreeLearner<C>
 extends AbstractParsimoniousContextTreeLearner<C> {
 
     @Override
-    public ParsimoniousContextTree<C> learn(Alphabet<C> alphabet, List<DataRow<C>> listOfDataRows) {
+    public ParsimoniousContextTree<C> learn(List<DataRow<C>> listOfDataRows) {
         return null;
     }
 }

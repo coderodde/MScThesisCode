@@ -2,6 +2,7 @@ package net.coderodde.msc;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -48,6 +49,10 @@ public final class DataRow<C> {
     public C getExplanatoryVariable(int index) {
         return this.explanatoryVariableList.get(
                this.explanatoryVariableList.size() - 1 - index);
+    }
+    
+    public List<C> getAllExplantoryVariables() {
+        return Collections.<C>unmodifiableList(explanatoryVariableList);
     }
     
     public C getResponseVariable() {
