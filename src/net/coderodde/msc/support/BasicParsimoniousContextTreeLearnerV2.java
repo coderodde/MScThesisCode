@@ -171,14 +171,32 @@ extends AbstractParsimoniousContextTreeLearner<C> {
             loadCombinationList(labelFlags);
             
             if (!isPartitionOfAlphabet(this.labelCombination)) {
+                if (node == this.root && this.labelCombination.size() == 2) {
+                    Set<Character> set1 = new HashSet<>(Arrays.asList('A', 'T'));
+                    Set<Character> set2 = new HashSet<>(Arrays.asList('C', 'G'));
+                    
+                    if (this.labelCombination.containsAll(Arrays.asList(set1, set2))) {
+                        System.err.println("Optimal children omitted!");
+                    }
+                }
                 this.labelCombination.clear();
                 continue;
             }
+            
             
             double score = 0.0;
             
             for (Set<C> label : this.labelCombination) {
                 score += nodeMap.get(label).getScore();
+            }
+            
+            if (node == this.root && this.labelCombination.size() == 2) {
+                Set<Character> set1 = new HashSet<>(Arrays.asList('A', 'T'));
+                Set<Character> set2 = new HashSet<>(Arrays.asList('C', 'G'));
+
+                if (this.labelCombination.containsAll(Arrays.asList(set1, set2))) {
+                    System.err.println("Optimal children processed! Score: " + score);
+                }
             }
             
             List<Set<C>> newLabelCombination = 

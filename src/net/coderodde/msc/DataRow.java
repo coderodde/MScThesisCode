@@ -46,7 +46,8 @@ public final class DataRow<C> {
     }
     
     public C getExplanatoryVariable(int index) {
-        return this.explanatoryVariableList.get(index);
+        return this.explanatoryVariableList.get(
+               this.explanatoryVariableList.size() - 1 - index);
     }
     
     public C getResponseVariable() {
