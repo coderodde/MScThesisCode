@@ -6,6 +6,7 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
+import net.coderodde.msc.support.BasicParsimoniousContextTreeLearner;
 
 public class Main {
 
@@ -15,7 +16,7 @@ public class Main {
             return;
         }
         
-        int depth;
+        int depth = Integer.MIN_VALUE;
         
         try {
             depth = Integer.parseInt(args[2]);
@@ -24,7 +25,7 @@ public class Main {
             System.exit(1);
         }
         
-        int start;
+        int start = Integer.MIN_VALUE;
         
         try {
             start = Integer.parseInt(args[1]);
@@ -48,7 +49,7 @@ public class Main {
                     arr[i++] = c;
                 }
                 
-                dataRows.add(new DataRow<Character>(arr));
+                dataRows.add(new DataRow<Character>(arr, start, depth));
             }
         } catch (FileNotFoundException ex) {
             ex.printStackTrace(System.err);
@@ -59,6 +60,19 @@ public class Main {
         for (DataRow<Character> dataRow : dataRows) {
             System.out.println(dataRow);
         }
+        
+        AbstractParsimoniousContextTreeLearner<Character> learner = 
+                new BasicParsimoniousContextTreeLearner<>();
+        
+        long startTime = System.currentTimeMillis();
+        
+        ParsimoniousContextTree<Character> tree = 
+                learner.learn(dataRows);
+    
+        long endTime = System.currentTimeMillis();
+        
+        System.out.println(tree);
+        System.out.println("Time: " + (endTime - startTime) + " milliseconds.");
     }
     
     private static void checkFile(File file) {

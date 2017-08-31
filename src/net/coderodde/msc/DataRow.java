@@ -30,6 +30,12 @@ public final class DataRow<C> {
         this.responseVariable = variables[variables.length - 1];
     }
     
+    public DataRow(C[] variables, int start, int depth) {
+        this(Arrays.copyOfRange(variables,
+                                start - depth, 
+                                variables.length));
+    }
+    
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("[");
