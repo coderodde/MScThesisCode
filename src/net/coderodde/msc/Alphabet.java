@@ -37,6 +37,10 @@ public class Alphabet<C> implements Iterable<C> {
         return this.alphabet.contains(ch);
     }
     
+    public List<C> getCharacters() {
+        return new ArrayList<>(characterList);
+    }
+    
     public int getNumberOfNonemptyCharacterCombinations() {
         return 1 << this.alphabet.size() - 1;
     }

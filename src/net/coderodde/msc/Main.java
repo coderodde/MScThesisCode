@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 import net.coderodde.msc.support.BasicParsimoniousContextTreeLearner;
+import net.coderodde.msc.support.IndependenceModelParsimoniousContextTreeLearner;
 
 public class Main {
 
@@ -64,6 +65,11 @@ public class Main {
         AbstractParsimoniousContextTreeLearner<Character> learner = 
                 new BasicParsimoniousContextTreeLearner<>();
         
+        AbstractParsimoniousContextTreeLearner<Character> learner2 = 
+                new IndependenceModelParsimoniousContextTreeLearner<>();
+        
+        System.out.println("Dynamic programming algorithm:");
+        
         long startTime = System.currentTimeMillis();
         
         ParsimoniousContextTree<Character> tree = 
@@ -72,6 +78,19 @@ public class Main {
         long endTime = System.currentTimeMillis();
         
         System.out.println(tree);
+        System.out.println("Time: " + (endTime - startTime) + " milliseconds.");
+        
+        System.out.println();
+        System.out.println("Independence model:");
+        
+        startTime = System.currentTimeMillis();
+        
+        ParsimoniousContextTree<Character> independenceModel =
+                learner2.learn(dataRows);
+        
+        endTime = System.currentTimeMillis();
+        
+        System.out.println(independenceModel);
         System.out.println("Time: " + (endTime - startTime) + " milliseconds.");
     }
     
