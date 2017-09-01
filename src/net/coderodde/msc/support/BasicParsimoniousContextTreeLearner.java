@@ -227,9 +227,6 @@ extends AbstractParsimoniousContextTreeLearner<C> {
             if (dataRowMatchesLeafNode(dataRow, node)) {
                 totalCount++;
                 C responseVariable = dataRow.getResponseVariable();
-                node.addToCharacterCountMap(responseVariable);
-                //System.out.println("In BIC: choosing data row " + dataRow + " for " + debugStack);
-                
                 Integer count = this.characterCountMap.get(responseVariable);
                 
                 if (count != null) {
