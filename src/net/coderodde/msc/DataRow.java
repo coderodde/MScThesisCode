@@ -33,7 +33,7 @@ public final class DataRow<C> {
     public DataRow(C[] variables, int start, int depth) {
         this(Arrays.copyOfRange(variables,
                                 start - depth, 
-                                variables.length));
+                                start + 1));
     }
     
     @Override

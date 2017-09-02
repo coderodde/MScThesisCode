@@ -126,7 +126,7 @@ public class Main {
         
         endTime = System.currentTimeMillis();
         
-        System.out.println(tree3);
+        System.out.println(tree4);
         System.out.println("Time: " + (endTime - startTime) + " milliseconds.");
     }
     

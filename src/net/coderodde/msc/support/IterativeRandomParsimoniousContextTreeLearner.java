@@ -35,7 +35,6 @@ extends AbstractParsimoniousContextTreeLearner<C>{
             if (bestScore < tree.getScore()) {
                 bestScore = tree.getScore();
                 bestTree = tree;
-                System.out.println(bestScore);
             }
         }
         
