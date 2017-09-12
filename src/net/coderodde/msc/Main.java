@@ -15,6 +15,8 @@ import net.coderodde.msc.support.RandomParsimoniousContextTreeLearner;
 public class Main {
 
     public static void main(String[] args) {
+        long startTime;
+        long endTime;
         if (args.length != 3) {
             printHelpMessage(System.out);
             return;
@@ -83,12 +85,12 @@ public class Main {
         
         System.out.println("BasicParsimoniousContextTreeLearner:");
         
-        long startTime = System.currentTimeMillis();
+        startTime = System.currentTimeMillis();
         
         ParsimoniousContextTree<Character> tree = 
                 learner.learn(dataRows);
     
-        long endTime = System.currentTimeMillis();
+        endTime = System.currentTimeMillis();
         
         System.out.println(tree);
         System.out.println("Time: " + (endTime - startTime) + " milliseconds.");
@@ -128,6 +130,75 @@ public class Main {
         
         System.out.println(tree4);
         System.out.println("Time: " + (endTime - startTime) + " milliseconds.");
+        
+        
+        ///////
+        List<DataRow<Integer>> data = new ArrayList<>();
+        
+//        data.add(new DataRow<>(1, 1, 2, 2, 1, 2, 2, 1, 1, 1, 1, 2, 1));
+//        data.add(new DataRow<>(1, 1, 1, 2, 2, 1, 1, 2, 1, 1, 1, 2, 2));
+//        data.add(new DataRow<>(2, 1, 1, 1, 2, 1, 1, 1, 1, 2, 2, 1, 1));
+//
+//        data.add(new DataRow<>(2, 1, 2, 1, 2, 2, 1, 2, 2, 2, 2, 1, 2));
+//        data.add(new DataRow<>(1, 2, 1, 1, 1, 2, 2, 2, 2, 1, 2, 1, 1));
+//        data.add(new DataRow<>(2, 2, 1, 1, 2, 1, 1, 1, 1, 1, 2, 1, 2));
+//
+//        data.add(new DataRow<>(1, 1, 2, 2, 2, 1, 2, 2, 1, 1, 2, 1, 1));
+//        data.add(new DataRow<>(2, 1, 1, 2, 1, 1, 2, 1, 2, 2, 1, 1, 1));
+//        data.add(new DataRow<>(1, 1, 2, 2, 1, 2, 1, 1, 1, 2, 2, 2, 2));
+        
+//        data.add(new DataRow<>(2, 3, 1, 2));
+//        data.add(new DataRow<>(0, 1, 3, 2));
+//        data.add(new DataRow<>(1, 1, 3, 3));
+//        
+//        data.add(new DataRow<>(0, 0, 2, 1));
+//        data.add(new DataRow<>(3, 2, 0, 1));
+//        data.add(new DataRow<>(3, 1, 1, 1));
+//       
+//        data.add(new DataRow<>(3, 0, 1, 2));
+//        data.add(new DataRow<>(2, 1, 2, 1));
+//        data.add(new DataRow<>(0, 0, 0, 0));
+
+//        data.add(new DataRow<>(0, 1, 2, 3));
+//        data.add(new DataRow<>(2, 0, 1, 2));
+//        data.add(new DataRow<>(3, 1, 1, 4));
+//        data.add(new DataRow<>(1, 4, 0, 0));
+//        data.add(new DataRow<>(2, 4, 3, 1));
+//        data.add(new DataRow<>(3, 0, 4, 2));
+//        
+//        IterativeRandomParsimoniousContextTreeLearner<Integer> 
+//                learnerIterative =
+//                new IterativeRandomParsimoniousContextTreeLearner<>();
+//        
+//        learnerIterative.setRandom(new Random());
+//        learnerIterative.setIterations(50);
+//        
+//        startTime = System.currentTimeMillis();
+//        
+//        ParsimoniousContextTree<Integer> myTree1 = learnerIterative.learn(data);
+//        
+//        endTime = System.currentTimeMillis();
+//        System.out.println(
+//                "IterativeRandomParsimoniousContextTreeLearner: " +
+//                myTree1.getScore() + ": " + (endTime - startTime) +
+//                " milliseconds.");
+//        
+//        BasicParsimoniousContextTreeLearner<Integer> learnerBasic =
+//                new BasicParsimoniousContextTreeLearner<>();
+//        
+//        startTime = System.currentTimeMillis();
+//        
+//        ParsimoniousContextTree<Integer> myTree2 = learnerBasic.learn(data);
+//        
+//        endTime = System.currentTimeMillis();
+//        System.out.println("BasicParsimoniousContextTreeLearner: " + 
+//                           myTree2.getScore() + ": " + (endTime - startTime) +
+//                           " milliseconds.");
+//        
+//        AbstractParsimoniousContextTreeLearner<Integer> learner3 = 
+//                new IndependenceModelParsimoniousContextTreeLearner<>();
+//        
+//        System.out.println("IM: " + learner3.learn(data).getScore());
     }
     
     private static void checkFile(File file) {

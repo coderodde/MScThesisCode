@@ -1,6 +1,7 @@
 package net.coderodde.msc.support;
 
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.HashMap;
@@ -81,7 +82,10 @@ extends AbstractParsimoniousContextTreeLearner<C> {
      */
     private Set<C> characterFilterSet;
     
-    private Deque<ParsimoniousContextTreeNode<C>> debugStack = new ArrayDeque();
+    /**
+     * This list holds all the partitions of the alphabet.
+     */
+    private List<List<Set<C>>> listOfAllAlphabetPartitions;
     
     @Override
     public ParsimoniousContextTree<C> 
@@ -111,7 +115,7 @@ extends AbstractParsimoniousContextTreeLearner<C> {
         state.root.setLabel(Collections.<C>emptySet());
         state.k = 0.5 * (state.alphabet.size() - 1) * 
                          Math.log(listOfDataRows.size());
-        
+        state.generateAllAlphabetPartitions();
         int depth = listOfDataRows.get(0).getNumberOfExplanatoryVariables();
         
         state.buildTree(state.root, depth);
@@ -119,13 +123,39 @@ extends AbstractParsimoniousContextTreeLearner<C> {
         return new ParsimoniousContextTree<>(state.root);
     }
         
-    private void buildTree(ParsimoniousContextTreeNode<C> node, int depth) {
-        debugStack.addLast(node);
+    private void generateAllAlphabetPartitions() {
+        this.listOfAllAlphabetPartitions = new ArrayList<>();
+        long start = System.currentTimeMillis();
         
+        for (int blocks = 1; blocks <= this.alphabet.size(); ++blocks) {
+            PartitionIterable<C> iterable = 
+                    new PartitionIterable<>(this.alphabet.getCharacters(), 
+                                            blocks);
+            
+            for (List<Set<C>> partition : iterable) {
+                this.listOfAllAlphabetPartitions.add(partition);
+            }
+        }
+//        this.listOfAllAlphabetPartitions = new ArrayList<>();
+//        
+//        for (List<Set<C>> labelCombination :
+//                new CombinationIterable<Set<C>>(
+//                        this.listOfAllPossibleNodeLabels)) {
+//            if (!isPartitionOfAlphabet(labelCombination)) {
+//                continue;
+//            }
+//            
+//            this.listOfAllAlphabetPartitions.add(labelCombination);
+//        }
+        long end = System.currentTimeMillis();
+        System.out.println("Created the alphabet partitions in " +
+                (end - start) + " ms.");
+    }
+        
+    private void buildTree(ParsimoniousContextTreeNode<C> node, int depth) {
         if (depth == 0) {
             node.createCharacterCountMap();
             node.setScore(computeBayesianInformationCriterion(node));
-            debugStack.removeLast();
             return;
         }
         
@@ -149,21 +179,16 @@ extends AbstractParsimoniousContextTreeLearner<C> {
         }
         
         this.mapPartitionToScore.clear();
-        
-        for (List<Set<C>> labelCombination :
-                new CombinationIterable<Set<C>>(
-                        this.listOfAllPossibleNodeLabels)) {
-            if (!isPartitionOfAlphabet(labelCombination)) {
-                continue;
-            }
-            
+        // Enumerate all valid partitions, Google. + (paper).
+        for (List<Set<C>> alphabetPartition :
+                this.listOfAllAlphabetPartitions) {
             double score = 0.0;
             
-            for (Set<C> label : labelCombination) {
+            for (Set<C> label : alphabetPartition) {
                 score += nodeMap.get(label).getScore();
             }
             
-            this.mapPartitionToScore.put(labelCombination, score);
+            this.mapPartitionToScore.put(alphabetPartition, score);
         }
         
         double bestScore = Double.NEGATIVE_INFINITY;
@@ -190,8 +215,6 @@ extends AbstractParsimoniousContextTreeLearner<C> {
                 iterator.remove();
             }
         }
-        
-        debugStack.removeLast();
     }
     
     private boolean isPartitionOfAlphabet(List<Set<C>> labelCombination) {
