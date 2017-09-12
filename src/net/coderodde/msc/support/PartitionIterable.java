@@ -1,7 +1,6 @@
 package net.coderodde.msc.support;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -10,7 +9,8 @@ import java.util.Set;
 
 /**
  * This class implements an {@code Iterable} over all partitions of a given 
- * list.
+ * list. It relies on the paper by Michael Orlov
+ * <a href="http://www.informatik.uni-ulm.de/ni/Lehre/WS03/DMM/Software/partitions.pdf">Efficient Generation of Set Partitions</a>
  * 
  * @author Rodion "rodde" Efremov
  * @version 1.6 (Feb 14, 2016 a.k.a. Friend Edition)
