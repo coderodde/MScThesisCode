@@ -13,11 +13,14 @@ public final class TextWordsProvider {
         
         try {
             Scanner scanner = new Scanner(file);
-            String line = scanner.nextLine();
-            String[] tokens = line.split("\\s+");
             
-            for (String token : tokens) {
-                words.add(token.toLowerCase());
+            while (scanner.hasNextLine()) {
+                String line = scanner.nextLine();
+                String[] tokens = line.split("\\s+");
+
+                for (String token : tokens) {
+                    words.add(token.trim().toLowerCase());
+                }
             }
         } catch (FileNotFoundException ex) {
             throw new RuntimeException(ex);

@@ -4,17 +4,28 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.Scanner;
 import net.coderodde.msc.support.BasicParsimoniousContextTreeLearner;
 import net.coderodde.msc.support.IndependenceModelParsimoniousContextTreeLearner;
 import net.coderodde.msc.support.IterativeRandomParsimoniousContextTreeLearner;
-import net.coderodde.msc.support.RandomParsimoniousContextTreeLearner;
 
 public class Main {
 
-    public static void maifn(String[] args) {
+    public static void main(String[] args) {
+        if (args.length == 6) {
+            if (args[0].equals("datagen")) {
+                generateData(args[1], // text file name
+                             args[2], // alphabet file name
+                             Integer.parseInt(args[3]),  // order
+                             Integer.parseInt(args[4]),  // lines
+                             Integer.parseInt(args[5])); // line length
+                return;
+            }
+        }
         long startTime;
         long endTime;
 //        if (args.length != 3) {
@@ -224,5 +235,45 @@ public class Main {
                     "is the starting index of the explanatory variable.");
         out.println("  DEPTH is the number of explanatory variables/" +
                     "the depth of the PCT tree.");
+    }
+    
+    private static void generateData(String textFileName, 
+                                     String alphabetFileName,
+                                     int order,
+                                     int lines,
+                                     int length) {
+        File textFile      = new File(textFileName);
+        File alphabetFile  = new File(alphabetFileName);
+        List<String> words = new TextWordsProvider().getWordsFromFile(textFile);
+        Map<Character, Character> reductionMap = getReductionMap(alphabetFile);
+        List<String> reducedWords =
+                new AlphabetReducer().reduceAlphabet(words, reductionMap);
+        MarkovChain mc = new MarkovChain(order, reducedWords);
+        
+        for (int i = 0; i < lines; ++i) {
+            System.out.println(mc.generate(length));
+        }
+    }
+    
+    private static Map<Character, Character> getReductionMap(File file) {
+        Map<Character, Character> reductionMap = new HashMap<>();
+        
+        try {
+            Scanner scanner = new Scanner(file);
+            
+            while (scanner.hasNextLine()) {
+                String line = scanner.nextLine();
+                char[] chars = line.toCharArray();
+                char character = chars[0];
+                
+                for (int i = 1; i < chars.length; ++i) {
+                    reductionMap.put(chars[i], character);
+                }
+            }
+        } catch (FileNotFoundException ex) {
+            throw new RuntimeException(ex);
+        }
+        
+        return reductionMap;
     }
 }

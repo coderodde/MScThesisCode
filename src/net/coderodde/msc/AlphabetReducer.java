@@ -21,6 +21,7 @@ public final class AlphabetReducer {
         StringBuilder sb = new StringBuilder(word.length());
         
         for (char c : word.toCharArray()) {
+            // Possibly omit unknown characters.
             if (reductionMap.containsKey(c)) {
                 sb.append(reductionMap.get(c));
             }

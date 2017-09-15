@@ -17,7 +17,7 @@ public final class MarkovChain {
     private final Map<String, Integer> countMap = new HashMap<>();
     private final List<String> tokenList;
     private final Set<String> tokenSet = new HashSet<>();
-    private final Random random = new Random();
+    private final Random random = new Random(1);
     private final int order;
     
     public MarkovChain(int order, List<String> words) {
@@ -101,7 +101,7 @@ public final class MarkovChain {
         throw new IllegalStateException("Should not get here.");
     }
     
-    public static void main(String[] args) {
+    public static void mainf(String[] args) {
         List<String> words = new ArrayList<>(Arrays.asList("abcb", 
                                                            "bacca",
                                                            "ccba",
