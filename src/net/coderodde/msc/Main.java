@@ -14,7 +14,7 @@ import net.coderodde.msc.support.RandomParsimoniousContextTreeLearner;
 
 public class Main {
 
-    public static void main(String[] args) {
+    public static void maifn(String[] args) {
         long startTime;
         long endTime;
 //        if (args.length != 3) {
