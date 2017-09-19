@@ -62,7 +62,6 @@ public final class MarkovChain {
         }
         
         this.tokenList = new ArrayList<>(tokenSet);
-        System.out.println(probabilityMap);
     }
     
     public String generate(int length) {
@@ -76,6 +75,11 @@ public final class MarkovChain {
         
         while (sb.length() < length) {
             currentToken = getRandomMove(currentToken);
+            
+            if (currentToken == null) {
+                return null;
+            }
+            
             sb.append(currentToken.charAt(currentToken.length() - 1));
         }
         
@@ -88,6 +92,11 @@ public final class MarkovChain {
     
     private String getRandomMove(String token) {
         Map<String, Double> m = probabilityMap.get(token);
+        
+        if (m == null) {
+            return null;
+        }
+        
         double coin = random.nextDouble();
         
         for (Map.Entry<String, Double> e : m.entrySet()) {
@@ -108,7 +117,7 @@ public final class MarkovChain {
                                                            "baac",
                                                            "ccabc",
                                                            "bbab"));
-        MarkovChain mc = new MarkovChain(2, words);
+        MarkovChain mc = new MarkovChain(3, words);
         
         for (int i = 0; i < 10; ++i) {
             System.out.println(mc.generate(5));

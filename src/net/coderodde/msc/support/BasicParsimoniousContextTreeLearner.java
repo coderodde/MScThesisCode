@@ -16,7 +16,7 @@ import net.coderodde.msc.Alphabet;
 import net.coderodde.msc.DataRow;
 import net.coderodde.msc.ParsimoniousContextTree;
 import net.coderodde.msc.ParsimoniousContextTreeNode;
-import net.coderodde.msc.util.CombinationIterable;
+import net.coderodde.msc.ResponseVariableDistribution;
 
 /**
  * This class implements a basic algorithm for learning parsimonious context 
@@ -260,13 +260,20 @@ extends AbstractParsimoniousContextTreeLearner<C> {
             }
         }
         
+        ResponseVariableDistribution<C> distribution = 
+                new ResponseVariableDistribution<>();
+        
         double score = -this.k;
         
         for (Map.Entry<C, Integer> e : this.characterCountMap.entrySet()) {
             score += e.getValue() * 
                     Math.log((1.0 * e.getValue()) / totalCount);
+            distribution.putResponseVariableProbability(
+                    e.getKey(), 
+                    Double.valueOf(e.getValue()) / totalCount);
         }
-
+        
+        node.setResponseVariableDistribution(distribution);
         return score;
     }
     

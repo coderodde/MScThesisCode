@@ -170,12 +170,19 @@ public class Main {
 //        data.add(new DataRow<>(2, 1, 2, 1));
 //        data.add(new DataRow<>(0, 0, 0, 0));
 
-        data.add(new DataRow<>(0, 1, 2, 3));
-        data.add(new DataRow<>(2, 0, 1, 5));
-        data.add(new DataRow<>(3, 1, 1, 4));
-        data.add(new DataRow<>(1, 4, 5, 0));
-        data.add(new DataRow<>(2, 4, 3, 1));
-        data.add(new DataRow<>(3, 0, 4, 2));
+        data.add(new DataRow<>(0, 1, 3));
+        data.add(new DataRow<>(2, 0, 5));
+        data.add(new DataRow<>(3, 1, 4));
+        data.add(new DataRow<>(1, 4, 0));
+        data.add(new DataRow<>(2, 4, 1));
+        data.add(new DataRow<>(3, 0, 2));
+//
+//        data.add(new DataRow<>(0, 1, 2, 3));
+//        data.add(new DataRow<>(2, 0, 1, 5));
+//        data.add(new DataRow<>(3, 1, 1, 4));
+//        data.add(new DataRow<>(1, 4, 5, 0));
+//        data.add(new DataRow<>(2, 4, 3, 1));
+//        data.add(new DataRow<>(3, 0, 4, 2));
         
         IterativeRandomParsimoniousContextTreeLearner<Integer> 
                 learnerIterative =
@@ -251,6 +258,12 @@ public class Main {
         MarkovChain mc = new MarkovChain(order, reducedWords);
         
         for (int i = 0; i < lines; ++i) {
+            String string = mc.generate(length);
+            
+            while (string == null) {
+                string = mc.generate(length);
+            }
+            
             System.out.println(mc.generate(length));
         }
     }

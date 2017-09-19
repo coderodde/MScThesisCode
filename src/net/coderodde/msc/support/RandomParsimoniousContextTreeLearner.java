@@ -16,6 +16,7 @@ import net.coderodde.msc.Alphabet;
 import net.coderodde.msc.DataRow;
 import net.coderodde.msc.ParsimoniousContextTree;
 import net.coderodde.msc.ParsimoniousContextTreeNode;
+import net.coderodde.msc.ResponseVariableDistribution;
 import net.coderodde.msc.util.AbstractProbabilityDistribution;
 import net.coderodde.msc.util.support.BinaryTreeProbabilityDistribution;
 
@@ -201,12 +202,18 @@ extends AbstractParsimoniousContextTreeLearner<C> {
         }
         
         double score = -this.k;
+        ResponseVariableDistribution<C> distribution = 
+                new ResponseVariableDistribution<>();
         
         for (Map.Entry<C, Integer> e : this.characterCountMap.entrySet()) {
             score += e.getValue() * 
                     Math.log((1.0 * e.getValue()) / totalCount);
+            distribution.putResponseVariableProbability(
+                    e.getKey(), 
+                    Double.valueOf(e.getValue()) / totalCount);
         }
 
+        node.setResponseVariableDistribution(distribution);
         return score;
     }
     
