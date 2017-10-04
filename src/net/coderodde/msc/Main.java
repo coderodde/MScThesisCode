@@ -15,6 +15,9 @@ import net.coderodde.msc.support.IterativeRandomParsimoniousContextTreeLearner;
 
 public class Main {
 
+    // Commands for generating MC-data:
+    // datagen /Users/rodionefremov/Desktop/WarAndPeace.txt /Users/rodionefremov/Desktop/ProGradu/alphabetReduction6 3 908 19
+    
     public static void main(String[] args) {
         if (args.length == 6) {
             if (args[0].equals("datagen")) {
@@ -170,12 +173,12 @@ public class Main {
 //        data.add(new DataRow<>(2, 1, 2, 1));
 //        data.add(new DataRow<>(0, 0, 0, 0));
 
-        data.add(new DataRow<>(0, 1, 3));
-        data.add(new DataRow<>(2, 0, 5));
-        data.add(new DataRow<>(3, 1, 4));
-        data.add(new DataRow<>(1, 4, 0));
-        data.add(new DataRow<>(2, 4, 1));
-        data.add(new DataRow<>(3, 0, 2));
+        data.add(new DataRow<>(0, 1, 0, 3));
+        data.add(new DataRow<>(2, 0, 6, 5));
+        data.add(new DataRow<>(3, 1, 3, 4));
+        data.add(new DataRow<>(1, 6, 2, 0));
+        data.add(new DataRow<>(2, 4, 5, 1));
+        data.add(new DataRow<>(3, 0, 2, 2));
 //
 //        data.add(new DataRow<>(0, 1, 2, 3));
 //        data.add(new DataRow<>(2, 0, 1, 5));
