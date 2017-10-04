@@ -166,7 +166,7 @@ public final class DataGeneratingPCT {
     }
     
     public static void main(String[] args) {
-        double[] weights = { 1.0, 1.5, 2.0, 2.0, 1.5, 1.0 };
+        double[] weights = { 2.0, 2, 2.0, 2.0, 2, 2.0 };
         
         DataGeneratingPCT pct = new DataGeneratingPCT(2, 6, weights);
         System.out.println(pct);
