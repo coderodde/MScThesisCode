@@ -60,7 +60,7 @@ public final class DataGeneratingPCT {
         
         for (int blocks = 1; blocks <= alphabet.size(); ++blocks) {
             PartitionIterable<Character> pi = 
-                    new PartitionIterable<>(alphabet.getCharacters(), 1);
+                    new PartitionIterable<>(alphabet.getCharacters(), blocks);
             
             partitionMap.put(blocks, new ArrayList<>());
             
