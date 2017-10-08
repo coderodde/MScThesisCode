@@ -10,15 +10,33 @@ import java.util.Random;
 import java.util.Set;
 import java.util.stream.DoubleStream;
 import net.coderodde.msc.support.PartitionIterable;
+import de.jstacs.utils.random.DirichletMRG;
+import de.jstacs.utils.random.DirichletMRGParams;
 
 public final class DataGeneratingPCT {
     
     private static final class PCTNode {
         Set<Character> label;
         Set<PCTNode> children;
-        ResponseVariableDistribution<Character> responseVarDistribution;
+        List<Character> characters;
+        double[] characterWeights;
+        
+        Character sample(Random random) {
+            double coin = random.nextDouble();
+            
+            for (int i = 0; i < characters.size(); ++i) {
+                if (coin < characterWeights[i]) {
+                    return characters.get(i);
+                }
+                
+                coin -= characterWeights[i];
+            }
+            
+            throw new IllegalStateException("Should not get here ever.");
+        }
     }
     
+    private final DirichletMRGParams params;
     private final Alphabet<Character> alphabet;
     private final Map<Integer, List<List<Set<Character>>>> partitionMap = 
             new HashMap<>();
@@ -26,7 +44,6 @@ public final class DataGeneratingPCT {
     private final int depth;
     
     private PCTNode root;
-    private final double[] probs;
     private final double[] weights;
     private final Random random = new Random();
     
@@ -46,7 +63,6 @@ public final class DataGeneratingPCT {
         }
         
         this.depth = depth;
-        this.probs = new double[alphabetSize];
         this.weights = weights;
         
         Character[] chars = new Character[alphabetSize];
@@ -57,7 +73,7 @@ public final class DataGeneratingPCT {
         }
         
         this.alphabet = new Alphabet<Character>(chars);
-        
+        this.params = new DirichletMRGParams(0.5, this.alphabet.size());
         for (int blocks = 1; blocks <= alphabet.size(); ++blocks) {
             PartitionIterable<Character> pi = 
                     new PartitionIterable<>(alphabet.getCharacters(), blocks);
@@ -70,6 +86,10 @@ public final class DataGeneratingPCT {
         }
         
         buildTree();
+    }
+    
+    public List<Character> getAlphabetCharacters() {
+        return alphabet.getCharacters();
     }
     
     private void buildTree() {
@@ -92,6 +112,12 @@ public final class DataGeneratingPCT {
     
     private void buildTree(PCTNode node, int depth) {
         if (depth == 0) {
+            node.characters = alphabet.getCharacters();
+            node.characterWeights = new double[node.characters.size()];
+            DirichletMRG.DEFAULT_INSTANCE.generate(node.characterWeights, 
+                                                   0, 
+                                                   node.characterWeights.length, 
+                                                   params);
             return;
         }
         
@@ -121,15 +147,27 @@ public final class DataGeneratingPCT {
         return i + 1;
     }
 
-    private Character sample(ResponseVariableDistribution<Character> dist,  
-                             Random random) {
-        double coin = random.nextDouble();
-        
-        for (char c = 'a'; c < 'a' + alphabet.size(); ++c) {
-            
+    public Character sampleNext(String string) {
+        if (string.length() != depth) {
+            throw new IllegalArgumentException(
+                    "Bad length: " + string.length() + ". Must be " + depth);
         }
         
-        return null;
+        PCTNode currentNode = root;
+        
+        outer:
+        for (char c : string.toCharArray()) {
+            for (PCTNode child : currentNode.children) {
+                if (child.label.contains(c)) {
+                    currentNode = child;
+                    continue outer;
+                }
+            }
+            
+            throw new IllegalStateException("Should not get here ever.");
+        }
+        
+        return currentNode.sample(random);
     }
     
     private <T> T choose(List<T> list) {
@@ -165,7 +203,7 @@ public final class DataGeneratingPCT {
         }
     }
     
-    public static void main(String[] args) {
+    public static void mainOld(String[] args) {
         double[] weights = { 2.0, 2, 2.0, 2.0, 2, 2.0 };
         
         DataGeneratingPCT pct = new DataGeneratingPCT(2, 6, weights);
