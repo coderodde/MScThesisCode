@@ -19,7 +19,8 @@ public final class TextWordsProvider {
                 String[] tokens = line.split("\\s+");
 
                 for (String token : tokens) {
-                    words.add(token.trim().toLowerCase());
+                    token = filterToken(token.trim().toLowerCase());
+                    words.add(token);
                 }
             }
         } catch (FileNotFoundException ex) {
@@ -27,5 +28,19 @@ public final class TextWordsProvider {
         }
         
         return words;
+    }
+    
+    private String filterToken(String token) {
+        StringBuilder sb = new StringBuilder(token.length());
+        
+        for (int i = 0; i < token.length(); ++i) {
+            char c = token.charAt(i);
+            
+            if (c >= 'a' && c <= 'z') {
+                sb.append(c);
+            }
+        }
+        
+        return sb.toString();
     }
 }

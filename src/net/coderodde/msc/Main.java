@@ -28,7 +28,15 @@ public class Main {
                              Integer.parseInt(args[5])); // line length
                 return;
             }
+        } else if (args.length == 5) {
+            if (args[0].equals("datagen")) {
+                generateData(args[1],
+                             Integer.parseInt(args[2]),
+                             Integer.parseInt(args[3]),
+                             Integer.parseInt(args[4]));
+            }
         }
+        
         long startTime;
         long endTime;
 //        if (args.length != 3) {
@@ -247,6 +255,25 @@ public class Main {
                     "the depth of the PCT tree.");
     }
     
+    private static void generateData(String textFileName,
+                                     int order,
+                                     int lines,
+                                     int length) {
+        File textFile = new File(textFileName);
+        List<String> words = new TextWordsProvider().getWordsFromFile(textFile);
+        MarkovChain mc = new MarkovChain(order, words);
+        
+        for (int i = 0; i < lines; ++i) {
+            String string = mc.generate(length);
+            
+            while (string == null) {
+                string = mc.generate(length);
+            }
+            
+            System.out.println(string);
+        }
+    }
+    
     private static void generateData(String textFileName, 
                                      String alphabetFileName,
                                      int order,
@@ -267,7 +294,7 @@ public class Main {
                 string = mc.generate(length);
             }
             
-            System.out.println(mc.generate(length));
+            System.out.println(string);
         }
     }
     

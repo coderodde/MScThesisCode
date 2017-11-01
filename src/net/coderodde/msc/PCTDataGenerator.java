@@ -62,7 +62,7 @@ public final class PCTDataGenerator {
                                                           ALPHABET_SIZE,
                                                           weights);
         
-        String[] data = generator.generate(5, 6);
+        String[] data = generator.generate(908, 20);
         
         for (String dataRow : data) {
             System.out.println(dataRow);
