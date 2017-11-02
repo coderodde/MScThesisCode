@@ -154,7 +154,7 @@ extends AbstractParsimoniousContextTreeLearner<C> {
         
     private void buildTree(ParsimoniousContextTreeNode<C> node, int depth) {
         if (depth == 0) {
-            node.createCharacterCountMap();
+//            node.createCharacterCountMap();
             node.setScore(computeBayesianInformationCriterion(node));
             return;
         }

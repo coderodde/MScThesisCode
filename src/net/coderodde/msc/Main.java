@@ -12,12 +12,13 @@ import java.util.Scanner;
 import net.coderodde.msc.support.BasicParsimoniousContextTreeLearner;
 import net.coderodde.msc.support.IndependenceModelParsimoniousContextTreeLearner;
 import net.coderodde.msc.support.IterativeRandomParsimoniousContextTreeLearner;
+import net.coderodde.msc.support.RandomParsimoniousContextTreeLearner;
 
 public class Main {
 
     // Commands for generating MC-data:
     // datagen /Users/rodionefremov/Desktop/WarAndPeace.txt /Users/rodionefremov/Desktop/ProGradu/alphabetReduction6 3 908 19
-    
+    // Running as Ralf's learner: /Users/rodionefremov/Desktop/ProGradu/CTCF.txt 18 3  
     public static void main(String[] args) {
         if (args.length == 6) {
             if (args[0].equals("datagen")) {
@@ -34,126 +35,128 @@ public class Main {
                              Integer.parseInt(args[2]),
                              Integer.parseInt(args[3]),
                              Integer.parseInt(args[4]));
+                return;
             }
         }
         
         long startTime;
         long endTime;
-//        if (args.length != 3) {
-//            printHelpMessage(System.out);
-//            return;
-//        }
-//        
-//        int depth = Integer.MIN_VALUE;
-//        
-//        try {
-//            depth = Integer.parseInt(args[2]);
-//        } catch (NumberFormatException ex) {
-//            System.err.println(args[2] + ": not an integer.");
-//            System.exit(1);
-//        }
-//        
-//        int start = Integer.MIN_VALUE;
-//        
-//        try {
-//            start = Integer.parseInt(args[1]);
-//        } catch (NumberFormatException ex) {
-//            System.err.println(args[1] + ": not an integer.");
-//            System.exit(1);
-//        }
-//        
-//        File file = new File(args[0]);
-//        checkFile(file);
-//        List<DataRow<Character>> dataRows = new ArrayList<>();
-//        
-//        try (Scanner scanner = new Scanner(file, "UTF-8")) {
-//            while (scanner.hasNextLine()) {
-//                String line = scanner.nextLine().trim().toLowerCase();
-//                Character[] arr = new Character[line.length()];
-//                
-//                int i = 0;
-//
-//                for (char c : line.toCharArray()) {
-//                    arr[i++] = c;
-//                }
-//                
-//                dataRows.add(new DataRow<Character>(arr, start, depth));
-//            }
-//        } catch (FileNotFoundException ex) {
-//            ex.printStackTrace(System.err);
-//            System.err.println("File not found!");
-//            System.exit(0);
-//        }
-//        
-//        for (DataRow<Character> dataRow : dataRows) {
-//            System.out.println(dataRow);
-//        }
-//        
-//        AbstractParsimoniousContextTreeLearner<Character> learner = 
-//                new BasicParsimoniousContextTreeLearner<>();
-//        
-//        RandomParsimoniousContextTreeLearner<Character> learner2 = 
-//                new RandomParsimoniousContextTreeLearner<>();
-//        
-//        AbstractParsimoniousContextTreeLearner<Character> learner3 = 
-//                new IndependenceModelParsimoniousContextTreeLearner<>();
-//        
-//        IterativeRandomParsimoniousContextTreeLearner<Character> learner4 =
-//                new IterativeRandomParsimoniousContextTreeLearner<>();
-//        
-//        learner2.setRandom(new Random());
-//        learner4.setIterations(100);
-//        learner4.setRandom(new Random());
-//        
-//        System.out.println("BasicParsimoniousContextTreeLearner:");
-//        
-//        startTime = System.currentTimeMillis();
-//        
-//        ParsimoniousContextTree<Character> tree = 
-//                learner.learn(dataRows);
-//    
-//        endTime = System.currentTimeMillis();
-//        
-//        System.out.println(tree);
-//        System.out.println("Time: " + (endTime - startTime) + " milliseconds.");
-//        
-//        System.out.println();
-//        System.out.println("RandomParsimoniousContextTreeLearner:");
-//        
-//        startTime = System.currentTimeMillis();
-//        
-//        ParsimoniousContextTree<Character> tree2 = learner2.learn(dataRows);
-//        
-//        endTime = System.currentTimeMillis();
-//        
-//        System.out.println(tree2);
-//        System.out.println("Time: " + (endTime - startTime) + " milliseconds.");
-//        
-//        System.out.println();
-//        System.out.println("IndependenceModelParsimoniousContextTreeLearner:");
-//        
-//        startTime = System.currentTimeMillis();
-//        
-//        ParsimoniousContextTree<Character> tree3 = learner3.learn(dataRows);
-//        
-//        endTime = System.currentTimeMillis();
-//        
-//        System.out.println(tree3);
-//        System.out.println("Time: " + (endTime - startTime) + " milliseconds.");
-//        
-//        System.out.println();
-//        System.out.println("IterativeRandomParsimoniousContextTreeLearner:");
-//        
-//        startTime = System.currentTimeMillis();
-//        
-//        ParsimoniousContextTree<Character> tree4 = learner4.learn(dataRows);
-//        
-//        endTime = System.currentTimeMillis();
-//        
-//        System.out.println(tree4);
-//        System.out.println("Time: " + (endTime - startTime) + " milliseconds.");
         
+        if (args.length != 3) {
+            printHelpMessage(System.out);
+            return;
+        }
         
+        int depth = Integer.MIN_VALUE;
+        
+        try {
+            depth = Integer.parseInt(args[2]);
+        } catch (NumberFormatException ex) {
+            System.err.println(args[2] + ": not an integer.");
+            System.exit(1);
+        }
+        
+        int start = Integer.MIN_VALUE;
+        
+        try {
+            start = Integer.parseInt(args[1]);
+        } catch (NumberFormatException ex) {
+            System.err.println(args[1] + ": not an integer.");
+            System.exit(1);
+        }
+        
+        File file = new File(args[0]);
+        checkFile(file);
+        List<DataRow<Character>> dataRows = new ArrayList<>();
+        
+        try (Scanner scanner = new Scanner(file, "UTF-8")) {
+            while (scanner.hasNextLine()) {
+                String line = scanner.nextLine().trim().toLowerCase();
+                Character[] arr = new Character[line.length()];
+                
+                int i = 0;
+
+                for (char c : line.toCharArray()) {
+                    arr[i++] = c;
+                }
+                
+                dataRows.add(new DataRow<Character>(arr, start, depth));
+            }
+        } catch (FileNotFoundException ex) {
+            ex.printStackTrace(System.err);
+            System.err.println("File not found!");
+            System.exit(0);
+        }
+        
+        for (DataRow<Character> dataRow : dataRows) {
+            System.out.println(dataRow);
+        }
+        
+        AbstractParsimoniousContextTreeLearner<Character> learner = 
+                new BasicParsimoniousContextTreeLearner<>();
+        
+        RandomParsimoniousContextTreeLearner<Character> learner2 = 
+                new RandomParsimoniousContextTreeLearner<>();
+        
+        AbstractParsimoniousContextTreeLearner<Character> learner3 = 
+                new IndependenceModelParsimoniousContextTreeLearner<>();
+        
+        IterativeRandomParsimoniousContextTreeLearner<Character> learner4 =
+                new IterativeRandomParsimoniousContextTreeLearner<>();
+        
+        learner2.setRandom(new Random());
+        learner4.setIterations(100);
+        learner4.setRandom(new Random());
+        
+        System.out.println("BasicParsimoniousContextTreeLearner:");
+        
+        startTime = System.currentTimeMillis();
+        
+        ParsimoniousContextTree<Character> tree = 
+                learner.learn(dataRows);
+    
+        endTime = System.currentTimeMillis();
+        
+        System.out.println(tree);
+        System.out.println("Time: " + (endTime - startTime) + " milliseconds.");
+        
+        System.out.println();
+        System.out.println("RandomParsimoniousContextTreeLearner:");
+        
+        startTime = System.currentTimeMillis();
+        
+        ParsimoniousContextTree<Character> tree2 = learner2.learn(dataRows);
+        
+        endTime = System.currentTimeMillis();
+        
+        System.out.println(tree2);
+        System.out.println("Time: " + (endTime - startTime) + " milliseconds.");
+        
+        System.out.println();
+        System.out.println("IndependenceModelParsimoniousContextTreeLearner:");
+        
+        startTime = System.currentTimeMillis();
+        
+        ParsimoniousContextTree<Character> tree3 = learner3.learn(dataRows);
+        
+        endTime = System.currentTimeMillis();
+        
+        System.out.println(tree3);
+        System.out.println("Time: " + (endTime - startTime) + " milliseconds.");
+        
+        System.out.println();
+        System.out.println("IterativeRandomParsimoniousContextTreeLearner:");
+        
+        startTime = System.currentTimeMillis();
+        
+        ParsimoniousContextTree<Character> tree4 = learner4.learn(dataRows);
+        
+        endTime = System.currentTimeMillis();
+        
+        System.out.println(tree4);
+        System.out.println("Time: " + (endTime - startTime) + " milliseconds.");
+        
+        System.exit(0);
         ///////
         List<DataRow<Integer>> data = new ArrayList<>();
         
@@ -194,40 +197,40 @@ public class Main {
 //        data.add(new DataRow<>(1, 4, 5, 0));
 //        data.add(new DataRow<>(2, 4, 3, 1));
 //        data.add(new DataRow<>(3, 0, 4, 2));
-        
-        IterativeRandomParsimoniousContextTreeLearner<Integer> 
-                learnerIterative =
-                new IterativeRandomParsimoniousContextTreeLearner<>();
-        
-        learnerIterative.setRandom(new Random());
-        learnerIterative.setIterations(50);
-        
-        startTime = System.currentTimeMillis();
-        
-        ParsimoniousContextTree<Integer> myTree1 = learnerIterative.learn(data);
-        
-        endTime = System.currentTimeMillis();
-        System.out.println(
-                "IterativeRandomParsimoniousContextTreeLearner: " +
-                myTree1.getScore() + ": " + (endTime - startTime) +
-                " milliseconds.");
-        
-        BasicParsimoniousContextTreeLearner<Integer> learnerBasic =
-                new BasicParsimoniousContextTreeLearner<>();
-        
-        startTime = System.currentTimeMillis();
-        
-        ParsimoniousContextTree<Integer> myTree2 = learnerBasic.learn(data);
-        
-        endTime = System.currentTimeMillis();
-        System.out.println("BasicParsimoniousContextTreeLearner: " + 
-                           myTree2.getScore() + ": " + (endTime - startTime) +
-                           " milliseconds.");
-        
-        AbstractParsimoniousContextTreeLearner<Integer> learner3 = 
-                new IndependenceModelParsimoniousContextTreeLearner<>();
-        
-        System.out.println("IM: " + learner3.learn(data).getScore());
+//        
+//        IterativeRandomParsimoniousContextTreeLearner<Integer> 
+//                learnerIterative =
+//                new IterativeRandomParsimoniousContextTreeLearner<>();
+//        
+//        learnerIterative.setRandom(new Random());
+//        learnerIterative.setIterations(50);
+//        
+//        startTime = System.currentTimeMillis();
+//        
+//        ParsimoniousContextTree<Integer> myTree1 = learnerIterative.learn(data);
+//        
+//        endTime = System.currentTimeMillis();
+//        System.out.println(
+//                "IterativeRandomParsimoniousContextTreeLearner: " +
+//                myTree1.getScore() + ": " + (endTime - startTime) +
+//                " milliseconds.");
+//        
+//        BasicParsimoniousContextTreeLearner<Integer> learnerBasic =
+//                new BasicParsimoniousContextTreeLearner<>();
+//        
+//        startTime = System.currentTimeMillis();
+//        
+//        ParsimoniousContextTree<Integer> myTree2 = learnerBasic.learn(data);
+//        
+//        endTime = System.currentTimeMillis();
+//        System.out.println("BasicParsimoniousContextTreeLearner: " + 
+//                           myTree2.getScore() + ": " + (endTime - startTime) +
+//                           " milliseconds.");
+//        
+//        AbstractParsimoniousContextTreeLearner<Integer> learner3 = 
+//                new IndependenceModelParsimoniousContextTreeLearner<>();
+//        
+//        System.out.println("IM: " + learner3.learn(data).getScore());
     }
     
     private static void checkFile(File file) {
