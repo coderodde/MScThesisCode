@@ -9,25 +9,25 @@ import java.util.Scanner;
 public final class TextWordsProvider {
 
     public List<String> getWordsFromFile(File file) {
-        List<String> words = new ArrayList<>();
+        List<String> wordList = new ArrayList<>();
         
         try {
             Scanner scanner = new Scanner(file);
             
             while (scanner.hasNextLine()) {
                 String line = scanner.nextLine();
-                String[] tokens = line.split("\\s+");
+                String[] words = line.split("\\s+");
 
-                for (String token : tokens) {
-                    token = filterToken(token.trim().toLowerCase());
-                    words.add(token);
+                for (String word : words) {
+                    word = filterToken(word.trim().toLowerCase());
+                    wordList.add(word);
                 }
             }
         } catch (FileNotFoundException ex) {
             throw new RuntimeException(ex);
         }
         
-        return words;
+        return wordList;
     }
     
     private String filterToken(String token) {

@@ -17,11 +17,11 @@ import net.coderodde.msc.support.RandomParsimoniousContextTreeLearner;
 public class Main {
 
     // Commands for generating MC-data:
-    // datagen /Users/rodionefremov/Desktop/WarAndPeace.txt /Users/rodionefremov/Desktop/ProGradu/alphabetReduction6 3 908 19
+    // MC: datagen-mc /Users/rodionefremov/Desktop/WarAndPeace.txt /Users/rodionefremov/Desktop/ProGradu/alphabetReduction6 3 908 19
     // Running as Ralf's learner: /Users/rodionefremov/Desktop/ProGradu/CTCF.txt 18 3  
     public static void main(String[] args) {
         if (args.length == 6) {
-            if (args[0].equals("datagen")) {
+            if (args[0].equals("datagen-mc")) {
                 generateData(args[1], // text file name
                              args[2], // alphabet file name
                              Integer.parseInt(args[3]),  // order
@@ -30,7 +30,7 @@ public class Main {
                 return;
             }
         } else if (args.length == 5) {
-            if (args[0].equals("datagen")) {
+            if (args[0].equals("datagen-mc")) {
                 generateData(args[1],
                              Integer.parseInt(args[2]),
                              Integer.parseInt(args[3]),
@@ -291,11 +291,11 @@ public class Main {
         MarkovChain mc = new MarkovChain(order, reducedWords);
         
         for (int i = 0; i < lines; ++i) {
-            String string = mc.generate(length);
+            String string;
             
-            while (string == null) {
+            do {
                 string = mc.generate(length);
-            }
+            } while (string == null);
             
             System.out.println(string);
         }
