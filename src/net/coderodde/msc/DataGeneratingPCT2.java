@@ -45,7 +45,7 @@ public final class DataGeneratingPCT2 {
         }
         
         Character[] chars = new Character[alphabetSize];
-        char c = ' ';
+        char c = '0';
         
         for (int i = 0; i < alphabetSize; ++i) {
             chars[i] = c++;
@@ -136,10 +136,13 @@ public final class DataGeneratingPCT2 {
             childrenLabels.get(childIndex).add(c);
         }
         
+        node.children = new HashSet<>(childrenLabels.size());
+        
         for (Set<Character> label : childrenLabels) {
             PCTNode childNode = new PCTNode();
             childNode.label = label;
             buildTree(childNode, depth - 1);
+            node.children.add(childNode);
         }
     }
     

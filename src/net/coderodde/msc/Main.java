@@ -21,7 +21,13 @@ public class Main {
     // Running as Ralf's learner: /Users/rodionefremov/Desktop/ProGradu/CTCF.txt 18 3  
     // PCT: datagen-pct /Users/rodionefremov/Desktop/ProGradu/weightsAlphabet5 2 908 19
     // PCT2: datagen-pct2 <alphabetSize> <order> <lines> <lineLength>
+    // Example: datagen-pct2 26 2 908 19
     public static void main(String[] args) {
+        if (args.length == 0) {
+            benchmark();
+            return;
+        }
+        
         if (args.length == 6) {
             if (args[0].equals("datagen-mc")) {
                 generateDataViaMC(args[1], // text file name
@@ -59,13 +65,13 @@ public class Main {
                 int order        = Integer.parseInt(args[2]);
                 int lines        = Integer.parseInt(args[3]);
                 int lineLength   = Integer.parseInt(args[4]);
-                
-                System.out.println(
-                        "=== Generating data via a PCT2: " +
-                        "alphabet size = " + alphabetSize + ", " +
-                        "order = " + order + ", " +
-                        "lines = " + lines + ", " +
-                        "lineLength = " + lineLength);
+//                
+//                System.out.println(
+//                        "=== Generating data via a PCT2: " +
+//                        "alphabet size = " + alphabetSize + ", " +
+//                        "order = " + order + ", " +
+//                        "lines = " + lines + ", " +
+//                        "lineLength = " + lineLength);
                 
                 generateDataViaPCT2(alphabetSize,
                                     order,
@@ -403,4 +409,74 @@ public class Main {
         
         return reductionMap;
     }
+    
+    private static final int ROWS = 10;
+    
+    private static void benchmark() {
+        warmup();
+        
+        Random random = new Random();
+        AbstractParsimoniousContextTreeLearner<Integer> learner = 
+                new BasicParsimoniousContextTreeLearner<>();
+        
+        for (int depth = 1; depth <= 3; ++depth) {
+            for (int alphabetSize = 2; alphabetSize <= 7; ++alphabetSize) {
+                List<DataRow<Integer>> data = generateData(depth, 
+                                                           alphabetSize, 
+                                                           ROWS,
+                                                           random);
+                
+                long start = System.currentTimeMillis();
+                learner.learn(data);
+                long end = System.currentTimeMillis();
+                
+                System.out.println(
+                        "Depth = " + depth + ", alphabet size = " +
+                        alphabetSize + ": " + (end - start) + " milliseconds.");
+            }
+        }
+    }
+    
+    private static List<DataRow<Integer>> generateData(int depth,
+                                                       int alphabetSize,
+                                                       int rows,
+                                                       Random random) {
+        List<DataRow<Integer>> dataRows = new ArrayList<>(rows);
+        
+        for (int row = 0; row < rows; ++row) {
+            dataRows.add(generateDataRow(depth, alphabetSize, random));
+        }
+        
+        return dataRows;
+    }
+    
+    private static DataRow<Integer> generateDataRow(int depth,
+                                                    int alphabetSize,
+                                                    Random random) {
+        Integer[] data = new Integer[depth + 1];
+        
+        for (int i = 0; i < data.length; ++i) {
+            data[i] = random.nextInt(alphabetSize);
+        }
+        
+        return new DataRow<>(data);
+    }
+    
+    private static void warmup() {
+        long start = System.currentTimeMillis();
+        List<DataRow<Integer>> data = new ArrayList<>();
+        
+        data.add(new DataRow<>(0, 1, 2, 6));
+        data.add(new DataRow<>(3, 1, 4, 4));
+        data.add(new DataRow<>(2, 6, 3, 5));
+        data.add(new DataRow<>(2, 3, 2, 6));
+        data.add(new DataRow<>(1, 4, 2, 6));
+        
+        AbstractParsimoniousContextTreeLearner<Integer> learner = 
+                new BasicParsimoniousContextTreeLearner<>();
+        
+        learner.learn(data);
+        long end = System.currentTimeMillis();
+        System.out.println("Warmed up in " + (end - start) + " milliseconds.");
+    }   
 }

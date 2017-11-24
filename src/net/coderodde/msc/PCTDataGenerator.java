@@ -16,7 +16,7 @@ public final class PCTDataGenerator {
         this.pct = new DataGeneratingPCT2(order, alphabetSize);
         this.characterList = this.pct.getAlphabet().getCharacters();
         
-        System.out.println(this.pct);
+//        System.out.println(this.pct);
     }
     
     public String[] generate(int rows, int length) {

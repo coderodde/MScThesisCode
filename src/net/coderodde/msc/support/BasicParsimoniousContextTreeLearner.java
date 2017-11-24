@@ -148,8 +148,8 @@ extends AbstractParsimoniousContextTreeLearner<C> {
 //            this.listOfAllAlphabetPartitions.add(labelCombination);
 //        }
         long end = System.currentTimeMillis();
-        System.out.println("Created the alphabet partitions in " +
-                (end - start) + " ms.");
+//        System.out.println("Created the alphabet partitions in " +
+//                (end - start) + " ms.");
     }
         
     private void buildTree(ParsimoniousContextTreeNode<C> node, int depth) {
