@@ -6,14 +6,17 @@ import java.util.Random;
 public final class PCTDataGenerator {
 
     private final int order;
-    private final DataGeneratingPCT pct;
+    private final DataGeneratingPCT2 pct;
     private final List<Character> characterList;
     private final Random random = new Random();
     
-    public PCTDataGenerator(int order, int alphabetSize, double[] weights) {
+    public PCTDataGenerator(int order, int alphabetSize) {
         this.order = order;
-        this.pct = new DataGeneratingPCT(order, alphabetSize, weights);
-        this.characterList = this.pct.getAlphabetCharacters();
+//        this.pct = new DataGeneratingPCT(order, alphabetSize, weights);
+        this.pct = new DataGeneratingPCT2(order, alphabetSize);
+        this.characterList = this.pct.getAlphabet().getCharacters();
+        
+        System.out.println(this.pct);
     }
     
     public String[] generate(int rows, int length) {
@@ -29,8 +32,9 @@ public final class PCTDataGenerator {
     private String generateDataRow(int length) {
         StringBuilder sb = new StringBuilder(length);
         String string = getRandomString();
+        sb.append(string);
         
-        for (int i = 0; i < length; ++i) {
+        while (sb.length() < length) {
             char nextChar = pct.sampleNext(string);
             sb.append(nextChar);
             string = string.substring(1) + nextChar;
@@ -57,10 +61,10 @@ public final class PCTDataGenerator {
     private static final int ALPHABET_SIZE = 6;
     
     public static void main(String[] args) {
+        System.out.println("--- PCTDataGenerator ---");
         double[] weights = { 2.0, 2.0, 2.0, 2.0, 2.0, 2.0 };
         PCTDataGenerator generator = new PCTDataGenerator(ORDER,
-                                                          ALPHABET_SIZE,
-                                                          weights);
+                                                          ALPHABET_SIZE);
         
         String[] data = generator.generate(908, 20);
         

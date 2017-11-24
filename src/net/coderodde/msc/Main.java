@@ -19,25 +19,61 @@ public class Main {
     // Commands for generating MC-data:
     // MC: datagen-mc /Users/rodionefremov/Desktop/WarAndPeace.txt /Users/rodionefremov/Desktop/ProGradu/alphabetReduction6 3 908 19
     // Running as Ralf's learner: /Users/rodionefremov/Desktop/ProGradu/CTCF.txt 18 3  
+    // PCT: datagen-pct /Users/rodionefremov/Desktop/ProGradu/weightsAlphabet5 2 908 19
+    // PCT2: datagen-pct2 <alphabetSize> <order> <lines> <lineLength>
     public static void main(String[] args) {
         if (args.length == 6) {
             if (args[0].equals("datagen-mc")) {
-                generateData(args[1], // text file name
-                             args[2], // alphabet file name
-                             Integer.parseInt(args[3]),  // order
-                             Integer.parseInt(args[4]),  // lines
-                             Integer.parseInt(args[5])); // line length
+                generateDataViaMC(args[1], // text file name
+                                  args[2], // alphabet file name
+                                  Integer.parseInt(args[3]),  // order
+                                  Integer.parseInt(args[4]),  // lines
+                                  Integer.parseInt(args[5])); // line length
                 return;
-            }
+            } 
         } else if (args.length == 5) {
             if (args[0].equals("datagen-mc")) {
-                generateData(args[1],
-                             Integer.parseInt(args[2]),
-                             Integer.parseInt(args[3]),
-                             Integer.parseInt(args[4]));
+                generateDataViaMC(args[1], // text file name
+                                  Integer.parseInt(args[2]),  // order
+                                  Integer.parseInt(args[3]),  // lines
+                                  Integer.parseInt(args[4])); // line length
+                return;
+            } else if (args[0].equals("datagen-pct")) {
+                System.out.println("This shit is old.");
+                System.exit(0);
+//                int order = Integer.parseInt(args[2]);
+//                int lines = Integer.parseInt(args[3]);
+//                int lineLength = Integer.parseInt(args[4]);
+//                
+//                System.out.println(
+//                        "=== Generating data via a PCT: order = " + order +
+//                        ", lines = " + lines + ", lineLength = " + lineLength);
+//                
+//                generateDataViaPCT(args[1], // weight file,
+//                                   order,
+//                                   lines,
+//                                   lineLength);
+//                return;
+            } else if (args[0].equals("datagen-pct2")) {
+                int alphabetSize = Integer.parseInt(args[1]);
+                int order        = Integer.parseInt(args[2]);
+                int lines        = Integer.parseInt(args[3]);
+                int lineLength   = Integer.parseInt(args[4]);
+                
+                System.out.println(
+                        "=== Generating data via a PCT2: " +
+                        "alphabet size = " + alphabetSize + ", " +
+                        "order = " + order + ", " +
+                        "lines = " + lines + ", " +
+                        "lineLength = " + lineLength);
+                
+                generateDataViaPCT2(alphabetSize,
+                                    order,
+                                    lines,
+                                    lineLength);
                 return;
             }
-        }
+        } 
         
         long startTime;
         long endTime;
@@ -258,7 +294,7 @@ public class Main {
                     "the depth of the PCT tree.");
     }
     
-    private static void generateData(String textFileName,
+    private static void generateDataViaMC(String textFileName,
                                      int order,
                                      int lines,
                                      int length) {
@@ -277,7 +313,7 @@ public class Main {
         }
     }
     
-    private static void generateData(String textFileName, 
+    private static void generateDataViaMC(String textFileName, 
                                      String alphabetFileName,
                                      int order,
                                      int lines,
@@ -298,6 +334,51 @@ public class Main {
             } while (string == null);
             
             System.out.println(string);
+        }
+    }
+    
+    private static void generateDataViaPCT(String weightFileName,
+                                           int order,
+                                           int lines,
+                                           int lineLength) {
+//        File weightFile = new File(weightFileName);
+//        List<Double> weightList = new ArrayList<>();
+//        
+//        try (Scanner scanner = new Scanner(weightFile)) {
+//            while (scanner.hasNextLine()) {
+//                weightList.add(scanner.nextDouble());
+//            }
+//        } catch (FileNotFoundException ex) {
+//            throw new RuntimeException(
+//                    "Weight file \"" + weightFileName + "\" not found.", ex);
+//        }
+//        
+//        double[] weights = new double[weightList.size()];
+//        
+//        for (int i = 0; i < weights.length; ++i) {
+//            weights[i] = weightList.get(i);
+//        }
+//        
+//        PCTDataGenerator generator = new PCTDataGenerator(order, 
+//                                                          weights.length, 
+//                                                          weights);
+//        
+//        String[] data = generator.generate(lines, lineLength);
+//        
+//        for (String s : data) {
+//            System.out.println(s);
+//        }
+    }
+    
+    private static void generateDataViaPCT2(int alphabetSize,
+                                            int order,
+                                            int lines,
+                                            int lineLength) {
+        PCTDataGenerator generator = new PCTDataGenerator(order, alphabetSize);
+        String[] data = generator.generate(lines, lineLength);
+        
+        for (String s : data) {
+            System.out.println(s);
         }
     }
     

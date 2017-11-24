@@ -74,6 +74,7 @@ public final class DataGeneratingPCT {
         
         this.alphabet = new Alphabet<Character>(chars);
         this.params = new DirichletMRGParams(0.5, this.alphabet.size());
+        
         for (int blocks = 1; blocks <= alphabet.size(); ++blocks) {
             PartitionIterable<Character> pi = 
                     new PartitionIterable<>(alphabet.getCharacters(), blocks);
