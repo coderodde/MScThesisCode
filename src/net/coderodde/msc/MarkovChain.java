@@ -110,7 +110,7 @@ public final class MarkovChain {
         throw new IllegalStateException("Should not get here.");
     }
     
-    public static void mainf(String[] args) {
+    public static void main(String[] args) {
         List<String> words = new ArrayList<>(Arrays.asList("abcb", 
                                                            "bacca",
                                                            "ccba",
@@ -122,5 +122,18 @@ public final class MarkovChain {
         for (int i = 0; i < 10; ++i) {
             System.out.println(mc.generate(5));
         }
+        
+        List<String> words2 = new ArrayList<>(Arrays.asList("1101",
+                                                            "00110",
+                                                            "101110",
+                                                            "1",
+                                                            "101",
+                                                            "00",
+                                                            "0001",
+                                                            "100"));
+        
+        MarkovChain mc2 = new MarkovChain(2, words2);
+        
+        System.out.println("Oh yeah.");
     }
 }

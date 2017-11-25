@@ -28,6 +28,20 @@ public class Main {
             return;
         }
         
+        if (args.length == 2 && args[0].equals("check")) {
+            File file = new File(args[1]);
+            
+            try (Scanner scanner = new Scanner(file, "UTF-8")) {
+                while (scanner.hasNextLine()) {
+                    System.out.println(scanner.nextLine().length());
+                }
+            } catch (FileNotFoundException ex) {
+                
+            }
+            
+            return;
+        }
+        
         if (args.length == 6) {
             if (args[0].equals("datagen-mc")) {
                 generateDataViaMC(args[1], // text file name
