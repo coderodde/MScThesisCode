@@ -21,6 +21,7 @@ public class Main {
     // Running as Ralf's learner: /Users/rodionefremov/Desktop/ProGradu/CTCF.txt 18 3  
     // PCT: datagen-pct /Users/rodionefremov/Desktop/ProGradu/weightsAlphabet5 2 908 19
     // PCT2: datagen-pct2 <alphabetSize> <order> <lines> <lineLength>
+    // PCT3: datagen-pct3 <alphabetSize> <order> <lines> <lineLength> <beta>
     // Example: datagen-pct2 26 2 908 19
     public static void main(String[] args) {
         if (args.length == 0) {
@@ -50,7 +51,14 @@ public class Main {
                                   Integer.parseInt(args[4]),  // lines
                                   Integer.parseInt(args[5])); // line length
                 return;
-            } 
+            } else if (args[0].equals("datagen-pct3")) {
+                generateDataViaPCT3(Integer.parseInt(args[1]), // alphabet size,
+                                    Integer.parseInt(args[2]), // depth/order,
+                                    Integer.parseInt(args[3]), // lines,
+                                    Integer.parseInt(args[4]), // line length,
+                                    Double.parseDouble(args[5])); // beta.
+                return;
+            }
         } else if (args.length == 5) {
             if (args[0].equals("datagen-mc")) {
                 generateDataViaMC(args[1], // text file name
@@ -395,6 +403,23 @@ public class Main {
                                             int lines,
                                             int lineLength) {
         PCTDataGenerator generator = new PCTDataGenerator(order, alphabetSize);
+        String[] data = generator.generate(lines, lineLength);
+        
+        for (String s : data) {
+            System.out.println(s);
+        }
+    }
+    
+    private static void generateDataViaPCT3(int alphabetSize,
+                                            int order,
+                                            int lines,
+                                            int lineLength,
+                                            double beta) {
+        PCTDataGenerator3 generator = 
+                new PCTDataGenerator3(order, 
+                                      alphabetSize, 
+                                      beta);
+        
         String[] data = generator.generate(lines, lineLength);
         
         for (String s : data) {
