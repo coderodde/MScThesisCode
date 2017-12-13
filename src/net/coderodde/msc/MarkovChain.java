@@ -110,7 +110,7 @@ public final class MarkovChain {
         throw new IllegalStateException("Should not get here.");
     }
     
-    public static void main(String[] args) {
+    public static void fmain(String[] args) {
         List<String> words = new ArrayList<>(Arrays.asList("abcb", 
                                                            "bacca",
                                                            "ccba",

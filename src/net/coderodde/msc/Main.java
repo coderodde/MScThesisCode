@@ -133,7 +133,7 @@ public class Main {
         checkFile(file);
         List<DataRow<Character>> dataRows = new ArrayList<>();
         
-        try (Scanner scanner = new Scanner(file, "UTF-8")) {
+        try (Scanner scanner = new Scanner(file, "ISO-8859-1")) {
             while (scanner.hasNextLine()) {
                 String line = scanner.nextLine().trim().toLowerCase();
                 Character[] arr = new Character[line.length()];
@@ -420,6 +420,12 @@ public class Main {
                                       alphabetSize, 
                                       beta);
         
+        DataGeneratingPCT3 pct = generator.getPCT();
+        
+//        System.out.println("--- PCT ----");
+//        System.out.println(pct);
+//        
+//        System.out.println("--- Data ---");
         String[] data = generator.generate(lines, lineLength);
         
         for (String s : data) {

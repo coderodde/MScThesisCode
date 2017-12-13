@@ -60,7 +60,7 @@ public final class PCTDataGenerator {
     private static final int ORDER = 2;
     private static final int ALPHABET_SIZE = 6;
     
-    public static void main(String[] args) {
+    public static void mfain(String[] args) {
         System.out.println("--- PCTDataGenerator ---");
         double[] weights = { 2.0, 2.0, 2.0, 2.0, 2.0, 2.0 };
         PCTDataGenerator generator = new PCTDataGenerator(ORDER,
