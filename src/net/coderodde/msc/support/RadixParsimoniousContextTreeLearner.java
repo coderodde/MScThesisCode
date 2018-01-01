@@ -1,12 +1,15 @@
 package net.coderodde.msc.support;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Deque;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import net.coderodde.msc.AbstractParsimoniousContextTreeLearner;
 import net.coderodde.msc.DataRow;
 import net.coderodde.msc.ParsimoniousContextTree;
@@ -24,7 +27,8 @@ public class RadixParsimoniousContextTreeLearner<C>
         extends AbstractParsimoniousContextTreeLearner<C> {
 
     private final Comparator<C> comparator;
-
+    private final int minimumLabelSize;
+    
     public RadixParsimoniousContextTreeLearner(
             Comparator<C> comparator,
             int minimumLabelSize) {
@@ -38,6 +42,8 @@ public class RadixParsimoniousContextTreeLearner<C>
         } else {
             this.comparator = comparator;
         }
+        
+        this.minimumLabelSize = minimumLabelSize;
     }
 
     static final class DataRowComparator<C> implements Comparator<DataRow<C>> {
@@ -92,23 +98,51 @@ public class RadixParsimoniousContextTreeLearner<C>
 
         ParsimoniousContextTree<C> buildTree() {
             this.root = new ParsimoniousContextTreeNode<>();
-
-            buildTree(this.root, this.depth);
-
+            buildTree(this.root, listOfDataRows, this.depth);
             return new ParsimoniousContextTree<>(this.root);
         }
 
-        private void buildTree(ParsimoniousContextTreeNode<C> node, int depth) {
+        private void buildTree(ParsimoniousContextTreeNode<C> node, 
+                               List<DataRow<C>> subList,
+                               int depth) {
             if (depth == 0) {
                 node.setScore(computeBayesianInformationCriterion(node));
                 return;
             }
             
             dataRowComparator.setVariableIndex(0);
-            Collections.sort(listOfDataRows, dataRowComparator);
+            Collections.sort(subList, dataRowComparator);
+            Map<C, List<Integer>> m = new HashMap<>();
             
+            for (int rowIndex = 0; 
+                    rowIndex < subList.size(); 
+                    rowIndex++) {
+                C character = subList
+                        .get(rowIndex)
+                        .getExplanatoryVariable(this.depth - depth);
+                if (!m.containsKey(character)) {
+                    m.put(character, new ArrayList<>());
+                }
+                
+                m.get(character).add(rowIndex);
+            }
+            
+            Set<ParsimoniousContextTreeNode<C>> childrenSet = new HashSet<>();
+            
+            for (List<Integer> bucket : m.values()) {
+                if (bucket.size() <= minimumLabelSize) {
+                    childrenSet.add(convertToIndependenceModel(depth));
+                } else {
+                    
+                }
+            }
         }
 
+        private ParsimoniousContextTreeNode<C> 
+        convertToIndependenceModel(int depth) {
+            return null;
+        }
+        
         private boolean dataRowMatchesLeafNode(
                 DataRow<C> dataRow,
                 ParsimoniousContextTreeNode<C> leafNode) {
