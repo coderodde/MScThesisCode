@@ -172,6 +172,7 @@ public class Main {
         learner4.setIterations(100);
         learner4.setRandom(new Random());
         
+        //// Optimal learner:
         System.out.println("BasicParsimoniousContextTreeLearner:");
         
         startTime = System.currentTimeMillis();
@@ -183,19 +184,11 @@ public class Main {
         
         System.out.println(tree);
         System.out.println("Time: " + (endTime - startTime) + " milliseconds.");
+       
+        double optimalScore = tree.getScore();
+        System.out.println("Optimal score: " + optimalScore);
         
-        System.out.println();
-        System.out.println("RandomParsimoniousContextTreeLearner:");
-        
-        startTime = System.currentTimeMillis();
-        
-        ParsimoniousContextTree<Character> tree2 = learner2.learn(dataRows);
-        
-        endTime = System.currentTimeMillis();
-        
-        System.out.println(tree2);
-        System.out.println("Time: " + (endTime - startTime) + " milliseconds.");
-        
+        //// Independence model learner:
         System.out.println();
         System.out.println("IndependenceModelParsimoniousContextTreeLearner:");
         
@@ -207,7 +200,26 @@ public class Main {
         
         System.out.println(tree3);
         System.out.println("Time: " + (endTime - startTime) + " milliseconds.");
+        double independenceModelScore = tree3.getScore();
         
+        //// Random PCT learner:
+        System.out.println();
+        System.out.println("RandomParsimoniousContextTreeLearner:");
+        
+        startTime = System.currentTimeMillis();
+        
+        ParsimoniousContextTree<Character> tree2 = learner2.learn(dataRows);
+        
+        endTime = System.currentTimeMillis();
+        
+        System.out.println(tree2);
+        System.out.println("Time: " + (endTime - startTime) + " milliseconds.");
+        System.out.println("Score: " + tree2.getScore() + ", plausibility: "
+            + getPlausibilityScore(optimalScore,
+                                   independenceModelScore,
+                                   tree2.getScore()));
+        
+        //// Iterative random PCT learner:
         System.out.println();
         System.out.println("IterativeRandomParsimoniousContextTreeLearner:");
         
@@ -219,7 +231,12 @@ public class Main {
         
         System.out.println(tree4);
         System.out.println("Time: " + (endTime - startTime) + " milliseconds.");
+        double irpctScore = tree4.getScore();
         
+        System.out.println("Score: " + irpctScore + ", plausibility: " +
+                getPlausibilityScore(optimalScore, 
+                                     independenceModelScore, 
+                                     irpctScore));
         System.exit(0);
         ///////
         List<DataRow<Integer>> data = new ArrayList<>();
@@ -524,4 +541,12 @@ public class Main {
         long end = System.currentTimeMillis();
         System.out.println("Warmed up in " + (end - start) + " milliseconds.");
     }   
+    
+    private static double getPlausibilityScore(double optimalScore,
+                                               double independenceModelScore,
+                                               double targetScore) {
+        double enumerator = targetScore - independenceModelScore;
+        double denominator = optimalScore - independenceModelScore;
+        return enumerator / denominator;
+    }
 }
