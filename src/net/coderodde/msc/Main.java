@@ -11,7 +11,9 @@ import java.util.Random;
 import java.util.Scanner;
 import net.coderodde.msc.support.BasicParsimoniousContextTreeLearner;
 import net.coderodde.msc.support.IndependenceModelParsimoniousContextTreeLearner;
+import net.coderodde.msc.support.IterativeRadixParsimoniousContextTreeLearner;
 import net.coderodde.msc.support.IterativeRandomParsimoniousContextTreeLearner;
+import net.coderodde.msc.support.RadixParsimoniousContextTreeLearner;
 import net.coderodde.msc.support.RandomParsimoniousContextTreeLearner;
 
 public class Main {
@@ -237,6 +239,49 @@ public class Main {
                 getPlausibilityScore(optimalScore, 
                                      independenceModelScore, 
                                      irpctScore));
+        
+        //// Radix PCT learner:
+        System.out.println();
+        System.out.println("RadixParsimoniousContextTreeLearner:");
+        RadixParsimoniousContextTreeLearner<Character> radixLearner = 
+                new RadixParsimoniousContextTreeLearner<>(Character::compareTo, 
+                                                          3);
+        startTime = System.currentTimeMillis();
+        
+        ParsimoniousContextTree<Character> tree5 = radixLearner.learn(dataRows);
+        
+        endTime = System.currentTimeMillis();
+        
+        System.out.println(tree5);
+        System.out.println("Time: " + (endTime - startTime) + " milliseconds.");
+        double radixLearnerScore = tree5.getScore();
+        
+        System.out.println("Score: " + radixLearnerScore + ", plausibility: " +
+                getPlausibilityScore(optimalScore, 
+                                     independenceModelScore,
+                                     radixLearnerScore));
+        
+        //// Iterative radix PCT learner:
+        System.out.println();
+        System.out.println("IterativeRadixParsimoniousContextTreeLearner:");
+        IterativeRadixParsimoniousContextTreeLearner<Character> iterativeRadixLearner = 
+                new IterativeRadixParsimoniousContextTreeLearner<>();
+        
+        startTime = System.currentTimeMillis();
+        
+        ParsimoniousContextTree<Character> tree6 = iterativeRadixLearner.learn(dataRows);
+        
+        endTime = System.currentTimeMillis();
+        
+        System.out.println(tree6);
+        System.out.println("Time: " + (endTime - startTime) + " milliseconds.");
+        
+        System.out.println("Score: " + tree6.getScore() + ", plausibility: " +
+                getPlausibilityScore(optimalScore, 
+                                     independenceModelScore, 
+                                     tree6.getScore()));
+        
+        
         System.exit(0);
         ///////
         List<DataRow<Integer>> data = new ArrayList<>();

@@ -1,5 +1,6 @@
 package net.coderodde.msc.support;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -28,7 +29,7 @@ public class RadixParsimoniousContextTreeLearner<C>
         extends AbstractParsimoniousContextTreeLearner<C> {
 
     private final Comparator<C> comparator;
-    private final int minimumLabelSize;
+    private int minimumLabelSize;
     
     public RadixParsimoniousContextTreeLearner(
             Comparator<C> comparator,
@@ -46,8 +47,13 @@ public class RadixParsimoniousContextTreeLearner<C>
         
         this.minimumLabelSize = minimumLabelSize;
     }
+    
+    public void setMinimumLabelSize(int minimumLabelSize) {
+        this.minimumLabelSize = minimumLabelSize;
+    }
 
-    static final class DataRowComparator<C> implements Comparator<DataRow<C>> {
+    public static final class DataRowComparator<C> 
+            implements Comparator<DataRow<C>> {
         private final Comparator<? super C> variableComparator;
         private int variableIndex;
         
@@ -82,12 +88,14 @@ public class RadixParsimoniousContextTreeLearner<C>
          * The frontier queue for the breadth-first search. We need this whenever
          * asking whether a data row leads to a particular leaf node.
          */
-        private Deque<ParsimoniousContextTreeNode<C>> queue;
+        private Deque<ParsimoniousContextTreeNode<C>> queue =
+                new ArrayDeque<>();
 
         /**
          * Maps each node to its depth in the breadth-first search.
          */
-        private Map<ParsimoniousContextTreeNode<C>, Integer> depthMap;
+        private Map<ParsimoniousContextTreeNode<C>, Integer> depthMap = 
+                new HashMap<>();
 
         State(List<DataRow<C>> listOfDataRows,
               Comparator<C> comparator,
@@ -102,12 +110,13 @@ public class RadixParsimoniousContextTreeLearner<C>
                     .getNumberOfExplanatoryVariables();
             this.dataRowComparator = new DataRowComparator<>(comparator);
             this.minimumLabelSize = minimumLabelSize;
+            this.k = 0.5 * (this.alphabet.size() - 1) * 
+                         Math.log(listOfDataRows.size());
             this.root = new ParsimoniousContextTreeNode<>();
             this.root.setLabel(Collections.emptySet());
         }
 
         ParsimoniousContextTree<C> buildTree() {
-            this.root = new ParsimoniousContextTreeNode<>();
             buildTree(this.root, this.listOfDataRows, this.depth);
             return new ParsimoniousContextTree<>(this.root);
         }
@@ -121,21 +130,29 @@ public class RadixParsimoniousContextTreeLearner<C>
             }
             
             if (subList.size() <= minimumLabelSize) {
-                node.setLabel(this.alphabetAsSet);
                 Set<ParsimoniousContextTreeNode<C>> childSet = new HashSet<>(1);
                 ParsimoniousContextTreeNode<C> child = 
                         new ParsimoniousContextTreeNode<>();
                 childSet.add(child);
+                node.setChildren(childSet);
+                child.setLabel(this.alphabetAsSet);
                 
                 if (depth > 0) {
                     buildTree(child, subList, depth - 1);
                 }
+                
+                node.setScore(child.getScore());
                     
                 return;
             }
             
             dataRowComparator.setVariableIndex(this.depth - depth);
             Collections.sort(subList, dataRowComparator);
+            
+//            for (DataRow<C> dataRow : subList) {
+//                System.out.println(dataRow);
+//            }
+            
             Map<C, List<DataRow<C>>> m = new HashMap<>();
             
             for (int rowIndex = 0; 
@@ -155,6 +172,7 @@ public class RadixParsimoniousContextTreeLearner<C>
                     new HashSet<>(m.size());
             
             node.setChildren(children);
+            double score = 0.0;
             
             for (Map.Entry<C, List<DataRow<C>>> e : m.entrySet()) {
                 Set<C> label = new HashSet<>(1);
@@ -164,14 +182,12 @@ public class RadixParsimoniousContextTreeLearner<C>
                 newChild.setLabel(label);
                 children.add(newChild);
                 buildTree(newChild, e.getValue(), depth - 1);
+                score += newChild.getScore();
             }
+            
+            node.setScore(score);
         }
 
-        private ParsimoniousContextTreeNode<C> 
-        convertToIndependenceModel(int depth) {
-            return null;
-        }
-        
         private boolean dataRowMatchesLeafNode(
                 DataRow<C> dataRow,
                 ParsimoniousContextTreeNode<C> leafNode) {
