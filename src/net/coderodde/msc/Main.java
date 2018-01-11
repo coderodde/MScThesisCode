@@ -17,6 +17,7 @@ import net.coderodde.msc.support.IterativeRandomParsimoniousContextTreeLearner2;
 import net.coderodde.msc.support.RadixParsimoniousContextTreeLearner;
 import net.coderodde.msc.support.RandomParsimoniousContextTreeLearner;
 import net.coderodde.msc.support.RandomParsimoniousContextTreeLearner2;
+import net.coderodde.msc.support.RandomParsimoniousContextTreeLearner3;
 
 public class Main {
 
@@ -168,7 +169,12 @@ public class Main {
         
         RandomParsimoniousContextTreeLearner2<Character> learner2b =
                 new RandomParsimoniousContextTreeLearner2<>(0.8);
+        
+        RandomParsimoniousContextTreeLearner3<Character> learner2c = 
+                new RandomParsimoniousContextTreeLearner3<>();
+        
         learner2b.setRandom(new Random());
+        learner2c.setRandom(new Random());
         
         AbstractParsimoniousContextTreeLearner<Character> learner3 = 
                 new IndependenceModelParsimoniousContextTreeLearner<>();
@@ -247,6 +253,23 @@ public class Main {
             + getPlausibilityScore(optimalScore,
                                    independenceModelScore,
                                    treeRandom2.getScore()));
+        
+        //// 3rd random PCT learner:
+        System.out.println();
+        System.out.println("RandomParsimoniousContextTreeLearner3:");
+        
+        startTime = System.currentTimeMillis();
+        
+        ParsimoniousContextTree<Character> treeRandom3 = learner2c.learn(dataRows);
+        
+        endTime = System.currentTimeMillis();
+        
+        System.out.println(treeRandom3);
+        System.out.println("Time: " + (endTime - startTime) + " milliseconds.");
+        System.out.println("Score: " + treeRandom3.getScore() + ", plausibility: " 
+            + getPlausibilityScore(optimalScore, 
+                                   independenceModelScore, 
+                                   treeRandom3.getScore()));
         
         //// Iterative random PCT learner:
         System.out.println();

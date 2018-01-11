@@ -94,6 +94,13 @@ extends AbstractParsimoniousContextTreeLearner<C> {
             labels.get(labelIndex).add(character);
         }
         
+        for (Set<C> label : labels) {
+            ParsimoniousContextTreeNode<C> node = 
+                    new ParsimoniousContextTreeNode<>();
+            node.setLabel(label);
+            children.add(node);
+        }
+        
         if (depth > 0) {
             for (ParsimoniousContextTreeNode<C> node : children) {
                 node.setChildren(createChildren(depth - 1));
