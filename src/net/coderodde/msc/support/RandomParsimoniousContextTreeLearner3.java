@@ -95,6 +95,10 @@ extends AbstractParsimoniousContextTreeLearner<C> {
         }
         
         for (Set<C> label : labels) {
+            if (label.isEmpty()) {
+                continue;
+            }
+            
             ParsimoniousContextTreeNode<C> node = 
                     new ParsimoniousContextTreeNode<>();
             node.setLabel(label);
