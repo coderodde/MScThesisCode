@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -13,6 +12,7 @@ import java.util.Scanner;
 import net.coderodde.msc.support.BasicParsimoniousContextTreeLearner;
 import net.coderodde.msc.support.IndependenceModelParsimoniousContextTreeLearner;
 import net.coderodde.msc.support.IterativeRadixParsimoniousContextTreeLearner;
+import net.coderodde.msc.support.IterativeRadixRandomParsimoniousContextTreeLearner;
 import net.coderodde.msc.support.IterativeRandomParsimoniousContextTreeLearner;
 import net.coderodde.msc.support.IterativeRandomParsimoniousContextTreeLearner2;
 import net.coderodde.msc.support.IterativeRandomParsimoniousContextTreeLearner3;
@@ -402,6 +402,28 @@ public class Main {
                 getPlausibilityScore(optimalScore, 
                                      independenceModelScore, 
                                      rrTree.getScore()));
+        
+        //// Iterative random/radix PCT learner:
+        System.out.println();
+        System.out.println("IterativeRadixRandomParsimoniousContextTreeLearner:");
+        IterativeRadixRandomParsimoniousContextTreeLearner<Character> irrpLearner = 
+                new IterativeRadixRandomParsimoniousContextTreeLearner<>(Character::compareTo, 10);
+        
+        irrpLearner.setGlobalIterations(10);
+        irrpLearner.setRandom(new Random());
+        
+        startTime = System.currentTimeMillis();
+        
+        ParsimoniousContextTree<Character> irrTree = irrpLearner.learn(dataRows);
+        
+        endTime = System.currentTimeMillis();
+        
+        System.out.println(irrTree);
+        System.out.println("Time: " + (endTime - startTime) + " milliseconds.");
+        System.out.println("Score: " + irrTree + ", plausibility: " +
+                getPlausibilityScore(optimalScore,
+                                     independenceModelScore, 
+                                     irrTree.getScore()));
         
         System.exit(0);
         ///////
