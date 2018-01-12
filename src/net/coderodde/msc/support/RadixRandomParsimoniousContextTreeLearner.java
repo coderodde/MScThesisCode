@@ -7,6 +7,7 @@ import java.util.Comparator;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -86,7 +87,7 @@ extends AbstractParsimoniousContextTreeLearner<C> {
         private ParsimoniousContextTreeNode<C> root;
         private final DataRowComparator<C> dataRowComparator;
         private final Alphabet<C> alphabet;
-        private final Set<C> alphabetAsSet;
+        private Random random;
         
         private Deque<ParsimoniousContextTreeNode<C>> queue = 
                 new ArrayDeque<>();
@@ -94,10 +95,13 @@ extends AbstractParsimoniousContextTreeLearner<C> {
         private Map<ParsimoniousContextTreeNode<C>, Integer> depthMap =
                 new HashMap<>();
         
+        void setRandom(Random random) {
+            this.random = random;
+        }
+        
         State(List<DataRow<C>> listOfDataRows, int minimumLabelSize) {
             this.listOfDataRows = new ArrayList<>(listOfDataRows);
             this.alphabet = getAlphabet(listOfDataRows);
-            this.alphabetAsSet = new HashSet<>(this.alphabet.getCharacters());
             checkDataRowListNotEmpty(listOfDataRows);
             checkDataRowListHasConstantNumberOfExplanatoryVariables(
                     listOfDataRows);
@@ -125,7 +129,49 @@ extends AbstractParsimoniousContextTreeLearner<C> {
             }
             
             if (subList.size() <= minimumLabelSize) {
-                // TODO
+                int numberOfChildren = random.nextInt(this.alphabet.size()) + 1;
+                Set<ParsimoniousContextTreeNode<C>> children = 
+                        new HashSet<>(numberOfChildren);
+                
+                List<Set<C>> labels = new ArrayList<>(numberOfChildren);
+                
+                for (int i = 0; i < numberOfChildren; ++i) {
+                    labels.add(new HashSet<>());
+                }
+                
+                for (C character : alphabet) {
+                    int labelIndex = random.nextInt(numberOfChildren);
+                    labels.get(labelIndex).add(character);
+                }
+                
+                Iterator<Set<C>> labelIterator = labels.iterator();
+                
+                for (int i = 0; i < numberOfChildren; ++i) {
+                    Set<C> label = labelIterator.next();
+                    
+                    if (label.isEmpty()) {
+                        continue;
+                    }
+                    
+                    ParsimoniousContextTreeNode<C> childNode = 
+                            new ParsimoniousContextTreeNode<>();
+                    childNode.setLabel(label);
+                    children.add(childNode);
+                }
+                
+                node.setChildren(children);
+                
+                for (ParsimoniousContextTreeNode<C> child : children) {
+                    buildTree(child, subList, depth - 1);
+                }
+                
+                double score = 0.0;
+                
+                for (ParsimoniousContextTreeNode<C> child : children) {
+                    score += child.getScore();
+                }
+                
+                node.setScore(score);
                 return;
             }
             
@@ -251,6 +297,8 @@ extends AbstractParsimoniousContextTreeLearner<C> {
     
     @Override
     public ParsimoniousContextTree<C> learn(List<DataRow<C>> listOfDataRows) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        State state = new State(listOfDataRows, minimumLabelSize);
+        state.setRandom(random);
+        return state.buildTree();
     }
 }

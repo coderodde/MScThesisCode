@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,6 +17,7 @@ import net.coderodde.msc.support.IterativeRandomParsimoniousContextTreeLearner;
 import net.coderodde.msc.support.IterativeRandomParsimoniousContextTreeLearner2;
 import net.coderodde.msc.support.IterativeRandomParsimoniousContextTreeLearner3;
 import net.coderodde.msc.support.RadixParsimoniousContextTreeLearner;
+import net.coderodde.msc.support.RadixRandomParsimoniousContextTreeLearner;
 import net.coderodde.msc.support.RandomParsimoniousContextTreeLearner;
 import net.coderodde.msc.support.RandomParsimoniousContextTreeLearner2;
 import net.coderodde.msc.support.RandomParsimoniousContextTreeLearner3;
@@ -161,6 +163,20 @@ public class Main {
         for (DataRow<Character> dataRow : dataRows) {
             System.out.println(dataRow);
         }
+        
+        RadixRandomParsimoniousContextTreeLearner<Character> testLearner = 
+                new RadixRandomParsimoniousContextTreeLearner<>(Character::compareTo, 10);
+        
+        long ta = System.currentTimeMillis();
+        
+        ParsimoniousContextTree<Character> testTree = testLearner.learn(dataRows);
+        
+        long tb = System.currentTimeMillis();
+        
+        System.out.println("Time: " + (tb - ta) + " milliseconds.");
+        System.out.println(testTree);
+        
+        System.exit(0);
         
         AbstractParsimoniousContextTreeLearner<Character> learner = 
                 new BasicParsimoniousContextTreeLearner<>();
