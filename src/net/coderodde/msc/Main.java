@@ -14,6 +14,7 @@ import net.coderodde.msc.support.IndependenceModelParsimoniousContextTreeLearner
 import net.coderodde.msc.support.IterativeRadixParsimoniousContextTreeLearner;
 import net.coderodde.msc.support.IterativeRandomParsimoniousContextTreeLearner;
 import net.coderodde.msc.support.IterativeRandomParsimoniousContextTreeLearner2;
+import net.coderodde.msc.support.IterativeRandomParsimoniousContextTreeLearner3;
 import net.coderodde.msc.support.RadixParsimoniousContextTreeLearner;
 import net.coderodde.msc.support.RandomParsimoniousContextTreeLearner;
 import net.coderodde.msc.support.RandomParsimoniousContextTreeLearner2;
@@ -173,6 +174,7 @@ public class Main {
         RandomParsimoniousContextTreeLearner3<Character> learner2c = 
                 new RandomParsimoniousContextTreeLearner3<>();
         
+        learner2.setRandom(new Random());
         learner2b.setRandom(new Random());
         learner2c.setRandom(new Random());
         
@@ -184,11 +186,17 @@ public class Main {
         
         IterativeRandomParsimoniousContextTreeLearner2<Character> learner4b =
                 new IterativeRandomParsimoniousContextTreeLearner2<>();
+        
+        IterativeRandomParsimoniousContextTreeLearner3<Character> learner4c = 
+                new IterativeRandomParsimoniousContextTreeLearner3<>();
+        
         learner4b.setBeta(0.8);
         
         learner2.setRandom(new Random());
-        learner4.setIterations(100);
+        learner4.setIterations(1000);
         learner4.setRandom(new Random());
+        learner4b.setIterations(1000);
+        learner4c.setIterations(1000);
         
         //// Optimal learner:
         System.out.println("BasicParsimoniousContextTreeLearner:");
@@ -276,7 +284,7 @@ public class Main {
         System.out.println("IterativeRandomParsimoniousContextTreeLearner:");
         
         startTime = System.currentTimeMillis();
-        
+        learner4.setIterations(1000);
         ParsimoniousContextTree<Character> tree4 = learner4.learn(dataRows);
         
         endTime = System.currentTimeMillis();
@@ -296,7 +304,7 @@ public class Main {
         
         startTime = System.currentTimeMillis();
         learner4b.setRandom(new Random());
-        learner4b.setIterations(100);
+        learner4b.setIterations(1000);
         
         ParsimoniousContextTree<Character> tree4b = learner4b.learn(dataRows);
         
@@ -310,6 +318,27 @@ public class Main {
                 getPlausibilityScore(optimalScore,
                                      independenceModelScore, 
                                      tree4bScore));
+        
+        //// Iterative random PCT learner 3:
+        System.out.println();
+        System.out.println("IterativeRandomParsimoniousContextTreeLearner3:");
+        learner4c.setRandom(new Random());
+        learner4c.setIterations(1000);
+        
+        startTime = System.currentTimeMillis();
+        
+        ParsimoniousContextTree<Character> tree4c = learner4c.learn(dataRows);
+        
+        endTime = System.currentTimeMillis();
+        
+        System.out.println(tree4c);
+        System.out.println("Time: " + (endTime - startTime) + " milliseconds.");
+        double tree4cScore = tree4c.getScore();
+        
+        System.out.println("Score: " + tree4cScore + ", plausibility: " +
+                getPlausibilityScore(optimalScore, 
+                                     independenceModelScore, 
+                                     tree4cScore));
         
         //// Radix PCT learner:
         System.out.println();
