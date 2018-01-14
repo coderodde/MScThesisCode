@@ -850,8 +850,8 @@ public class Main {
         System.out.println("--- MEASURING ---");
         iterativeRandomLearner.setRandom(new Random(seed));
         iterativeRandomLearnerB.setRandom(new Random(seed));
-        iterativeRandomLearner.setMaximumLabelsPerNode(4);
-        iterativeRandomLearnerB.setMaximumLabelsPerNode(4);
+        iterativeRandomLearner.setMaximumLabelsPerNode(5);  
+        iterativeRandomLearnerB.setMaximumLabelsPerNode(5);
 
         start = System.currentTimeMillis();
         ParsimoniousContextTree<Character> largeTree1
@@ -872,5 +872,12 @@ public class Main {
         System.out.println(iterativeRandomLearnerB.getClass().getSimpleName()
                 + " in " + (end - start) + " milliseconds.");
         System.out.println("Score: " + largeTree2.getScore());
+        
+        System.out.println("Large tree 1:");
+        System.out.println(largeTree1);
+        
+        System.out.println("------");
+        System.out.println("Large tree 2:");
+        System.out.println(largeTree2);
     }
 }
