@@ -10,6 +10,7 @@ public final class IterativeRandomParsimoniousContextTreeLearner3B<C>
 extends AbstractParsimoniousContextTreeLearner<C>{
 
     private int k;
+    private int maximumLabelsPerNode;
     private Random random;
     
     public void setRandom(Random random) {
@@ -20,15 +21,20 @@ extends AbstractParsimoniousContextTreeLearner<C>{
         this.k = k;
     }
     
+    public void setMaximumLabelsPerNode(int maximumLabelsPerNode) {
+        this.maximumLabelsPerNode = maximumLabelsPerNode;
+    }
+    
     @Override
     public ParsimoniousContextTree<C> learn(List<DataRow<C>> listOfDataRows) {
-        RandomParsimoniousContextTreeLearner3<C> learner = 
-                new RandomParsimoniousContextTreeLearner3<>();
+        BasicIterativeRandomLearner<C> learner = 
+                new BasicIterativeRandomLearner<>();
         learner.setRandom(random);
+        learner.setMaximumLabelsPerNode(maximumLabelsPerNode);
         
-        int lastImproved = 0;
         double bestScore = Double.NEGATIVE_INFINITY;
         ParsimoniousContextTree<C> bestTree = null;
+        int lastImproved = 0;
         
         while (lastImproved <= k) {
             ParsimoniousContextTree<C> tree = learner.learn(listOfDataRows);
