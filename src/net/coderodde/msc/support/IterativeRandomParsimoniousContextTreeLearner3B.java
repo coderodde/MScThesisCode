@@ -6,18 +6,18 @@ import net.coderodde.msc.AbstractParsimoniousContextTreeLearner;
 import net.coderodde.msc.DataRow;
 import net.coderodde.msc.ParsimoniousContextTree;
 
-public final class IterativeRandomParsimoniousContextTreeLearner3<C>
+public final class IterativeRandomParsimoniousContextTreeLearner3B<C>
 extends AbstractParsimoniousContextTreeLearner<C>{
 
-    private int iterations;
+    private int k;
     private Random random;
     
     public void setRandom(Random random) {
         this.random = random;
     }
     
-    public void setIterations(int iterations) {
-        this.iterations = iterations;
+    public void setK(int k) {
+        this.k = k;
     }
     
     @Override
@@ -26,15 +26,19 @@ extends AbstractParsimoniousContextTreeLearner<C>{
                 new RandomParsimoniousContextTreeLearner3<>();
         learner.setRandom(random);
         
+        int lastImproved = 0;
         double bestScore = Double.NEGATIVE_INFINITY;
         ParsimoniousContextTree<C> bestTree = null;
         
-        for (int i = 0; i < iterations; ++i) {
+        while (lastImproved <= k) {
             ParsimoniousContextTree<C> tree = learner.learn(listOfDataRows);
             
             if (bestScore < tree.getScore()) {
                 bestScore = tree.getScore();
                 bestTree = tree;
+                lastImproved = 0;
+            } else {
+                lastImproved++;
             }
         }
         

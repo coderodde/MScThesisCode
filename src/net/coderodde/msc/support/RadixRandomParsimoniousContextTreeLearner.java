@@ -243,6 +243,10 @@ extends AbstractParsimoniousContextTreeLearner<C> {
                 } else {
                     C targetChar = dataRow.getExplanatoryVariable(currentNodeDepth);
 
+                    if (currentNode == null || currentNode.getChildren() == null) {
+                        System.out.println("yeah"); // TODO: remove when debugged.
+                    }
+                    
                     for (ParsimoniousContextTreeNode<C> child
                             : currentNode.getChildren()) {
                         if (child.getLabel().contains(targetChar)) {

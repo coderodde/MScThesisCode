@@ -16,6 +16,7 @@ import net.coderodde.msc.support.IterativeRadixRandomParsimoniousContextTreeLear
 import net.coderodde.msc.support.IterativeRandomParsimoniousContextTreeLearner;
 import net.coderodde.msc.support.IterativeRandomParsimoniousContextTreeLearner2;
 import net.coderodde.msc.support.IterativeRandomParsimoniousContextTreeLearner3;
+import net.coderodde.msc.support.IterativeRandomParsimoniousContextTreeLearner3B;
 import net.coderodde.msc.support.RadixParsimoniousContextTreeLearner;
 import net.coderodde.msc.support.RadixRandomParsimoniousContextTreeLearner;
 import net.coderodde.msc.support.RandomParsimoniousContextTreeLearner;
@@ -160,9 +161,8 @@ public class Main {
             System.exit(0);
         }
         
-        for (DataRow<Character> dataRow : dataRows) {
-            System.out.println(dataRow);
-        }
+        benchmark1(dataRows);
+        System.exit(0);
         
         AbstractParsimoniousContextTreeLearner<Character> learner = 
                 new BasicParsimoniousContextTreeLearner<>();
@@ -388,7 +388,7 @@ public class Main {
         System.out.println();
         System.out.println("RadixRandomParsimoniousContextTreeLearner:");
         RadixRandomParsimoniousContextTreeLearner<Character> radixRandomLearner =
-                new RadixRandomParsimoniousContextTreeLearner<>(Character::compareTo, 10);
+                new RadixRandomParsimoniousContextTreeLearner<>(Character::compareTo, 2);
         
         startTime = System.currentTimeMillis();
         
@@ -407,10 +407,10 @@ public class Main {
         System.out.println();
         System.out.println("IterativeRadixRandomParsimoniousContextTreeLearner:");
         IterativeRadixRandomParsimoniousContextTreeLearner<Character> irrpLearner = 
-                new IterativeRadixRandomParsimoniousContextTreeLearner<>(Character::compareTo, 10);
+                new IterativeRadixRandomParsimoniousContextTreeLearner<>(Character::compareTo, 2);
         
         irrpLearner.setGlobalIterations(10);
-        irrpLearner.setRandom(new Random());
+        irrpLearner.setRandom(new Random(10L));
         
         startTime = System.currentTimeMillis();
         
@@ -420,7 +420,7 @@ public class Main {
         
         System.out.println(irrTree);
         System.out.println("Time: " + (endTime - startTime) + " milliseconds.");
-        System.out.println("Score: " + irrTree + ", plausibility: " +
+        System.out.println("Score: " + irrTree.getScore() + ", plausibility: " +
                 getPlausibilityScore(optimalScore,
                                      independenceModelScore, 
                                      irrTree.getScore()));
@@ -736,5 +736,80 @@ public class Main {
         double enumerator = targetScore - independenceModelScore;
         double denominator = optimalScore - independenceModelScore;
         return enumerator / denominator;
+    }
+    
+    private static void benchmark1(List<DataRow<Character>> dataRows) {
+        BasicParsimoniousContextTreeLearner<Character> basicLearner = 
+                new BasicParsimoniousContextTreeLearner<>();
+        
+        IndependenceModelParsimoniousContextTreeLearner<Character> 
+                independenceModelLearner = 
+                new IndependenceModelParsimoniousContextTreeLearner<>();
+        
+        IterativeRandomParsimoniousContextTreeLearner3<Character> 
+                iterativeRandomLearner = 
+                new IterativeRandomParsimoniousContextTreeLearner3<>();
+        
+        IterativeRandomParsimoniousContextTreeLearner3B<Character> 
+                iterativeRandomLearnerB = 
+                new IterativeRandomParsimoniousContextTreeLearner3B<>();
+        
+        long seed = System.currentTimeMillis();
+        Random random = new Random(seed);
+        System.out.println("Seed = " + seed);
+        
+        iterativeRandomLearner.setRandom(random);
+        iterativeRandomLearner.setIterations(500);
+        iterativeRandomLearnerB.setRandom(new Random(seed));
+        iterativeRandomLearnerB.setK(500);
+        
+        long start = System.currentTimeMillis();
+        ParsimoniousContextTree<Character> tree1 = basicLearner.learn(dataRows);
+        long end = System.currentTimeMillis();
+        
+        System.out.println(basicLearner.getClass().getSimpleName() + " in " +
+                           (end - start) + " milliseconds.");
+        System.out.println("Optimal score: " + tree1.getScore());
+        
+        start = System.currentTimeMillis();
+        ParsimoniousContextTree<Character> tree2 = 
+                independenceModelLearner.learn(dataRows);
+        end = System.currentTimeMillis();
+        
+        System.out.println();
+        System.out.println(independenceModelLearner.getClass().getSimpleName() +
+                           " in " + (end - start) + " milliseconds.");
+        System.out.println("Baseline score: " + tree2.getScore());
+        
+        final double optimalScore = tree1.getScore();
+        final double baselineScore = tree2.getScore();
+        
+        start = System.currentTimeMillis();
+        ParsimoniousContextTree<Character> tree3 = 
+                iterativeRandomLearner.learn(dataRows);
+        end = System.currentTimeMillis();
+        
+        System.out.println();
+        System.out.println(iterativeRandomLearner.getClass().getSimpleName() +
+                           " in " + (end - start) + " milliseconds.");
+        System.out.println("Score: " + tree3.getScore());
+        System.out.println(
+                "Plausibility: " + getPlausibilityScore(optimalScore,
+                                                        baselineScore,
+                                                        tree3.getScore()));
+        
+        start = System.currentTimeMillis();
+        ParsimoniousContextTree<Character> tree4 = 
+                iterativeRandomLearnerB.learn(dataRows);
+        end = System.currentTimeMillis();
+        
+        System.out.println();
+        System.out.println(iterativeRandomLearnerB.getClass().getSimpleName() + 
+                           " in " + (end - start) + " milliseconds.");
+        System.out.println("Score: " + tree4.getScore());
+        System.out.println(
+                "Plausibility: " + getPlausibilityScore(optimalScore,
+                                                        baselineScore,
+                                                        tree4.getScore()));
     }
 }

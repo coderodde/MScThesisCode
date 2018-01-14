@@ -4,6 +4,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
 import net.coderodde.msc.AbstractParsimoniousContextTreeLearner;
+import net.coderodde.msc.Alphabet;
 import net.coderodde.msc.DataRow;
 import net.coderodde.msc.ParsimoniousContextTree;
 
@@ -45,10 +46,15 @@ extends AbstractParsimoniousContextTreeLearner<C> {
         RadixRandomParsimoniousContextTreeLearner<C> learner = 
                 new RadixRandomParsimoniousContextTreeLearner<>(
                         comparator, minimumBucketSize);
+        Alphabet<C> alphabet = getAlphabet(listOfDataRows);
         
         for (int i = 0; i < globalIterations; ++i) {
-            for (int bucketSize = 1; bucketSize < listOfDataRows.size() / 4; ++bucketSize) {
+            for (int bucketSize = 1; bucketSize <= alphabet.size(); ++bucketSize) {
                 learner.setMinimumLabelSize(bucketSize);
+                long seed = System.currentTimeMillis();
+                System.out.println("Seed = " + seed + ", bucketSize = " + bucketSize);
+                learner.setRandom(new Random(seed));
+                
                 ParsimoniousContextTree<C> tree = 
                         learner.learn(listOfDataRows);
                 
@@ -58,7 +64,6 @@ extends AbstractParsimoniousContextTreeLearner<C> {
                 }
             }
         }
-        
         
         return bestTree;
     }
