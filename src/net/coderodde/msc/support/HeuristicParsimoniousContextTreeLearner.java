@@ -70,6 +70,7 @@ extends AbstractParsimoniousContextTreeLearner<C> {
             score += fixScores(child);
         }
         
+        node.setScore(score);
         return score;
     }
     
@@ -96,8 +97,6 @@ extends AbstractParsimoniousContextTreeLearner<C> {
         if (depth == 0) {
             return;
         }
-        
-        System.out.println(depth);
         
         // Create the children list fo the parent node.
         List<ParsimoniousContextTreeNode<C>> childrenList = createChildren();
@@ -211,6 +210,11 @@ extends AbstractParsimoniousContextTreeLearner<C> {
     
     public static void main(String[] args) {
         List<DataRow<Integer>> dataRows = new ArrayList<>();
+//        dataRows.add(new DataRow<>(3, 2, 1));
+//        dataRows.add(new DataRow<>(3, 1, 2));
+//        dataRows.add(new DataRow<>(1, 3, 3));
+//        dataRows.add(new DataRow<>(1, 2, 1));
+//        dataRows.add(new DataRow<>(3, 3, 2));
         dataRows.add(new DataRow<>(1, 3, 2, 1));
         dataRows.add(new DataRow<>(3, 3, 1, 2));
         dataRows.add(new DataRow<>(2, 1, 3, 3));
