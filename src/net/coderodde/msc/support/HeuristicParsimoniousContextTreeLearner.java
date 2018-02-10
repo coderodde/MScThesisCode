@@ -29,10 +29,6 @@ extends AbstractParsimoniousContextTreeLearner<C> {
     private double k;
     private ParsimoniousContextTreeNode<C> root;
     private final Map<C, Integer> characterCountMap = new HashMap<>();
-    private final Map<ParsimoniousContextTreeNode<C>,
-                      List<DataRow<C>>> nodeToDataRowsMap = new HashMap<>();
-    private final Map<C, ParsimoniousContextTreeNode<C>> charToNodeMap = 
-            new HashMap<>();
     
     @Override
     public ParsimoniousContextTree<C> learn(List<DataRow<C>> listOfDataRows) {
@@ -56,6 +52,25 @@ extends AbstractParsimoniousContextTreeLearner<C> {
         root = new ParsimoniousContextTreeNode<>();
         root.setLabel(Collections.emptySet());
         build(root, depth, dataRows);
+        fixScores();
+    }
+    
+    private void fixScores() {
+        root.setScore(fixScores(root));
+    }
+    
+    private double fixScores(ParsimoniousContextTreeNode<C> node) {
+        if (node.getChildren() == null) {
+            return node.getScore();
+        }
+        
+        double score = 0.0;
+        
+        for (ParsimoniousContextTreeNode<C> child : node.getChildren()) {
+            score += fixScores(child);
+        }
+        
+        return score;
     }
     
     private List<ParsimoniousContextTreeNode<C>> createChildren() {
@@ -81,6 +96,8 @@ extends AbstractParsimoniousContextTreeLearner<C> {
         if (depth == 0) {
             return;
         }
+        
+        System.out.println(depth);
         
         // Create the children list fo the parent node.
         List<ParsimoniousContextTreeNode<C>> childrenList = createChildren();
@@ -118,6 +135,11 @@ extends AbstractParsimoniousContextTreeLearner<C> {
             }
             
             if (!improved) {
+                Map<ParsimoniousContextTreeNode<C>, 
+                    List<DataRow<C>>> nodeToDataRowsMap = new HashMap<>();
+                Map<C, ParsimoniousContextTreeNode<C>> charToNodeMap = 
+                        new HashMap<>();
+                
                 // Build the children.
                 // First split the data row list.
                 for (ParsimoniousContextTreeNode<C> node : childrenList) {
@@ -147,8 +169,7 @@ extends AbstractParsimoniousContextTreeLearner<C> {
                     build(child, depth - 1, nodeToDataRowsMap.get(child));
                 }
                 
-                nodeToDataRowsMap.clear();
-                charToNodeMap.clear();
+                return;
             } else {
                 // Merge:
                 parent.getChildren().remove(bestChild2);
@@ -188,32 +209,6 @@ extends AbstractParsimoniousContextTreeLearner<C> {
         return score;
     }
     
-    private double findScore(ParsimoniousContextTreeNode<C> node,
-                             List<DataRow<C>> dataRows, 
-                             int depth) {
-        int charIndex = 
-                dataRows.get(0).getNumberOfExplanatoryVariables() - depth;
-        
-        int count = 0;
-        double score = -k;
-        Map<C, Integer> charCountMap = new HashMap<>();
-        
-        for (DataRow<C> dataRow : dataRows) {
-            C ch = dataRow.getExplanatoryVariable(charIndex);
-            
-            if (node.getLabel().contains(ch)) {
-                count++;
-                charCountMap.put(ch, charCountMap.getOrDefault(ch, 0) + 1);
-            }
-        }
-        
-        for (Map.Entry<C, Integer> entry : charCountMap.entrySet()) {
-            score += entry.getValue() * Math.log(entry.getValue() / count);
-        }
-        
-        return score;
-    }
-    
     public static void main(String[] args) {
         List<DataRow<Integer>> dataRows = new ArrayList<>();
         dataRows.add(new DataRow<>(1, 3, 2, 1));
@@ -224,6 +219,7 @@ extends AbstractParsimoniousContextTreeLearner<C> {
         HeuristicParsimoniousContextTreeLearner<Integer> learner = 
                 new HeuristicParsimoniousContextTreeLearner<>();
         
-        learner.learn(dataRows);
+        ParsimoniousContextTree<Integer> tree = learner.learn(dataRows);
+        System.out.println(tree);
     }
 }
