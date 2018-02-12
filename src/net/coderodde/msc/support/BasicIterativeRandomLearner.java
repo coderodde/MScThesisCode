@@ -124,101 +124,144 @@ extends AbstractParsimoniousContextTreeLearner<C>{
     }
     
     private void computeScores() {
-        computeScores(root);
+        computeScores(root, 
+                      dataRows,
+                      dataRows.get(0).getNumberOfExplanatoryVariables());
     }
     
-    private void computeScores(ParsimoniousContextTreeNode<C> node) {
-        if (node.getChildren() == null) {
-            node.setScore(computeBayesianInformationCriterion(node));
+    private void computeScores(ParsimoniousContextTreeNode<C> node,
+                               List<DataRow<C>> data,
+                               int depth) {
+        if (depth == 0) {
+            Map<C, Integer> map = new HashMap<>();
+            
+            for (DataRow<C> dataRow : data) {
+                C responseVariable = dataRow.getResponseVariable();
+                map.put(responseVariable, 
+                        map.getOrDefault(responseVariable, 0) + 1);
+            }
+            
+            double score = -this.k;
+            
+            for (Map.Entry<C, Integer> entry : map.entrySet()) {
+                score += entry.getValue() *
+                         Math.log((1.0 * entry.getValue()) / data.size());
+            }
+            
+            node.setScore(score);
             return;
         }
         
-        for (ParsimoniousContextTreeNode<C> child : node.getChildren()) {
-            computeScores(child);
+        Map<ParsimoniousContextTreeNode<C>, List<DataRow<C>>> map = 
+                new HashMap<>();
+        
+        Map<C, ParsimoniousContextTreeNode<C>> map2 = new HashMap<>();
+        
+        for (ParsimoniousContextTreeNode<C> tmpNode : node.getChildren()) {
+            for (C ch : tmpNode.getLabel()) {
+                map2.put(ch, tmpNode);
+            }
+            
+            map.put(tmpNode, new ArrayList<>());
+        }
+        
+        int charIndex = data.get(0).getNumberOfExplanatoryVariables() - depth;
+        
+        for (DataRow<C> dataRow : data) {
+            C ch = dataRow.getExplanatoryVariable(charIndex);
+            ParsimoniousContextTreeNode<C> myNode = map2.get(ch);
+            map.get(myNode).add(dataRow);
         }
         
         double score = 0.0;
         
         for (ParsimoniousContextTreeNode<C> child : node.getChildren()) {
+            computeScores(child, map.get(child), depth - 1);
             score += child.getScore();
         }
         
         node.setScore(score);
     }
     
-    private double computeBayesianInformationCriterion(
-            ParsimoniousContextTreeNode<C> node) {
-        this.characterCountMap.clear();
-        int totalCount = 0;
-        
-        for (DataRow<C> dataRow : dataRows) {
-            if (dataRowMatchesLeafNode(dataRow, node)) {
-                totalCount++;
-                C responseVariable = dataRow.getResponseVariable();
-                Integer count = this.characterCountMap.get(responseVariable);
-                
-                if (count != null) {
-                    this.characterCountMap.put(responseVariable, count + 1);
-                } else {
-                    this.characterCountMap.put(responseVariable, 1);
-                }
-            }
-        }
-        
-        double score = -this.k;
-        ResponseVariableDistribution<C> distribution = 
-                new ResponseVariableDistribution<>();
-        
-        for (Map.Entry<C, Integer> e : this.characterCountMap.entrySet()) {
-            score += e.getValue() * 
-                    Math.log((1.0 * e.getValue()) / totalCount);
-            distribution.putResponseVariableProbability(
-                    e.getKey(), 
-                    Double.valueOf(e.getValue()) / totalCount);
-        }
-
-        node.setResponseVariableDistribution(distribution);
-        return score;
+    //// BENCHMARK ////
+    private static final int NUMBER_OF_DATA_ROWS = 1000;
+    private static final int NUMBER_OF_EXPLANATORY_VARIABLES = 3;
+    private static final int ALPHABET_SIZE = 4;
+    
+    public static void main(String[] args) {
+//        benchmarkSmall();
+        benchmarkLarge();
     }
     
-    private boolean dataRowMatchesLeafNode(
-            DataRow<C> dataRow, 
-            ParsimoniousContextTreeNode<C> leafNode) {
-        this.queue.clear();
-        this.depthMap.clear();
-        int treeDepth = this.dataRows.get(0).getNumberOfExplanatoryVariables();
-
-        for (ParsimoniousContextTreeNode<C> childOfRoot : 
-                root.getChildren()) {
-            if (childOfRoot.getLabel()
-                           .contains(dataRow.getExplanatoryVariable(0))) {
-                this.queue.addLast(childOfRoot);
-                this.depthMap.put(childOfRoot, 1);
-            }
-        }
-
-        while (!this.queue.isEmpty()) {
-            ParsimoniousContextTreeNode<C> currentNode = 
-                    this.queue.removeFirst();
-            int currentNodeDepth = this.depthMap.get(currentNode);
-
-            if (currentNodeDepth == treeDepth) {
-                if (currentNode == leafNode) {
-                    return true;
-                }
-            } else {
-                C targetChar = dataRow.getExplanatoryVariable(currentNodeDepth);
-                
-                for (ParsimoniousContextTreeNode<C> child :
-                        currentNode.getChildren()) {
-                    if (child.getLabel().contains(targetChar)) {
-                        this.queue.addLast(child);
-                        this.depthMap.put(child, currentNodeDepth + 1);
-                    }
-                }
-            }
-        }
+    private static void benchmarkSmall() {
+        List<DataRow<Integer>> dataRows = new ArrayList<>();
+        dataRows.add(new DataRow<>(1, 3, 2, 1));
+        dataRows.add(new DataRow<>(3, 3, 1, 2));
+        dataRows.add(new DataRow<>(2, 1, 3, 3));
+        dataRows.add(new DataRow<>(1, 1, 2, 1));
+        dataRows.add(new DataRow<>(2, 3, 3, 2));
+//        dataRows.add(new DataRow<>(1, 3, 1));
+//        dataRows.add(new DataRow<>(3, 3, 2));
+//        dataRows.add(new DataRow<>(2, 1, 3));
+//        dataRows.add(new DataRow<>(1, 1, 1));
+//        dataRows.add(new DataRow<>(2, 3, 2));
+        BasicParsimoniousContextTreeLearner<Integer> learner = 
+                new BasicParsimoniousContextTreeLearner<>();
         
-        return false;
+        ParsimoniousContextTree<Integer> tree = learner.learn(dataRows);
+        System.out.println(tree);
+    }
+    
+    private static void benchmarkLarge() {
+        long seed = 100L; System.currentTimeMillis();
+        Random random = new Random(seed);
+        List<DataRow<Integer>> data = 
+                createRandomData(NUMBER_OF_DATA_ROWS,
+                                 NUMBER_OF_EXPLANATORY_VARIABLES,
+                                 ALPHABET_SIZE,
+                                 random);
+        
+        System.out.println("Seed = " + seed);
+        BasicParsimoniousContextTreeLearner<Integer> learner = 
+                new BasicParsimoniousContextTreeLearner<>();
+        
+        long startTime = System.currentTimeMillis();
+        ParsimoniousContextTree<Integer> tree = learner.learn(data);
+        long endTime = System.currentTimeMillis();
+        
+        System.out.println(tree);
+        System.out.println(
+                "Duration: " + (endTime - startTime) + " milliseconds.");
+    }
+    
+    private static List<DataRow<Integer>> 
+        createRandomData(int dataRows,
+                         int numberOfExplanatoryVariables,
+                         int alphabetSize,
+                         Random random) {
+        List<DataRow<Integer>> data = new ArrayList<>(dataRows);
+
+        for (int i = 0; i < dataRows; i++) {
+            data.add(createRandomDataRow(numberOfExplanatoryVariables, alphabetSize, random));
+        }
+
+        return data;
+    }
+        
+    private static DataRow<Integer> 
+        createRandomDataRow(int numberOfExplanatoryVariables,
+                            int alphabetSize,
+                            Random random) {
+        Integer[] array = new Integer[numberOfExplanatoryVariables + 1];
+
+        for (int i = 0; i < array.length; i++) {
+            array[i] = createRandomValue(alphabetSize, random);
+        }
+
+        return new DataRow<>(array);
+    }
+        
+    private static int createRandomValue(int alphabetSize, Random random) {
+        return 1 + random.nextInt(alphabetSize);
     }
 }

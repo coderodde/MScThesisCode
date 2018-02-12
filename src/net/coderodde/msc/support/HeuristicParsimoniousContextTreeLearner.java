@@ -16,7 +16,6 @@ import net.coderodde.msc.Alphabet;
 import net.coderodde.msc.DataRow;
 import net.coderodde.msc.ParsimoniousContextTree;
 import net.coderodde.msc.ParsimoniousContextTreeNode;
-import net.coderodde.msc.ResponseVariableDistribution;
 
 /**
  * This class implements a heuristic PCT learner.
