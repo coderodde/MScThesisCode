@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Scanner;
 import net.coderodde.msc.support.BasicParsimoniousContextTreeLearner;
+import net.coderodde.msc.support.BasicParsimoniousContextTreeLearnerV2;
 import net.coderodde.msc.support.IndependenceModelParsimoniousContextTreeLearner;
 import net.coderodde.msc.support.IterativeRadixParsimoniousContextTreeLearner;
 import net.coderodde.msc.support.IterativeRadixRandomParsimoniousContextTreeLearner;
@@ -161,11 +162,14 @@ public class Main {
             System.exit(0);
         }
 
-        benchmark1(dataRows, getLargeAlphabetRows(start, depth));
-        System.exit(0);
+//        benchmark1(dataRows, getLargeAlphabetRows(start, depth));
+//        System.exit(0);
 
         AbstractParsimoniousContextTreeLearner<Character> learner
                 = new BasicParsimoniousContextTreeLearner<>();
+        
+        BasicParsimoniousContextTreeLearnerV2<Character> learnerBasic2 = 
+                new BasicParsimoniousContextTreeLearnerV2<>();
 
         RandomParsimoniousContextTreeLearner<Character> learner2
                 = new RandomParsimoniousContextTreeLearner<>();
@@ -215,6 +219,21 @@ public class Main {
 
         double optimalScore = tree.getScore();
         System.out.println("Optimal score: " + optimalScore);
+        
+        //// Second optimal learner:
+        System.out.println("BasicParsimoniousContextTreeLearnerV2");
+        
+        startTime = System.currentTimeMillis();
+        
+        ParsimoniousContextTree<Character> treeV2 = learnerBasic2.learn(dataRows);
+        
+        endTime = System.currentTimeMillis();
+        
+        System.out.println(treeV2);
+        System.out.println("Time: " + (endTime - startTime) + " milliseconds.");
+        
+        double optimalScoreV2 = treeV2.getScore();
+        System.out.println("Score: " + optimalScoreV2);
 
         //// Independence model learner:
         System.out.println();

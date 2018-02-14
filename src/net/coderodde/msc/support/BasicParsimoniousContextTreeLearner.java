@@ -125,7 +125,6 @@ extends AbstractParsimoniousContextTreeLearner<C> {
         
     private void generateAllAlphabetPartitions() {
         this.listOfAllAlphabetPartitions = new ArrayList<>();
-        long start = System.currentTimeMillis();
         
         for (int blocks = 1; blocks <= this.alphabet.size(); ++blocks) {
             PartitionIterable<C> iterable = 
@@ -136,25 +135,10 @@ extends AbstractParsimoniousContextTreeLearner<C> {
                 this.listOfAllAlphabetPartitions.add(partition);
             }
         }
-//        this.listOfAllAlphabetPartitions = new ArrayList<>();
-//        
-//        for (List<Set<C>> labelCombination :
-//                new CombinationIterable<Set<C>>(
-//                        this.listOfAllPossibleNodeLabels)) {
-//            if (!isPartitionOfAlphabet(labelCombination)) {
-//                continue;
-//            }
-//            
-//            this.listOfAllAlphabetPartitions.add(labelCombination);
-//        }
-        long end = System.currentTimeMillis();
-//        System.out.println("Created the alphabet partitions in " +
-//                (end - start) + " ms.");
     }
         
     private void buildTree(ParsimoniousContextTreeNode<C> node, int depth) {
         if (depth == 0) {
-//            node.createCharacterCountMap();
             node.setScore(computeBayesianInformationCriterion(node));
             return;
         }
@@ -215,30 +199,6 @@ extends AbstractParsimoniousContextTreeLearner<C> {
                 iterator.remove();
             }
         }
-    }
-    
-    private boolean isPartitionOfAlphabet(List<Set<C>> labelCombination) {
-        int labels = labelCombination.size();
-        
-        for (int i = 0; i < labels; ++i) {
-            Set<C> label1 = labelCombination.get(i);
-            
-            for (int j = i + 1; j < labels; ++j) {
-                Set<C> label2 = labelCombination.get(j);
-                
-                if (!Collections.<C>disjoint(label1, label2)) {
-                    return false;
-                }
-            }
-        }
-        
-        this.characterFilterSet.clear();
-        
-        for (Set<C> label : labelCombination) {
-            this.characterFilterSet.addAll(label);
-        }
-        
-        return this.characterFilterSet.size() == this.alphabet.size();
     }
     
     private double computeBayesianInformationCriterion(
