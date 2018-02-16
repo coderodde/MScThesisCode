@@ -13,14 +13,10 @@ import net.coderodde.msc.support.BasicParsimoniousContextTreeLearner;
 import net.coderodde.msc.support.BasicParsimoniousContextTreeLearnerV2;
 import net.coderodde.msc.support.HeuristicParsimoniousContextTreeLearner;
 import net.coderodde.msc.support.IndependenceModelParsimoniousContextTreeLearner;
-import net.coderodde.msc.support.IterativeRadixParsimoniousContextTreeLearner;
-import net.coderodde.msc.support.IterativeRadixRandomParsimoniousContextTreeLearner;
 import net.coderodde.msc.support.IterativeRandomParsimoniousContextTreeLearner;
 import net.coderodde.msc.support.IterativeRandomParsimoniousContextTreeLearner2;
 import net.coderodde.msc.support.IterativeRandomParsimoniousContextTreeLearner3;
 import net.coderodde.msc.support.IterativeRandomParsimoniousContextTreeLearner3B;
-import net.coderodde.msc.support.RadixParsimoniousContextTreeLearner;
-import net.coderodde.msc.support.RadixRandomParsimoniousContextTreeLearner;
 import net.coderodde.msc.support.RandomParsimoniousContextTreeLearner;
 import net.coderodde.msc.support.RandomParsimoniousContextTreeLearner2;
 import net.coderodde.msc.support.RandomParsimoniousContextTreeLearner3;
@@ -166,103 +162,108 @@ public class Main {
 //        benchmark1(dataRows, getLargeAlphabetRows(start, depth));
 //        System.exit(0);
 
-        AbstractParsimoniousContextTreeLearner<Character> learner
+        BasicParsimoniousContextTreeLearner<Character> basicPCTLearner
                 = new BasicParsimoniousContextTreeLearner<>();
         
-        BasicParsimoniousContextTreeLearnerV2<Character> learnerBasic2 = 
+        BasicParsimoniousContextTreeLearnerV2<Character> basicPCTLearnerV2 = 
                 new BasicParsimoniousContextTreeLearnerV2<>();
 
-        RandomParsimoniousContextTreeLearner<Character> learner2
-                = new RandomParsimoniousContextTreeLearner<>();
-
-        RandomParsimoniousContextTreeLearner2<Character> learner2b
-                = new RandomParsimoniousContextTreeLearner2<>(0.8);
-
-        RandomParsimoniousContextTreeLearner3<Character> learner2c
-                = new RandomParsimoniousContextTreeLearner3<>();
-
-        HeuristicParsimoniousContextTreeLearner<Character> heuristicLearner = 
-                new HeuristicParsimoniousContextTreeLearner<>();
-        
-        learner2.setRandom(new Random());
-        learner2b.setRandom(new Random());
-        learner2c.setRandom(new Random());
-
-        AbstractParsimoniousContextTreeLearner<Character> learner3
+        IndependenceModelParsimoniousContextTreeLearner<Character> 
+                indepenendenceModelPCTLearner
                 = new IndependenceModelParsimoniousContextTreeLearner<>();
 
-        IterativeRandomParsimoniousContextTreeLearner<Character> learner4
+        RandomParsimoniousContextTreeLearner<Character> randomPCTLearner1
+                = new RandomParsimoniousContextTreeLearner<>();
+
+        RandomParsimoniousContextTreeLearner2<Character> randomPCTLearner2
+                = new RandomParsimoniousContextTreeLearner2<>(0.8);
+
+        RandomParsimoniousContextTreeLearner3<Character> randomPCTLearner3
+                = new RandomParsimoniousContextTreeLearner3<>();
+       
+        HeuristicParsimoniousContextTreeLearner<Character> heuristicPCTLearner = 
+                new HeuristicParsimoniousContextTreeLearner<>();
+        
+        randomPCTLearner1.setRandom(new Random());
+        randomPCTLearner2.setRandom(new Random());
+        randomPCTLearner3.setRandom(new Random());
+
+        IterativeRandomParsimoniousContextTreeLearner<Character>
+                iterativeRandomPCTLearner1
                 = new IterativeRandomParsimoniousContextTreeLearner<>();
 
-        IterativeRandomParsimoniousContextTreeLearner2<Character> learner4b
+        IterativeRandomParsimoniousContextTreeLearner2<Character>
+                iterativeRandomPCTLearner2
                 = new IterativeRandomParsimoniousContextTreeLearner2<>();
 
-        IterativeRandomParsimoniousContextTreeLearner3<Character> learner4c
+        IterativeRandomParsimoniousContextTreeLearner3<Character> 
+                iterativeRandomPCTLearner3
                 = new IterativeRandomParsimoniousContextTreeLearner3<>();
         
-        IterativeRandomParsimoniousContextTreeLearner3B<Character> learner4d =
+        IterativeRandomParsimoniousContextTreeLearner3B<Character>
+                iterativeRandomPCTLearner3B =
                 new IterativeRandomParsimoniousContextTreeLearner3B<>();
 
-        learner4b.setBeta(0.8);
-
-        learner2.setRandom(new Random());
-        learner4.setIterations(1000);
-        learner4.setRandom(new Random());
-        learner4b.setIterations(1000);
-        learner4c.setIterations(1000);
+        iterativeRandomPCTLearner2.setBeta(0.9);
+        randomPCTLearner1.setRandom(new Random());
+        iterativeRandomPCTLearner1.setIterations(1000);
+        iterativeRandomPCTLearner1.setRandom(new Random());
+        iterativeRandomPCTLearner2.setIterations(1000);
+        iterativeRandomPCTLearner3.setIterations(1000);
 
         //// Optimal learner:
-        System.out.println("BasicParsimoniousContextTreeLearner:");
-
+        System.out.println(
+                "--- " + basicPCTLearner.getClass().getSimpleName() + " ---");
         startTime = System.currentTimeMillis();
 
-        ParsimoniousContextTree<Character> tree
-                = learner.learn(dataRows);
+        ParsimoniousContextTree<Character> basicPCTTree
+                = basicPCTLearner.learn(dataRows);
 
         endTime = System.currentTimeMillis();
 
-        System.out.println(tree);
+        System.out.println(basicPCTTree);
         System.out.println("Time: " + (endTime - startTime) + " milliseconds.");
 
-        double optimalScore = tree.getScore();
+        double optimalScore = basicPCTTree.getScore();
         System.out.println("Optimal score: " + optimalScore);
+        System.out.println();
         
-        //// Second optimal learner:
-        System.out.println("BasicParsimoniousContextTreeLearnerV2");
-        
+        //// Faster optimal learner:
+        System.out.println("--- " + basicPCTLearnerV2.getClass().getSimpleName() + " ---");
         startTime = System.currentTimeMillis();
         
-        ParsimoniousContextTree<Character> treeV2 = learnerBasic2.learn(dataRows);
+        ParsimoniousContextTree<Character> basicPCTTree2 = 
+                basicPCTLearnerV2.learn(dataRows);
         
         endTime = System.currentTimeMillis();
         
-        System.out.println(treeV2);
+        System.out.println(basicPCTTree2);
         System.out.println("Time: " + (endTime - startTime) + " milliseconds.");
         
-        double optimalScoreV2 = treeV2.getScore();
+        double optimalScoreV2 = basicPCTTree2.getScore();
         System.out.println("Score: " + optimalScoreV2);
+        System.out.println();
 
         //// Independence model learner:
-        System.out.println();
-        System.out.println("IndependenceModelParsimoniousContextTreeLearner:");
-
+        System.out.println("--- " + indepenendenceModelPCTLearner.getClass().getSimpleName() + " ---");
         startTime = System.currentTimeMillis();
 
-        ParsimoniousContextTree<Character> tree3 = learner3.learn(dataRows);
+        ParsimoniousContextTree<Character> independenceModel = 
+                indepenendenceModelPCTLearner.learn(dataRows);
 
         endTime = System.currentTimeMillis();
 
-        System.out.println(tree3);
+        System.out.println(independenceModel);
         System.out.println("Time: " + (endTime - startTime) + " milliseconds.");
-        double independenceModelScore = tree3.getScore();
+        double independenceModelScore = independenceModel.getScore();
+        System.out.println();
 
         //// Heuristic learner:
-        System.out.println();
-        System.out.println("HeuristicParsimoniousContextTreeLearner:");
-        
+        System.out.println("--- " + heuristicPCTLearner.getClass().getSimpleName() + " ---");
         startTime = System.currentTimeMillis();
         
-        ParsimoniousContextTree<Character> heuristicTree = heuristicLearner.learn(dataRows);
+        ParsimoniousContextTree<Character> heuristicTree =
+                heuristicPCTLearner.learn(dataRows);
         
         endTime = System.currentTimeMillis();
         
@@ -272,297 +273,149 @@ public class Main {
                 + getPlausibilityScore(optimalScore, 
                                        independenceModelScore, 
                                        heuristicTree.getScore()));
+        System.out.println();
         
         //// Random PCT learner:
-        System.out.println();
-        System.out.println("RandomParsimoniousContextTreeLearner:");
-
+        System.out.println("--- " + randomPCTLearner1.getClass().getSimpleName() + " ---");
         startTime = System.currentTimeMillis();
 
-        ParsimoniousContextTree<Character> tree2 = learner2.learn(dataRows);
+        ParsimoniousContextTree<Character> randomPCTTree1 = 
+                randomPCTLearner1.learn(dataRows);
 
         endTime = System.currentTimeMillis();
 
-        System.out.println(tree2);
+        System.out.println(randomPCTTree1);
         System.out.println("Time: " + (endTime - startTime) + " milliseconds.");
-        System.out.println("Score: " + tree2.getScore() + ", plausibility: "
+        System.out.println("Score: " + randomPCTTree1.getScore() + ", plausibility: "
                 + getPlausibilityScore(optimalScore,
-                        independenceModelScore,
-                        tree2.getScore()));
+                                       independenceModelScore,
+                                       randomPCTTree1.getScore()));
+        System.out.println();
 
         //// 2nd random PCT learner:
-        System.out.println();
-        System.out.println("RandomParsimoniousContextTreeLearner2:");
-
+        System.out.println("--- " + randomPCTLearner2.getClass().getSimpleName() + " ---");
         startTime = System.currentTimeMillis();
 
-        ParsimoniousContextTree<Character> treeRandom2 = learner2b.learn(dataRows);
+        ParsimoniousContextTree<Character> randomPCTTree2 = 
+                randomPCTLearner2.learn(dataRows);
 
         endTime = System.currentTimeMillis();
 
-        System.out.println(treeRandom2);
+        System.out.println(randomPCTTree2);
         System.out.println("Time: " + (endTime - startTime) + " milliseconds.");
-        System.out.println("Score: " + treeRandom2.getScore() + ", plausibility: "
+        System.out.println("Score: " + randomPCTTree2.getScore() + ", plausibility: "
                 + getPlausibilityScore(optimalScore,
-                        independenceModelScore,
-                        treeRandom2.getScore()));
+                                       independenceModelScore,
+                                       randomPCTTree2.getScore()));
+        System.out.println();
 
         //// 3rd random PCT learner:
-        System.out.println();
-        System.out.println("RandomParsimoniousContextTreeLearner3:");
-
+        System.out.println("--- " + randomPCTLearner3.getClass().getSimpleName() + " ---");
         startTime = System.currentTimeMillis();
 
-        ParsimoniousContextTree<Character> treeRandom3 = learner2c.learn(dataRows);
+        ParsimoniousContextTree<Character> randomPCTTree3 = 
+                randomPCTLearner3.learn(dataRows);
 
         endTime = System.currentTimeMillis();
 
-        System.out.println(treeRandom3);
+        System.out.println(randomPCTTree3);
         System.out.println("Time: " + (endTime - startTime) + " milliseconds.");
-        System.out.println("Score: " + treeRandom3.getScore() + ", plausibility: "
+        System.out.println("Score: " + randomPCTTree3.getScore() + ", plausibility: "
                 + getPlausibilityScore(optimalScore,
-                        independenceModelScore,
-                        treeRandom3.getScore()));
+                                       independenceModelScore,
+                                       randomPCTTree3.getScore()));
+        System.out.println();
 
         //// Iterative random PCT learner:
-        System.out.println();
-        System.out.println("IterativeRandomParsimoniousContextTreeLearner:");
-
+        System.out.println("--- " + iterativeRandomPCTLearner1.getClass().getSimpleName() + " ---");
+        iterativeRandomPCTLearner1.setIterations(1000);
         startTime = System.currentTimeMillis();
-        learner4.setIterations(1000);
-        ParsimoniousContextTree<Character> tree4 = learner4.learn(dataRows);
-
+        ParsimoniousContextTree<Character> iterativeRandomPCTTree1 = 
+                iterativeRandomPCTLearner1.learn(dataRows);
         endTime = System.currentTimeMillis();
 
-        System.out.println(tree4);
+        System.out.println(iterativeRandomPCTTree1);
         System.out.println("Time: " + (endTime - startTime) + " milliseconds.");
-        double irpctScore = tree4.getScore();
+        double iterativeRandomPCTTree1Score = 
+                iterativeRandomPCTTree1.getScore();
 
-        System.out.println("Score: " + irpctScore + ", plausibility: "
+        System.out.println("Score: " + iterativeRandomPCTTree1Score + 
+                ", plausibility: "
                 + getPlausibilityScore(optimalScore,
-                        independenceModelScore,
-                        irpctScore));
+                                       independenceModelScore,
+                                       iterativeRandomPCTTree1Score));
+        System.out.println();
 
         //// Iterative random PCT learner 2:
-        System.out.println();
-        System.out.println("IterativeRandomParsimoniousContextTreeLearner2:");
-
+        System.out.println("--- " + iterativeRandomPCTLearner2.getClass().getSimpleName() + " ---");
+        iterativeRandomPCTLearner2.setRandom(new Random());
+        iterativeRandomPCTLearner2.setIterations(1000);
         startTime = System.currentTimeMillis();
-        learner4b.setRandom(new Random());
-        learner4b.setIterations(1000);
 
-        ParsimoniousContextTree<Character> tree4b = learner4b.learn(dataRows);
+        ParsimoniousContextTree<Character> iterativeRandomPCTTree2 = 
+                iterativeRandomPCTLearner2.learn(dataRows);
 
         endTime = System.currentTimeMillis();
 
-        System.out.println(tree4b);
+        System.out.println(iterativeRandomPCTTree2);
         System.out.println("Time: " + (endTime - startTime) + " milliseconds.");
-        double tree4bScore = tree4b.getScore();
+        double iterativeRandomPCTTree2Score = 
+                iterativeRandomPCTTree2.getScore();
 
-        System.out.println("Score: " + tree4bScore + ", plausibility: "
+        System.out.println("Score: " + iterativeRandomPCTTree2Score +
+                ", plausibility: "
                 + getPlausibilityScore(optimalScore,
-                        independenceModelScore,
-                        tree4bScore));
+                                       independenceModelScore,
+                                       iterativeRandomPCTTree2Score));
+        System.out.println();
 
         //// Iterative random PCT learner 3:
-        System.out.println();
-        System.out.println("IterativeRandomParsimoniousContextTreeLearner3:");
-        learner4c.setRandom(new Random());
-        learner4c.setIterations(1000);
-        learner4c.setMaximumLabelsPerNode(5);
+        System.out.println("--- " + iterativeRandomPCTLearner3.getClass().getSimpleName() + " ---");
+        iterativeRandomPCTLearner3.setRandom(new Random());
+        iterativeRandomPCTLearner3.setIterations(1000);
+        iterativeRandomPCTLearner3.setMaximumLabelsPerNode(5);
 
         startTime = System.currentTimeMillis();
 
-        ParsimoniousContextTree<Character> tree4c = learner4c.learn(dataRows);
+        ParsimoniousContextTree<Character> iterativeRandomPCTTree3 = 
+                iterativeRandomPCTLearner3.learn(dataRows);
 
         endTime = System.currentTimeMillis();
 
-        System.out.println(tree4c);
+        System.out.println(iterativeRandomPCTTree3);
         System.out.println("Time: " + (endTime - startTime) + " milliseconds.");
-        double tree4cScore = tree4c.getScore();
+        double iterativeRandomPCTTree3Score = iterativeRandomPCTTree3.getScore();
 
-        System.out.println("Score: " + tree4cScore + ", plausibility: "
+        System.out.println("Score: " + iterativeRandomPCTTree3Score + 
+                ", plausibility: "
                 + getPlausibilityScore(optimalScore,
-                        independenceModelScore,
-                        tree4cScore));
+                                       independenceModelScore,
+                                       iterativeRandomPCTTree3Score));
+        System.out.println();
 
         //// Iterative random PCT learner 3B:
-        System.out.println();
-        System.out.println("IterativeRandomParsimoniousContextTreeLearner3B:");
-        learner4d.setRandom(new Random());
-        learner4d.setK(1000);
-        learner4d.setMaximumLabelsPerNode(5);
+        System.out.println("--- " + iterativeRandomPCTLearner3B.getClass().getSimpleName() + " ---");
+        iterativeRandomPCTLearner3B.setRandom(new Random());
+        iterativeRandomPCTLearner3B.setK(1000);
+        iterativeRandomPCTLearner3B.setMaximumLabelsPerNode(5);
 
         startTime = System.currentTimeMillis();
 
-        ParsimoniousContextTree<Character> tree4d = learner4d.learn(dataRows);
+        ParsimoniousContextTree<Character> iterativeRandomPCTTree3B = 
+                iterativeRandomPCTLearner3B.learn(dataRows);
 
         endTime = System.currentTimeMillis();
 
-        System.out.println(tree4d);
+        System.out.println(iterativeRandomPCTTree3B);
         System.out.println("Time: " + (endTime - startTime) + " milliseconds.");
-        double tree4dScore = tree4d.getScore();
+        double iterativeRandomPCTTree3BScore = 
+                iterativeRandomPCTTree3B.getScore();
 
-        System.out.println("Score: " + tree4cScore + ", plausibility: "
+        System.out.println("Score: " + iterativeRandomPCTTree3Score + 
+                ", plausibility: "
                 + getPlausibilityScore(optimalScore,
-                        independenceModelScore,
-                        tree4dScore));
-
-        //// Radix PCT learner:
-        System.out.println();
-        System.out.println("RadixParsimoniousContextTreeLearner:");
-        RadixParsimoniousContextTreeLearner<Character> radixLearner
-                = new RadixParsimoniousContextTreeLearner<>(Character::compareTo,
-                        10);
-        startTime = System.currentTimeMillis();
-
-        ParsimoniousContextTree<Character> tree5 = radixLearner.learn(dataRows);
-
-        endTime = System.currentTimeMillis();
-
-        System.out.println(tree5);
-        System.out.println("Time: " + (endTime - startTime) + " milliseconds.");
-        double radixLearnerScore = tree5.getScore();
-
-        System.out.println("Score: " + radixLearnerScore + ", plausibility: "
-                + getPlausibilityScore(optimalScore,
-                        independenceModelScore,
-                        radixLearnerScore));
-
-        //// Iterative radix PCT learner:
-        System.out.println();
-        System.out.println("IterativeRadixParsimoniousContextTreeLearner:");
-        IterativeRadixParsimoniousContextTreeLearner<Character> iterativeRadixLearner
-                = new IterativeRadixParsimoniousContextTreeLearner<>();
-
-        startTime = System.currentTimeMillis();
-
-        ParsimoniousContextTree<Character> tree6 = iterativeRadixLearner.learn(dataRows);
-
-        endTime = System.currentTimeMillis();
-
-        System.out.println(tree6);
-        System.out.println("Time: " + (endTime - startTime) + " milliseconds.");
-
-        System.out.println("Score: " + tree6.getScore() + ", plausibility: "
-                + getPlausibilityScore(optimalScore,
-                        independenceModelScore,
-                        tree6.getScore()));
-
-        //// Random/radix PCT learner:
-        System.out.println();
-        System.out.println("RadixRandomParsimoniousContextTreeLearner:");
-        RadixRandomParsimoniousContextTreeLearner<Character> radixRandomLearner
-                = new RadixRandomParsimoniousContextTreeLearner<>(Character::compareTo, 2);
-
-        startTime = System.currentTimeMillis();
-
-        ParsimoniousContextTree<Character> rrTree = radixRandomLearner.learn(dataRows);
-
-        endTime = System.currentTimeMillis();
-
-        System.out.println(rrTree);
-        System.out.println("Time: " + (endTime - startTime) + " milliseconds.");
-        System.out.println("Score: " + rrTree.getScore() + ", plausibility: "
-                + getPlausibilityScore(optimalScore,
-                        independenceModelScore,
-                        rrTree.getScore()));
-
-        //// Iterative random/radix PCT learner:
-        System.out.println();
-        System.out.println("IterativeRadixRandomParsimoniousContextTreeLearner:");
-        IterativeRadixRandomParsimoniousContextTreeLearner<Character> irrpLearner
-                = new IterativeRadixRandomParsimoniousContextTreeLearner<>(Character::compareTo, 2);
-
-        irrpLearner.setGlobalIterations(10);
-        irrpLearner.setRandom(new Random(10L));
-
-        startTime = System.currentTimeMillis();
-
-        ParsimoniousContextTree<Character> irrTree = irrpLearner.learn(dataRows);
-
-        endTime = System.currentTimeMillis();
-
-        System.out.println(irrTree);
-        System.out.println("Time: " + (endTime - startTime) + " milliseconds.");
-        System.out.println("Score: " + irrTree.getScore() + ", plausibility: "
-                + getPlausibilityScore(optimalScore,
-                        independenceModelScore,
-                        irrTree.getScore()));
-
-        System.exit(0);
-        ///////
-        List<DataRow<Integer>> data = new ArrayList<>();
-
-//        data.add(new DataRow<>(1, 1, 2, 2, 1, 2, 2, 1, 1, 1, 1, 2, 1));
-//        data.add(new DataRow<>(1, 1, 1, 2, 2, 1, 1, 2, 1, 1, 1, 2, 2));
-//        data.add(new DataRow<>(2, 1, 1, 1, 2, 1, 1, 1, 1, 2, 2, 1, 1));
-//
-//        data.add(new DataRow<>(2, 1, 2, 1, 2, 2, 1, 2, 2, 2, 2, 1, 2));
-//        data.add(new DataRow<>(1, 2, 1, 1, 1, 2, 2, 2, 2, 1, 2, 1, 1));
-//        data.add(new DataRow<>(2, 2, 1, 1, 2, 1, 1, 1, 1, 1, 2, 1, 2));
-//
-//        data.add(new DataRow<>(1, 1, 2, 2, 2, 1, 2, 2, 1, 1, 2, 1, 1));
-//        data.add(new DataRow<>(2, 1, 1, 2, 1, 1, 2, 1, 2, 2, 1, 1, 1));
-//        data.add(new DataRow<>(1, 1, 2, 2, 1, 2, 1, 1, 1, 2, 2, 2, 2));
-//        data.add(new DataRow<>(2, 3, 1, 2));
-//        data.add(new DataRow<>(0, 1, 3, 2));
-//        data.add(new DataRow<>(1, 1, 3, 3));
-//        
-//        data.add(new DataRow<>(0, 0, 2, 1));
-//        data.add(new DataRow<>(3, 2, 0, 1));
-//        data.add(new DataRow<>(3, 1, 1, 1));
-//       
-//        data.add(new DataRow<>(3, 0, 1, 2));
-//        data.add(new DataRow<>(2, 1, 2, 1));
-//        data.add(new DataRow<>(0, 0, 0, 0));
-        data.add(new DataRow<>(0, 1, 0, 3));
-        data.add(new DataRow<>(2, 0, 6, 5));
-        data.add(new DataRow<>(3, 1, 3, 4));
-        data.add(new DataRow<>(1, 6, 2, 0));
-        data.add(new DataRow<>(2, 4, 5, 1));
-        data.add(new DataRow<>(3, 0, 2, 2));
-//
-//        data.add(new DataRow<>(0, 1, 2, 3));
-//        data.add(new DataRow<>(2, 0, 1, 5));
-//        data.add(new DataRow<>(3, 1, 1, 4));
-//        data.add(new DataRow<>(1, 4, 5, 0));
-//        data.add(new DataRow<>(2, 4, 3, 1));
-//        data.add(new DataRow<>(3, 0, 4, 2));
-//        
-//        IterativeRandomParsimoniousContextTreeLearner<Integer> 
-//                learnerIterative =
-//                new IterativeRandomParsimoniousContextTreeLearner<>();
-//        
-//        learnerIterative.setRandom(new Random());
-//        learnerIterative.setIterations(50);
-//        
-//        startTime = System.currentTimeMillis();
-//        
-//        ParsimoniousContextTree<Integer> myTree1 = learnerIterative.learn(data);
-//        
-//        endTime = System.currentTimeMillis();
-//        System.out.println(
-//                "IterativeRandomParsimoniousContextTreeLearner: " +
-//                myTree1.getScore() + ": " + (endTime - startTime) +
-//                " milliseconds.");
-//        
-//        BasicParsimoniousContextTreeLearner<Integer> learnerBasic =
-//                new BasicParsimoniousContextTreeLearner<>();
-//        
-//        startTime = System.currentTimeMillis();
-//        
-//        ParsimoniousContextTree<Integer> myTree2 = learnerBasic.learn(data);
-//        
-//        endTime = System.currentTimeMillis();
-//        System.out.println("BasicParsimoniousContextTreeLearner: " + 
-//                           myTree2.getScore() + ": " + (endTime - startTime) +
-//                           " milliseconds.");
-//        
-//        AbstractParsimoniousContextTreeLearner<Integer> learner3 = 
-//                new IndependenceModelParsimoniousContextTreeLearner<>();
-//        
-//        System.out.println("IM: " + learner3.learn(data).getScore());
+                                       independenceModelScore,
+                                       iterativeRandomPCTTree3BScore));
     }
 
     private static void checkFile(File file) {
@@ -633,39 +486,6 @@ public class Main {
         }
     }
 
-    private static void generateDataViaPCT(String weightFileName,
-            int order,
-            int lines,
-            int lineLength) {
-//        File weightFile = new File(weightFileName);
-//        List<Double> weightList = new ArrayList<>();
-//        
-//        try (Scanner scanner = new Scanner(weightFile)) {
-//            while (scanner.hasNextLine()) {
-//                weightList.add(scanner.nextDouble());
-//            }
-//        } catch (FileNotFoundException ex) {
-//            throw new RuntimeException(
-//                    "Weight file \"" + weightFileName + "\" not found.", ex);
-//        }
-//        
-//        double[] weights = new double[weightList.size()];
-//        
-//        for (int i = 0; i < weights.length; ++i) {
-//            weights[i] = weightList.get(i);
-//        }
-//        
-//        PCTDataGenerator generator = new PCTDataGenerator(order, 
-//                                                          weights.length, 
-//                                                          weights);
-//        
-//        String[] data = generator.generate(lines, lineLength);
-//        
-//        for (String s : data) {
-//            System.out.println(s);
-//        }
-    }
-
     private static void generateDataViaPCT2(int alphabetSize,
             int order,
             int lines,
@@ -689,11 +509,6 @@ public class Main {
                         beta);
 
         DataGeneratingPCT3 pct = generator.getPCT();
-
-//        System.out.println("--- PCT ----");
-//        System.out.println(pct);
-//        
-//        System.out.println("--- Data ---");
         String[] data = generator.generate(lines, lineLength);
 
         for (String s : data) {
