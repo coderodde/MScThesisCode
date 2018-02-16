@@ -256,8 +256,8 @@ extends AbstractParsimoniousContextTreeLearner<C> {
         node.setScore(score);
     }
     
-    private static final int NUMBER_OF_DATA_ROWS = 10000;
-    private static final int NUMBER_OF_EXPLANATORY_VARIABLES = 5;
+    private static final int NUMBER_OF_DATA_ROWS = 1000;
+    private static final int NUMBER_OF_EXPLANATORY_VARIABLES = 4;
     private static final int ALPHABET_SIZE = 5;
     
     public static void main(String[] args) {
@@ -285,7 +285,7 @@ extends AbstractParsimoniousContextTreeLearner<C> {
     }
     
     private static void benchmarkLarge() {
-        long seed = 100L; System.currentTimeMillis();
+        long seed = System.currentTimeMillis();
         Random random = new Random(seed);
         List<DataRow<Integer>> data = 
                 createRandomData(NUMBER_OF_DATA_ROWS,
@@ -294,16 +294,61 @@ extends AbstractParsimoniousContextTreeLearner<C> {
                                  random);
         
         System.out.println("Seed = " + seed);
-        HeuristicParsimoniousContextTreeLearner<Integer> learner = 
+        BasicParsimoniousContextTreeLearnerV2<Integer> basicLearner = 
+                new BasicParsimoniousContextTreeLearnerV2<>();
+        
+        IndependenceModelParsimoniousContextTreeLearner<Integer> 
+                independenceModelLearner =
+                new IndependenceModelParsimoniousContextTreeLearner<>();
+        
+        HeuristicParsimoniousContextTreeLearner<Integer> heuristicLearner = 
                 new HeuristicParsimoniousContextTreeLearner<>();
         
+        // Basic learner.
         long startTime = System.currentTimeMillis();
-        ParsimoniousContextTree<Integer> tree = learner.learn(data);
+        ParsimoniousContextTree<Integer> basicLearnerTree =
+                basicLearner.learn(data);
         long endTime = System.currentTimeMillis();
         
-        System.out.println(tree);
+        System.out.println(basicLearner.getClass().getSimpleName() + ":");
+        System.out.println("Score: " + basicLearnerTree.getScore());
+        System.out.println("Time: " + (endTime - startTime) + " milliseconds.");
+        System.out.println();
+        
+        // Independence model learner.
+        startTime = System.currentTimeMillis();
+        ParsimoniousContextTree<Integer> independenceModelTree = 
+                independenceModelLearner.learn(data);
+        endTime = System.currentTimeMillis();
+        
         System.out.println(
-                "Duration: " + (endTime - startTime) + " milliseconds.");
+                independenceModelLearner.getClass().getSimpleName() + ":");
+        System.out.println("Score: " + independenceModelTree.getScore());
+        System.out.println("Time: " + (endTime - startTime) + " milliseconds.");
+        System.out.println();
+        
+        // Heuristic learner.
+        startTime = System.currentTimeMillis();
+        ParsimoniousContextTree<Integer> heuristicTree = 
+                heuristicLearner.learn(data);
+        endTime = System.currentTimeMillis();
+        
+        System.out.println(heuristicLearner.getClass().getSimpleName() + ":");
+        System.out.println("Score: " + heuristicTree.getScore());
+        System.out.println("Time: " + (endTime - startTime) + " milliseconds.");
+        System.out.println();
+        System.out.println("Plausibility: " +
+                getPlausibilityScore(basicLearnerTree.getScore(), 
+                                     independenceModelTree.getScore(),
+                                     heuristicTree.getScore()));
+    }
+    
+    private static double getPlausibilityScore(double optimalScore,
+                                               double independenceModelScore,
+                                               double targetScore) {
+        double enumerator = targetScore - independenceModelScore;
+        double denominator = optimalScore - independenceModelScore;
+        return enumerator / denominator;
     }
     
     private static List<DataRow<Integer>> 

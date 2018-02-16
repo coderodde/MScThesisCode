@@ -20,6 +20,15 @@ import net.coderodde.msc.ResponseVariableDistribution;
 import net.coderodde.msc.util.AbstractProbabilityDistribution;
 import net.coderodde.msc.util.support.BinaryTreeProbabilityDistribution;
 
+// Beta-driven number of children. One child with prob. beta, two childs with 
+// prob. pow(beta,2), and so on.
+/**
+ * In this learner, the probability of having <code>n</code> children is 
+ * <code>pow(beta,n)</code>.
+ * 
+ * @author rodionefremov
+ * @param <C> 
+ */
 public final class RandomParsimoniousContextTreeLearner2<C>
 extends AbstractParsimoniousContextTreeLearner<C> {
 

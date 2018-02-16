@@ -18,7 +18,8 @@ import net.coderodde.msc.ParsimoniousContextTreeNode;
 import net.coderodde.msc.ResponseVariableDistribution;
 
 /**
- *
+ * This learner samples the number of children from an uniform distribution.
+ * 
  * @author Rodion "rodde" Efremov
  * @version 1.6 (Jan 11, 2018)
  */

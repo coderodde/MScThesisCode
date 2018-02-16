@@ -20,6 +20,11 @@ import net.coderodde.msc.ResponseVariableDistribution;
 import net.coderodde.msc.util.AbstractProbabilityDistribution;
 import net.coderodde.msc.util.support.BinaryTreeProbabilityDistribution;
 
+/**
+ * In this learner each children configuration is equally probable. Inefficient.
+ * @author rodionefremov
+ * @param <C> 
+ */
 public final class RandomParsimoniousContextTreeLearner<C>
 extends AbstractParsimoniousContextTreeLearner<C> {
 
