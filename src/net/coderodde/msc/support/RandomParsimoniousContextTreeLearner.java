@@ -1,9 +1,7 @@
 package net.coderodde.msc.support;
 
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -16,14 +14,14 @@ import net.coderodde.msc.Alphabet;
 import net.coderodde.msc.DataRow;
 import net.coderodde.msc.ParsimoniousContextTree;
 import net.coderodde.msc.ParsimoniousContextTreeNode;
-import net.coderodde.msc.ResponseVariableDistribution;
 import net.coderodde.msc.util.AbstractProbabilityDistribution;
 import net.coderodde.msc.util.support.BinaryTreeProbabilityDistribution;
 
 /**
- * In this learner each children configuration is equally probable. Inefficient.
- * @author rodionefremov
- * @param <C> 
+ * In this learner each children configuration is equally probable.
+ * 
+ * @author Rodion "rodde" Efremov
+ * @param <C> the actual character type.
  */
 public final class RandomParsimoniousContextTreeLearner<C>
 extends AbstractParsimoniousContextTreeLearner<C> {
@@ -35,12 +33,6 @@ extends AbstractParsimoniousContextTreeLearner<C> {
     private AbstractProbabilityDistribution<Set<C>> probabilityDistribution;
     
     private List<DataRow<C>> dataRows;
-    
-    private Map<C, Integer> characterCountMap;
-    
-    private Deque<ParsimoniousContextTreeNode<C>> queue;
-    
-    private Map<ParsimoniousContextTreeNode<C>, Integer> depthMap;
     
     private double k;
     
@@ -66,28 +58,77 @@ extends AbstractParsimoniousContextTreeLearner<C> {
                       * Math.log(listOfDataRows.size());
         state.probabilityDistribution =
                 createProbabilityDistribution(state.alphabet);
-        state.characterCountMap = new HashMap<>();
-        state.queue = new ArrayDeque<>();
-        state.depthMap = new HashMap<>();
         state.root = state.buildTree();
         state.computeScores();
         return new ParsimoniousContextTree<>(state.root);
     }
     
     private void computeScores() {
-        computeScores(root);
+        int treeDepth = dataRows.get(0).getNumberOfExplanatoryVariables();
+        computeScores(root,
+                      dataRows,
+                      treeDepth,
+                      treeDepth);
     }
     
-    private void computeScores(ParsimoniousContextTreeNode<C> node) {
+    private double computeBIC(List<DataRow<C>> dataRows) {
+        double score = -this.k;
+        Map<C, Integer> characterToCountMap = new HashMap<>();
+        
+        for (DataRow<C> dataRow : dataRows) {
+            C responseVariable = dataRow.getResponseVariable();
+            characterToCountMap.put(
+                    responseVariable, 
+                    characterToCountMap.getOrDefault(responseVariable, 0) + 1);
+        }
+        
+        for (Map.Entry<C, Integer> entry : characterToCountMap.entrySet()) {
+            score += entry.getValue() * 
+                     Math.log((1.0 * entry.getValue()) / dataRows.size());
+        }
+        
+        return score;
+    }
+    
+    private void computeScores(ParsimoniousContextTreeNode<C> node,
+                               List<DataRow<C>> dataRows,
+                               int currentDepth,
+                               int totalDepth) {
         if (node.getChildren() == null) {
-            node.setScore(computeBayesianInformationCriterion(node));
+            node.setScore(computeBIC(dataRows));
             return;
         }
         
+        Map<C, ParsimoniousContextTreeNode<C>> characterToNodeMap = 
+                new HashMap<>();
+        
+        Map<ParsimoniousContextTreeNode<C>, List<DataRow<C>>> nodeToDataMap = 
+                new HashMap<>();
+        
         for (ParsimoniousContextTreeNode<C> child : node.getChildren()) {
-            computeScores(child);
+            for (C character : child.getLabel()) {
+                characterToNodeMap.put(character, child);
+            }
+            
+            nodeToDataMap.put(child, new ArrayList<>());
         }
         
+        int charIndex = totalDepth - currentDepth;
+        
+        for (DataRow<C> dataRow : dataRows) {
+            C ch = dataRow.getExplanatoryVariable(charIndex);
+            ParsimoniousContextTreeNode<C> tmpNode = characterToNodeMap.get(ch);
+            nodeToDataMap.get(tmpNode).add(dataRow);
+        }
+        
+        for (ParsimoniousContextTreeNode<C> child : node.getChildren()) {
+            computeScores(child, 
+                          nodeToDataMap.get(child), 
+                          currentDepth - 1, 
+                          totalDepth);
+        }
+        
+        // Collect the scores.
         double score = 0.0;
         
         for (ParsimoniousContextTreeNode<C> child : node.getChildren()) {
@@ -185,81 +226,5 @@ extends AbstractParsimoniousContextTreeLearner<C> {
         }
         
         return filter.size() == alphabet.size();
-    }
-    
-    private double computeBayesianInformationCriterion(
-            ParsimoniousContextTreeNode<C> node) {
-        this.characterCountMap.clear();
-        int totalCount = 0;
-        
-        for (DataRow<C> dataRow : dataRows) {
-            if (dataRowMatchesLeafNode(dataRow, node)) {
-                totalCount++;
-                C responseVariable = dataRow.getResponseVariable();
-                Integer count = this.characterCountMap.get(responseVariable);
-                
-                if (count != null) {
-                    this.characterCountMap.put(responseVariable, count + 1);
-                } else {
-                    this.characterCountMap.put(responseVariable, 1);
-                }
-            }
-        }
-        
-        double score = -this.k;
-        ResponseVariableDistribution<C> distribution = 
-                new ResponseVariableDistribution<>();
-        
-        for (Map.Entry<C, Integer> e : this.characterCountMap.entrySet()) {
-            score += e.getValue() * 
-                    Math.log((1.0 * e.getValue()) / totalCount);
-            distribution.putResponseVariableProbability(
-                    e.getKey(), 
-                    Double.valueOf(e.getValue()) / totalCount);
-        }
-
-        node.setResponseVariableDistribution(distribution);
-        return score;
-    }
-    
-    private boolean dataRowMatchesLeafNode(
-            DataRow<C> dataRow, 
-            ParsimoniousContextTreeNode<C> leafNode) {
-        this.queue.clear();
-        this.depthMap.clear();
-        int treeDepth = this.dataRows.get(0).getNumberOfExplanatoryVariables();
-
-        for (ParsimoniousContextTreeNode<C> childOfRoot : 
-                root.getChildren()) {
-            if (childOfRoot.getLabel()
-                           .contains(dataRow.getExplanatoryVariable(0))) {
-                this.queue.addLast(childOfRoot);
-                this.depthMap.put(childOfRoot, 1);
-            }
-        }
-
-        while (!this.queue.isEmpty()) {
-            ParsimoniousContextTreeNode<C> currentNode = 
-                    this.queue.removeFirst();
-            int currentNodeDepth = this.depthMap.get(currentNode);
-
-            if (currentNodeDepth == treeDepth) {
-                if (currentNode == leafNode) {
-                    return true;
-                }
-            } else {
-                C targetChar = dataRow.getExplanatoryVariable(currentNodeDepth);
-                
-                for (ParsimoniousContextTreeNode<C> child :
-                        currentNode.getChildren()) {
-                    if (child.getLabel().contains(targetChar)) {
-                        this.queue.addLast(child);
-                        this.depthMap.put(child, currentNodeDepth + 1);
-                    }
-                }
-            }
-        }
-        
-        return false;
     }
 }

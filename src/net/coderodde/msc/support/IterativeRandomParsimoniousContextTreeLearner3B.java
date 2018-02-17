@@ -27,8 +27,8 @@ extends AbstractParsimoniousContextTreeLearner<C>{
     
     @Override
     public ParsimoniousContextTree<C> learn(List<DataRow<C>> listOfDataRows) {
-        BasicIterativeRandomLearner<C> learner = 
-                new BasicIterativeRandomLearner<>();
+        BasicIterativeRandomLearnerV2<C> learner = 
+                new BasicIterativeRandomLearnerV2<>();
         learner.setRandom(random);
         learner.setMaximumLabelsPerNode(maximumLabelsPerNode);
         
