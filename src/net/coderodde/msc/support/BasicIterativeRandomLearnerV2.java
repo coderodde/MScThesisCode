@@ -19,6 +19,7 @@ import net.coderodde.msc.ParsimoniousContextTreeNode;
  * 
  * @author Rodion "rodde" Efremov
  * @version 1.6 (Jan 14, 2018)
+ * @param <C> the actual character type.
  */
 public final class BasicIterativeRandomLearnerV2<C> 
 extends AbstractParsimoniousContextTreeLearner<C>{
@@ -69,13 +70,11 @@ extends AbstractParsimoniousContextTreeLearner<C>{
                 new ParsimoniousContextTreeNode<>();
         
         root.setLabel(new HashSet<>());
-        root.setChildren(createChildren(depth - 1, dataRows));
+        root.setChildren(createChildren(depth - 1));
         return root;
     }
     
-    private Set<ParsimoniousContextTreeNode<C>> 
-        createChildren(int depth,
-                       List<DataRow<C>> dataRows) {
+    private Set<ParsimoniousContextTreeNode<C>> createChildren(int depth) {
         int childCount = random.nextInt(alphabet.size()) + 1;
         childCount = Math.min(childCount, maximumLabelsPerNode);
         Set<ParsimoniousContextTreeNode<C>> children = 
@@ -93,43 +92,15 @@ extends AbstractParsimoniousContextTreeLearner<C>{
         }
         
         for (Set<C> label : labels) {
-            if (label.isEmpty()) {
-                continue;
-            }
-            
-            ParsimoniousContextTreeNode<C> node = 
-                    new ParsimoniousContextTreeNode<>();
-            node.setLabel(label);
-            children.add(node);
-        }
-        
-        Map<ParsimoniousContextTreeNode<C>, List<DataRow<C>>> nodeToDataMap = 
-                new HashMap<>();
-        
-        Map<C, ParsimoniousContextTreeNode<C>> characterToNodeMap = 
-                new HashMap<>();
-        
-        for (ParsimoniousContextTreeNode<C> tmpNode : children) {
-            nodeToDataMap.put(tmpNode, new ArrayList<>());
-            
-            for (C ch : tmpNode.getLabel()) {
-                characterToNodeMap.put(ch, tmpNode);
-            }
-        }
-        
-        int charIndex = dataRows.get(0).getNumberOfExplanatoryVariables() - 1 -
-                        depth;
-        
-        for (DataRow<C> dataRow : dataRows) {
-            C ch = dataRow.getExplanatoryVariable(charIndex);
-            ParsimoniousContextTreeNode<C> tmpNode = characterToNodeMap.get(ch);
-            nodeToDataMap.get(tmpNode).add(dataRow);
-        }
-        
-        if (depth > 0) {
-            for (ParsimoniousContextTreeNode<C> node : children) {
-                node.setChildren(createChildren(depth - 1, 
-                                                nodeToDataMap.get(node)));
+            if (!label.isEmpty()) {
+                ParsimoniousContextTreeNode<C> child = 
+                        new ParsimoniousContextTreeNode<>();
+                child.setLabel(label);
+                children.add(child);
+
+                if (depth > 0) {
+                    child.setChildren(createChildren(depth - 1));
+                }
             }
         }
         
@@ -161,7 +132,7 @@ extends AbstractParsimoniousContextTreeLearner<C>{
         
         for (ParsimoniousContextTreeNode<C> child : node.getChildren()) {
             for (C character : child.getLabel()) {
-                characterToNodeMap.put(character, node);
+                characterToNodeMap.put(character, child);
             }
             
             nodeToDataMap.put(child, new ArrayList<>());
@@ -205,8 +176,7 @@ extends AbstractParsimoniousContextTreeLearner<C>{
         
         for (Map.Entry<C, Integer> entry : characterToCountMap.entrySet()) {
             score += entry.getValue() * 
-                     Math.log((1.0 * entry.getValue()) / 
-                              characterToCountMap.size());
+                     Math.log((1.0 * entry.getValue()) / dataRows.size());
         }
         
         return score;
