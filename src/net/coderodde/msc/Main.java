@@ -17,6 +17,8 @@ import net.coderodde.msc.support.IterativeRandomParsimoniousContextTreeLearner;
 import net.coderodde.msc.support.IterativeRandomParsimoniousContextTreeLearner2;
 import net.coderodde.msc.support.IterativeRandomParsimoniousContextTreeLearner3;
 import net.coderodde.msc.support.IterativeRandomParsimoniousContextTreeLearner3B;
+import net.coderodde.msc.support.IterativeRandomParsimoniousContextTreeLearner3BV2;
+import net.coderodde.msc.support.IterativeRandomParsimoniousContextTreeLearner3V2;
 import net.coderodde.msc.support.RandomParsimoniousContextTreeLearner;
 import net.coderodde.msc.support.RandomParsimoniousContextTreeLearner2;
 import net.coderodde.msc.support.RandomParsimoniousContextTreeLearner3;
@@ -203,6 +205,14 @@ public class Main {
         IterativeRandomParsimoniousContextTreeLearner3B<Character>
                 iterativeRandomPCTLearner3B =
                 new IterativeRandomParsimoniousContextTreeLearner3B<>();
+        
+        IterativeRandomParsimoniousContextTreeLearner3V2 
+                iterativeRandomPCTLearner3V2 =
+                new IterativeRandomParsimoniousContextTreeLearner3V2();
+        
+        IterativeRandomParsimoniousContextTreeLearner3BV2
+                iterativeRandomPCTLearner3BV2 = 
+                new IterativeRandomParsimoniousContextTreeLearner3BV2();
 
         iterativeRandomPCTLearner2.setBeta(0.9);
         randomPCTLearner1.setRandom(new Random());
@@ -416,6 +426,56 @@ public class Main {
                 + getPlausibilityScore(optimalScore,
                                        independenceModelScore,
                                        iterativeRandomPCTTree3BScore));
+        System.out.println();
+        
+        //// Iterative random PCT learner 3V2:
+        System.out.println("--- " + iterativeRandomPCTLearner3V2.getClass().getSimpleName() + " ---");
+        iterativeRandomPCTLearner3V2.setRandom(new Random());
+        iterativeRandomPCTLearner3V2.setIterations(1000);
+        iterativeRandomPCTLearner3V2.setMaximumLabelsPerNode(5);
+        
+        startTime = System.currentTimeMillis();
+        
+        ParsimoniousContextTree<Character> iterativeRandomPCTTree3V2 =
+                iterativeRandomPCTLearner3V2.learn(dataRows);
+        
+        endTime = System.currentTimeMillis();
+        
+        System.out.println(iterativeRandomPCTTree3V2);
+        System.out.println("Time: " + (endTime - startTime) + " milliseconds.");
+        double iterativeRandomPCTTree3V2Score = 
+                iterativeRandomPCTTree3V2.getScore();
+        
+        System.out.println("Score: " + iterativeRandomPCTTree3V2Score + 
+                ", plausibility: " +
+                getPlausibilityScore(optimalScore, 
+                                     independenceModelScore, 
+                                     iterativeRandomPCTTree3V2Score));
+        System.out.println();
+        
+        //// Iterative random PCT learner 3BV2:
+        System.out.println("--- " + iterativeRandomPCTLearner3BV2.getClass().getSimpleName() + " ---");
+        iterativeRandomPCTLearner3BV2.setRandom(new Random());
+        iterativeRandomPCTLearner3BV2.setK(1000);
+        iterativeRandomPCTLearner3BV2.setMaximumLabelsPerNode(5);
+        
+        startTime = System.currentTimeMillis();
+        
+        ParsimoniousContextTree<Character> iterativeRandomPCTTree3BV2 =
+                iterativeRandomPCTLearner3BV2.learn(dataRows);
+        
+        endTime = System.currentTimeMillis();
+        
+        System.out.println(iterativeRandomPCTTree3V2);
+        System.out.println("Time: " + (endTime - startTime) + " milliseconds.");
+        double iterativeRandomPCTTree3BV2Score = 
+                iterativeRandomPCTTree3BV2.getScore();
+        
+        System.out.println("Score: " + iterativeRandomPCTTree3V2Score + 
+                ", plausibility: " +
+                getPlausibilityScore(optimalScore, 
+                                     independenceModelScore, 
+                                     iterativeRandomPCTTree3BV2Score));
     }
 
     private static void checkFile(File file) {
