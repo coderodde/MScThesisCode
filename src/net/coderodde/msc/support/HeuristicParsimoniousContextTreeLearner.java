@@ -294,8 +294,8 @@ extends AbstractParsimoniousContextTreeLearner<C> {
                                  random);
         
         System.out.println("Seed = " + seed);
-        BasicParsimoniousContextTreeLearnerV2<Integer> basicLearner = 
-                new BasicParsimoniousContextTreeLearnerV2<>();
+        BasicParsimoniousContextTreeLearner<Integer> basicLearner = 
+                new BasicParsimoniousContextTreeLearner<>();
         
         IndependenceModelParsimoniousContextTreeLearner<Integer> 
                 independenceModelLearner =

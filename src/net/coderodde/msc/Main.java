@@ -10,7 +10,6 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Scanner;
 import net.coderodde.msc.support.BasicParsimoniousContextTreeLearner;
-import net.coderodde.msc.support.BasicParsimoniousContextTreeLearnerV2;
 import net.coderodde.msc.support.HeuristicParsimoniousContextTreeLearner;
 import net.coderodde.msc.support.IndependenceModelParsimoniousContextTreeLearner;
 import net.coderodde.msc.support.IterativeRandomParsimoniousContextTreeLearner;
@@ -161,11 +160,14 @@ public class Main {
 //        benchmark1(dataRows, getLargeAlphabetRows(start, depth));
 //        System.exit(0);
 
-        BasicParsimoniousContextTreeLearner<Character> basicPCTLearner
-                = new BasicParsimoniousContextTreeLearner<>();
-        
-        BasicParsimoniousContextTreeLearnerV2<Character> basicPCTLearnerV2 = 
-                new BasicParsimoniousContextTreeLearnerV2<>();
+        long seed = System.currentTimeMillis();
+        System.out.println("Seed = " + seed);
+        final int iterations = 1000;
+        final int maximumLabelsPerNode = 5;
+        final double beta = 0.85;
+
+        BasicParsimoniousContextTreeLearner<Character> basicPCTLearnerV2 = 
+                new BasicParsimoniousContextTreeLearner<>();
 
         IndependenceModelParsimoniousContextTreeLearner<Character> 
                 indepenendenceModelPCTLearner
@@ -175,14 +177,11 @@ public class Main {
                 = new RandomParsimoniousContextTreeLearner<>();
 
         RandomParsimoniousContextTreeLearner2<Character> randomPCTLearner2
-                = new RandomParsimoniousContextTreeLearner2<>(0.8);
+                = new RandomParsimoniousContextTreeLearner2<>(beta);
 
         HeuristicParsimoniousContextTreeLearner<Character> heuristicPCTLearner = 
                 new HeuristicParsimoniousContextTreeLearner<>();
         
-        randomPCTLearner1.setRandom(new Random());
-        randomPCTLearner2.setRandom(new Random());
-
         IterativeRandomParsimoniousContextTreeLearner<Character>
                 iterativeRandomPCTLearner1
                 = new IterativeRandomParsimoniousContextTreeLearner<>();
@@ -192,35 +191,33 @@ public class Main {
                 = new IterativeRandomParsimoniousContextTreeLearner2<>();
         
         IterativeRandomParsimoniousContextTreeLearner3 
-                iterativeRandomPCTLearner3V2 =
+                iterativeRandomPCTLearner3 =
                 new IterativeRandomParsimoniousContextTreeLearner3();
         
         IterativeRandomParsimoniousContextTreeLearner3B
-                iterativeRandomPCTLearner3BV2 = 
+                iterativeRandomPCTLearner3B = 
                 new IterativeRandomParsimoniousContextTreeLearner3B();
+        
+        // Set randoms:
+        randomPCTLearner1.setRandom(new Random(seed));
+        randomPCTLearner2.setRandom(new Random(seed));
+        iterativeRandomPCTLearner1.setRandom(new Random(seed));
+        iterativeRandomPCTLearner2.setRandom(new Random(seed));
+        iterativeRandomPCTLearner3.setRandom(new Random(seed));
+        iterativeRandomPCTLearner3B.setRandom(new Random(seed));
 
-        iterativeRandomPCTLearner2.setBeta(0.9);
-        randomPCTLearner1.setRandom(new Random());
-        iterativeRandomPCTLearner1.setIterations(1000);
-        iterativeRandomPCTLearner1.setRandom(new Random());
-        iterativeRandomPCTLearner2.setIterations(1000);
-
-        //// Optimal learner:
-        System.out.println(
-                "--- " + basicPCTLearner.getClass().getSimpleName() + " ---");
-        startTime = System.currentTimeMillis();
-
-        ParsimoniousContextTree<Character> basicPCTTree
-                = basicPCTLearner.learn(dataRows);
-
-        endTime = System.currentTimeMillis();
-
-        System.out.println(basicPCTTree);
-        System.out.println("Time: " + (endTime - startTime) + " milliseconds.");
-
-        double optimalScore = basicPCTTree.getScore();
-        System.out.println("Optimal score: " + optimalScore);
-        System.out.println();
+        // Set iteration counts:
+        iterativeRandomPCTLearner1.setIterations(iterations);
+        iterativeRandomPCTLearner2.setIterations(iterations);
+        iterativeRandomPCTLearner3.setIterations(iterations);
+        iterativeRandomPCTLearner3B.setK(iterations);
+        
+        // Set maximum 
+        iterativeRandomPCTLearner3.setMaximumLabelsPerNode(maximumLabelsPerNode);
+        iterativeRandomPCTLearner3B.setMaximumLabelsPerNode(maximumLabelsPerNode);
+        
+        // Set betas:
+        iterativeRandomPCTLearner2.setBeta(0.95);
         
         //// Faster optimal learner:
         System.out.println("--- " + basicPCTLearnerV2.getClass().getSimpleName() + " ---");
@@ -234,8 +231,8 @@ public class Main {
         System.out.println(basicPCTTree2);
         System.out.println("Time: " + (endTime - startTime) + " milliseconds.");
         
-        double optimalScoreV2 = basicPCTTree2.getScore();
-        System.out.println("Score: " + optimalScoreV2);
+        double optimalScore = basicPCTTree2.getScore();
+        System.out.println("Optimal score: " + optimalScore);
         System.out.println();
 
         //// Independence model learner:
@@ -250,6 +247,7 @@ public class Main {
         System.out.println(independenceModel);
         System.out.println("Time: " + (endTime - startTime) + " milliseconds.");
         double independenceModelScore = independenceModel.getScore();
+        System.out.println("Baseline score: " + independenceModel.getScore());
         System.out.println();
 
         //// Heuristic learner:
@@ -309,7 +307,7 @@ public class Main {
 
             //// Iterative random PCT learner:
             System.out.println("--- " + iterativeRandomPCTLearner1.getClass().getSimpleName() + " ---");
-            iterativeRandomPCTLearner1.setIterations(1000);
+            
             startTime = System.currentTimeMillis();
             ParsimoniousContextTree<Character> iterativeRandomPCTTree1 = 
                     iterativeRandomPCTLearner1.learn(dataRows);
@@ -329,8 +327,6 @@ public class Main {
 
             //// Iterative random PCT learner 2:
             System.out.println("--- " + iterativeRandomPCTLearner2.getClass().getSimpleName() + " ---");
-            iterativeRandomPCTLearner2.setRandom(new Random());
-            iterativeRandomPCTLearner2.setIterations(1000);
             startTime = System.currentTimeMillis();
 
             ParsimoniousContextTree<Character> iterativeRandomPCTTree2 = 
@@ -350,54 +346,48 @@ public class Main {
                                            iterativeRandomPCTTree2Score));
             System.out.println();
         }
-        //// Iterative random PCT learner 3V2:
-        System.out.println("--- " + iterativeRandomPCTLearner3V2.getClass().getSimpleName() + " ---");
-        iterativeRandomPCTLearner3V2.setRandom(new Random());
-        iterativeRandomPCTLearner3V2.setIterations(1000);
-        iterativeRandomPCTLearner3V2.setMaximumLabelsPerNode(5);
+        //// Iterative random PCT learner 3:
+        System.out.println("--- " + iterativeRandomPCTLearner3.getClass().getSimpleName() + " ---");
         
         startTime = System.currentTimeMillis();
         
-        ParsimoniousContextTree<Character> iterativeRandomPCTTree3V2 =
-                iterativeRandomPCTLearner3V2.learn(dataRows);
+        ParsimoniousContextTree<Character> iterativeRandomPCTTree3 =
+                iterativeRandomPCTLearner3.learn(dataRows);
         
         endTime = System.currentTimeMillis();
         
-        System.out.println(iterativeRandomPCTTree3V2);
+        System.out.println(iterativeRandomPCTTree3);
         System.out.println("Time: " + (endTime - startTime) + " milliseconds.");
-        double iterativeRandomPCTTree3V2Score = 
-                iterativeRandomPCTTree3V2.getScore();
+        double iterativeRandomPCTTree3Score = 
+                iterativeRandomPCTTree3.getScore();
         
-        System.out.println("Score: " + iterativeRandomPCTTree3V2Score + 
+        System.out.println("Score: " + iterativeRandomPCTTree3Score + 
                 ", plausibility: " +
                 getPlausibilityScore(optimalScore, 
                                      independenceModelScore, 
-                                     iterativeRandomPCTTree3V2Score));
+                                     iterativeRandomPCTTree3Score));
         System.out.println();
         
-        //// Iterative random PCT learner 3BV2:
-        System.out.println("--- " + iterativeRandomPCTLearner3BV2.getClass().getSimpleName() + " ---");
-        iterativeRandomPCTLearner3BV2.setRandom(new Random());
-        iterativeRandomPCTLearner3BV2.setK(1000);
-        iterativeRandomPCTLearner3BV2.setMaximumLabelsPerNode(5);
+        //// Iterative random PCT learner 3B:
+        System.out.println("--- " + iterativeRandomPCTLearner3B.getClass().getSimpleName() + " ---");
         
         startTime = System.currentTimeMillis();
         
-        ParsimoniousContextTree<Character> iterativeRandomPCTTree3BV2 =
-                iterativeRandomPCTLearner3BV2.learn(dataRows);
+        ParsimoniousContextTree<Character> iterativeRandomPCTTree3B =
+                iterativeRandomPCTLearner3B.learn(dataRows);
         
         endTime = System.currentTimeMillis();
         
-        System.out.println(iterativeRandomPCTTree3V2);
+        System.out.println(iterativeRandomPCTTree3);
         System.out.println("Time: " + (endTime - startTime) + " milliseconds.");
-        double iterativeRandomPCTTree3BV2Score = 
-                iterativeRandomPCTTree3BV2.getScore();
+        double iterativeRandomPCTTree3BScore = 
+                iterativeRandomPCTTree3B.getScore();
         
-        System.out.println("Score: " + iterativeRandomPCTTree3V2Score + 
+        System.out.println("Score: " + iterativeRandomPCTTree3Score + 
                 ", plausibility: " +
                 getPlausibilityScore(optimalScore, 
                                      independenceModelScore, 
-                                     iterativeRandomPCTTree3BV2Score));
+                                     iterativeRandomPCTTree3BScore));
     }
 
     private static void checkFile(File file) {

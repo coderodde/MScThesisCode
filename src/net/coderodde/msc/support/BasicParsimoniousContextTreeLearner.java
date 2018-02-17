@@ -1,22 +1,18 @@
 package net.coderodde.msc.support;
 
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import net.coderodde.msc.AbstractParsimoniousContextTreeLearner;
 import net.coderodde.msc.Alphabet;
 import net.coderodde.msc.DataRow;
 import net.coderodde.msc.ParsimoniousContextTree;
 import net.coderodde.msc.ParsimoniousContextTreeNode;
-import net.coderodde.msc.ResponseVariableDistribution;
 
 /**
  * This class implements a basic algorithm for learning parsimonious context 
@@ -56,31 +52,9 @@ extends AbstractParsimoniousContextTreeLearner<C> {
     private Alphabet<C> alphabet;
     
     /**
-     * Holds the list of data rows.
-     */
-    private List<DataRow<C>> listOfDataRows;
-    
-    /**
-     * The frontier queue for the breadth-first search. We need this whenever
-     * asking whether a data row leads to a particular leaf node.
-     */
-    private Deque<ParsimoniousContextTreeNode<C>> queue;
-    
-    /**
-     * Maps each node to its depth in the breadth-first search.
-     */
-    private Map<ParsimoniousContextTreeNode<C>, Integer> depthMap;
-    
-    /**
      * Maps each partition of the alphabet to its score.
      */
     private Map<List<Set<C>>, Double> mapPartitionToScore;
-    
-    /**
-     * Whenever validating a partition candidate, this set is used to make sure 
-     * that all characters are present in the candidate.
-     */
-    private Set<C> characterFilterSet;
     
     /**
      * This list holds all the partitions of the alphabet.
@@ -96,9 +70,6 @@ extends AbstractParsimoniousContextTreeLearner<C> {
                 new BasicParsimoniousContextTreeLearner<>();
         
         state.alphabet = getAlphabet(listOfDataRows);
-        state.listOfDataRows = 
-                Objects.requireNonNull(listOfDataRows, 
-                                       "The list of data rows is null.");
         
         checkDataRowListNotEmpty(listOfDataRows);
         checkDataRowListHasConstantNumberOfExplanatoryVariables(listOfDataRows);
@@ -106,11 +77,8 @@ extends AbstractParsimoniousContextTreeLearner<C> {
         state.listOfAllPossibleNodeLabels =
                 state.alphabet.getAllPossibleLabels();
         
-        state.characterFilterSet = new HashSet<>();
-        state.depthMap = new HashMap<>();
         state.characterCountMap = new HashMap<>();
         state.mapPartitionToScore = new HashMap<>();
-        state.queue = new ArrayDeque<>();
         state.root = new ParsimoniousContextTreeNode<>();
         state.root.setLabel(Collections.<C>emptySet());
         state.k = 0.5 * (state.alphabet.size() - 1) * 
@@ -118,7 +86,7 @@ extends AbstractParsimoniousContextTreeLearner<C> {
         state.generateAllAlphabetPartitions();
         int depth = listOfDataRows.get(0).getNumberOfExplanatoryVariables();
         
-        state.buildTree(state.root, depth);
+        state.buildTree(state.root, depth, depth, listOfDataRows);
         
         return new ParsimoniousContextTree<>(state.root);
     }
@@ -137,9 +105,31 @@ extends AbstractParsimoniousContextTreeLearner<C> {
         }
     }
         
-    private void buildTree(ParsimoniousContextTreeNode<C> node, int depth) {
-        if (depth == 0) {
-            node.setScore(computeBayesianInformationCriterion(node));
+    private double computeScore(List<DataRow<C>> dataRows) {
+        double score = -k;
+        characterCountMap.clear();
+        
+        for (DataRow<C> dataRow : dataRows) {
+            C responseVariable = dataRow.getResponseVariable();
+            characterCountMap.put(
+                    responseVariable, 
+                    characterCountMap.getOrDefault(responseVariable, 0) + 1);
+        }
+        
+        for (Map.Entry<C, Integer> entry : characterCountMap.entrySet()) {
+            score += entry.getValue() * 
+                     Math.log((1.0 * entry.getValue()) / dataRows.size());
+        }
+        
+        return score;
+    }
+    
+    private void buildTree(ParsimoniousContextTreeNode<C> node, 
+                           int currentDepth,
+                           int totalDepth,
+                           List<DataRow<C>> dataRows) {
+        if (currentDepth == 0) {
+            node.setScore(computeScore(dataRows));
             return;
         }
         
@@ -152,6 +142,9 @@ extends AbstractParsimoniousContextTreeLearner<C> {
                 new HashMap<>(
                     this.alphabet.getNumberOfNonemptyCharacterCombinations());
         
+        Map<ParsimoniousContextTreeNode<C>, 
+            List<DataRow<C>>> nodeToDataMap = new HashMap<>();
+        
         for (Set<C> label : this.listOfAllPossibleNodeLabels) {
             ParsimoniousContextTreeNode<C> childNode =
                     new ParsimoniousContextTreeNode<>();
@@ -159,7 +152,41 @@ extends AbstractParsimoniousContextTreeLearner<C> {
             childNode.setLabel(label);
             nodeMap.put(label, childNode);
             children.add(childNode);
-            buildTree(childNode, depth - 1);
+            nodeToDataMap.put(childNode, new ArrayList<>());
+        }
+        
+        // Maps each alphabet character to the list of PCT nodes whose labels
+        // contain the character in question:
+        Map<C, List<ParsimoniousContextTreeNode<C>>> mapCharToNodes = 
+                new HashMap<>();
+        
+        for (ParsimoniousContextTreeNode<C> tmpNode : children) {
+            for (C ch : tmpNode.getLabel()) {
+                if (!mapCharToNodes.containsKey(ch)) {
+                    mapCharToNodes.put(ch, new ArrayList<>());
+                }
+                
+                mapCharToNodes.get(ch).add(tmpNode);
+            }
+        }
+        
+        int charIndex = totalDepth - currentDepth;
+        
+        for (DataRow<C> dataRow : dataRows) {
+            C ch = dataRow.getExplanatoryVariable(charIndex);
+            List<ParsimoniousContextTreeNode<C>> tmpNodes = 
+                    mapCharToNodes.get(ch);
+            
+            for (ParsimoniousContextTreeNode<C> tmpNode : tmpNodes) {
+                nodeToDataMap.get(tmpNode).add(dataRow);
+            }
+        }
+        
+        for (ParsimoniousContextTreeNode<C> child : children) {
+            buildTree(child, 
+                      currentDepth - 1,
+                      totalDepth, 
+                      nodeToDataMap.get(child));
         }
         
         this.mapPartitionToScore.clear();
@@ -201,81 +228,21 @@ extends AbstractParsimoniousContextTreeLearner<C> {
         }
     }
     
-    private double computeBayesianInformationCriterion(
-            ParsimoniousContextTreeNode<C> node) {
-        this.characterCountMap.clear();
-        int totalCount = 0;
-        
-        for (DataRow<C> dataRow : this.listOfDataRows) {
-            if (dataRowMatchesLeafNode(dataRow, node)) {
-                totalCount++;
-                C responseVariable = dataRow.getResponseVariable();
-                Integer count = this.characterCountMap.get(responseVariable);
-                
-                if (count != null) {
-                    this.characterCountMap.put(responseVariable, count + 1);
-                } else {
-                    this.characterCountMap.put(responseVariable, 1);
-                }
-            }
-        }
-        
-        ResponseVariableDistribution<C> distribution = 
-                new ResponseVariableDistribution<>();
-        
-        double score = -this.k;
-        
-        for (Map.Entry<C, Integer> e : this.characterCountMap.entrySet()) {
-            score += e.getValue() * 
-                    Math.log((1.0 * e.getValue()) / totalCount);
-            distribution.putResponseVariableProbability(
-                    e.getKey(), 
-                    Double.valueOf(e.getValue()) / totalCount);
-        }
-        
-        node.setResponseVariableDistribution(distribution);
-        return score;
-    }
-    
-    private boolean dataRowMatchesLeafNode(
-            DataRow<C> dataRow, 
-            ParsimoniousContextTreeNode<C> leafNode) {
-        this.queue.clear();
-        this.depthMap.clear();
-        int treeDepth = this.listOfDataRows
-                            .get(0).getNumberOfExplanatoryVariables();
-
-        for (ParsimoniousContextTreeNode<C> childOfRoot : 
-                root.getChildren()) {
-            if (childOfRoot.getLabel()
-                           .contains(dataRow.getExplanatoryVariable(0))) {
-                this.queue.addLast(childOfRoot);
-                this.depthMap.put(childOfRoot, 1);
-            }
-        }
-
-        while (!this.queue.isEmpty()) {
-            ParsimoniousContextTreeNode<C> currentNode = 
-                    this.queue.removeFirst();
-            int currentNodeDepth = this.depthMap.get(currentNode);
-
-            if (currentNodeDepth == treeDepth) {
-                if (currentNode == leafNode) {
-                    return true;
-                }
-            } else {
-                C targetChar = dataRow.getExplanatoryVariable(currentNodeDepth);
-                
-                for (ParsimoniousContextTreeNode<C> child :
-                        currentNode.getChildren()) {
-                    if (child.getLabel().contains(targetChar)) {
-                        this.queue.addLast(child);
-                        this.depthMap.put(child, currentNodeDepth + 1);
-                    }
-                }
-            }
-        }
-        
-        return false;
-    }
+//    public static void main(String[] args) {
+//        BasicParsimoniousContextTreeLearner<Integer> learner = 
+//                new BasicParsimoniousContextTreeLearner<>();
+//        
+//        BasicParsimoniousContextTreeLearnerV2<Integer> learnerV2 = 
+//                new BasicParsimoniousContextTreeLearnerV2<>();
+//        
+//        List<DataRow<Integer>> data = new ArrayList<>();
+//        data.add(new DataRow(1, 0, 1));
+//        data.add(new DataRow(0, 1, 0));
+//        data.add(new DataRow(1, 1, 0));
+//        data.add(new DataRow(1, 0, 1));
+//        data.add(new DataRow(1, 0, 1));
+//        data.add(new DataRow(0, 0, 0));
+//        System.out.println(learner.learn(data));
+//        System.out.println(learnerV2.learn(data));
+//    }
 }
