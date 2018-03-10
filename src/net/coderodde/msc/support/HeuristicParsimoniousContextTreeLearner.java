@@ -79,17 +79,41 @@ extends AbstractParsimoniousContextTreeLearner<C> {
         return childrenList;
     }
     
+    private double computeInitialParentScore(int currentDepth,
+                                             List<DataRow<C>> dataRows) {
+        int charIndex = 
+                dataRows.get(0).getNumberOfExplanatoryVariables() - 
+                currentDepth;
+        
+        double score = -k * alphabet.size();
+        Map<C, Integer> characterCountMap = new HashMap<>(alphabet.size());
+        
+        for (DataRow<C> dataRow : dataRows) {
+            C currentCharacter = dataRow.getExplanatoryVariable(charIndex);
+            characterCountMap.put(currentCharacter, 
+                                  characterCountMap
+                                      .getOrDefault(currentCharacter, 0) + 1);
+        }
+        
+        for (Map.Entry<C, Integer> entry : characterCountMap.entrySet()) {
+            score += entry.getValue() * 
+                     Math.log(((double) entry.getValue()) / dataRows.size());
+        }
+        
+        return score;
+    }
+    
     private void build(ParsimoniousContextTreeNode<C> parent,
-                       int depth,
+                       int currentDepth,
                        List<DataRow<C>> dataRows) {
-        if (depth == 0) {
+        if (currentDepth == 0) {
             return;
         }
         
         // Create the children list fo the parent node.
         List<ParsimoniousContextTreeNode<C>> childrenList = createChildren();
-        parent.setChildren(new HashSet<>(childrenList));        
-        parent.setScore(-k * childrenList.size());
+        parent.setChildren(new HashSet<>(childrenList)); 
+        parent.setScore(computeInitialParentScore(currentDepth, dataRows));
         ParsimoniousContextTreeNode<C> bestChild1 = null;
         ParsimoniousContextTreeNode<C> bestChild2 = null;
         ParsimoniousContextTreeNode<C> child1 = null;
@@ -103,7 +127,7 @@ extends AbstractParsimoniousContextTreeLearner<C> {
                 
                 for (int j = i + 1; j < childrenList.size(); j++) {
                     child2 = childrenList.get(j);
-                    double mergedScore = findMergedScore(depth,
+                    double mergedScore = findMergedScore(currentDepth,
                                                          dataRows,
                                                          child1,
                                                          child2);
@@ -141,7 +165,7 @@ extends AbstractParsimoniousContextTreeLearner<C> {
                 
                 int charIndex = 
                         dataRows.get(0).getNumberOfExplanatoryVariables() -
-                        depth;
+                        currentDepth;
                 
                 for (DataRow<C> dataRow : dataRows) {
                     C ch = dataRow.getExplanatoryVariable(charIndex);
@@ -153,7 +177,7 @@ extends AbstractParsimoniousContextTreeLearner<C> {
                 }
                 
                 for (ParsimoniousContextTreeNode<C> child : parent.getChildren()) {
-                    build(child, depth - 1, nodeToDataRowsMap.get(child));
+                    build(child, currentDepth - 1, nodeToDataRowsMap.get(child));
                 }
                 
                 return;
@@ -189,7 +213,7 @@ extends AbstractParsimoniousContextTreeLearner<C> {
         }
         
         for (Map.Entry<C, Integer> entry : characterCountMap.entrySet()) {
-            score += entry.getValue() * Math.log(1.0 * entry.getValue() / count);
+            score += entry.getValue() * Math.log(((double) entry.getValue()) / count);
         }
         
         characterCountMap.clear();

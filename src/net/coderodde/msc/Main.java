@@ -24,6 +24,7 @@ public class Main {
     // Commands for generating MC-data:
     // MC: datagen-mc /Users/rodionefremov/Desktop/WarAndPeace.txt /Users/rodionefremov/Desktop/ProGradu/alphabetReduction6 3 908 19
     // Running as Ralf's learner: /Users/rodionefremov/Desktop/ProGradu/CTCF.txt 18 3  
+    // Running as Ralf's learner on Windows: C:\Users\Rodion Efremov\Documents\ProGradu\CTCF.txt 18 3
     // PCT: datagen-pct /Users/rodionefremov/Desktop/ProGradu/weightsAlphabet5 2 908 19
     // PCT2: datagen-pct2 <alphabetSize> <order> <lines> <lineLength>
     // PCT3: datagen-pct3 <alphabetSize> <order> <lines> <lineLength> <beta>
@@ -519,7 +520,7 @@ public class Main {
         AbstractParsimoniousContextTreeLearner<Integer> learner
                 = new BasicParsimoniousContextTreeLearner<>();
 
-        for (int depth = 1; depth <= 3; ++depth) {
+        for (int depth = 1; depth <= 4; ++depth) {
             for (int alphabetSize = 2; alphabetSize <= 7; ++alphabetSize) {
                 List<DataRow<Integer>> data = generateData(depth,
                         alphabetSize,
