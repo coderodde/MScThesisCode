@@ -1,9 +1,7 @@
 package net.coderodde.msc.support;
 
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -32,8 +30,6 @@ extends AbstractParsimoniousContextTreeLearner<C> {
     private double k;
     private ParsimoniousContextTreeNode<C> root;
     private final Map<C, Integer> characterCountMap = new HashMap<>();
-    private Deque<ParsimoniousContextTreeNode<C>> queue;
-    private Map<ParsimoniousContextTreeNode<C>, Integer> depthMap;
     
     @Override
     public ParsimoniousContextTree<C> learn(List<DataRow<C>> listOfDataRows) {
@@ -48,8 +44,6 @@ extends AbstractParsimoniousContextTreeLearner<C> {
         state.dataRows = listOfDataRows;
         state.k = 0.5 * (state.alphabet.size() - 1) * 
                          Math.log(listOfDataRows.size());
-        state.depthMap = new HashMap<>();
-        state.queue = new ArrayDeque<>();
         state.build();
         return new ParsimoniousContextTree<>(state.root);
     }
@@ -77,30 +71,6 @@ extends AbstractParsimoniousContextTreeLearner<C> {
         }
         
         return childrenList;
-    }
-    
-    private double computeInitialParentScore(int currentDepth,
-                                             List<DataRow<C>> dataRows) {
-        int charIndex = 
-                dataRows.get(0).getNumberOfExplanatoryVariables() - 
-                currentDepth;
-        
-        double score = -k * alphabet.size();
-        Map<C, Integer> characterCountMap = new HashMap<>(alphabet.size());
-        
-        for (DataRow<C> dataRow : dataRows) {
-            C currentCharacter = dataRow.getExplanatoryVariable(charIndex);
-            characterCountMap.put(currentCharacter, 
-                                  characterCountMap
-                                      .getOrDefault(currentCharacter, 0) + 1);
-        }
-        
-        for (Map.Entry<C, Integer> entry : characterCountMap.entrySet()) {
-            score += entry.getValue() * 
-                     Math.log(((double) entry.getValue()) / dataRows.size());
-        }
-        
-        return score;
     }
     
     /**
@@ -186,6 +156,21 @@ extends AbstractParsimoniousContextTreeLearner<C> {
         ParsimoniousContextTreeNode<C> child1 = null;
         ParsimoniousContextTreeNode<C> child2 = null;
         
+        // Redistribute the data rows to their respective buckets:
+        Map<C, List<DataRow<C>>> mapCharToDataRows = new HashMap<>();
+        
+        for (C character : alphabet.getCharacters()) {
+            mapCharToDataRows.put(character, new ArrayList<>());
+        }
+        
+        int characterIndex = dataRows.get(0).getNumberOfExplanatoryVariables()
+                             - currentDepth;
+        
+        for (DataRow<C> dataRow : dataRows) {
+            C currentCharacter = dataRow.getExplanatoryVariable(characterIndex);
+            mapCharToDataRows.get(currentCharacter).add(dataRow);
+        }
+        
         while (true) {
             boolean improved = false;
             // Try pairwise merging.
@@ -195,7 +180,7 @@ extends AbstractParsimoniousContextTreeLearner<C> {
                 for (int j = i + 1; j < childrenList.size(); j++) {
                     child2 = childrenList.get(j);
                     double mergedScore = findMergedScore(currentDepth,
-                                                         dataRows,
+                                                         mapCharToDataRows,
                                                          child1,
                                                          child2);
                     double candidateScore = 
@@ -261,24 +246,40 @@ extends AbstractParsimoniousContextTreeLearner<C> {
         }
     }
     
-     private double findMergedScore(int depth,
-                                   List<DataRow<C>> dataRows,
-                                   ParsimoniousContextTreeNode<C> node1,
-                                   ParsimoniousContextTreeNode<C> node2) {
+     private double findMergedScore(
+             int depth,
+             Map<C, List<DataRow<C>>> mapCharacterToDataRows,
+             ParsimoniousContextTreeNode<C> node1,
+             ParsimoniousContextTreeNode<C> node2) {
         int charIndex = 
                 dataRows.get(0).getNumberOfExplanatoryVariables() - depth;
         int count = 0;
         double score = -k;
+        characterCountMap.clear();
         
-        for (DataRow<C> dataRow : dataRows) {
-            C ch = dataRow.getExplanatoryVariable(charIndex);
-            
-            if (node1.getLabel().contains(ch)
-                    || node2.getLabel().contains(ch)) {
-                count++;
-                characterCountMap.put(
-                        ch, 
-                        characterCountMap.getOrDefault(ch, 0) + 1);
+        // Get the data row count:
+        for (List<DataRow<C>> dataRows : mapCharacterToDataRows.values()) {
+            count += dataRows.size();
+        }
+        
+        // Build the N_{V_a} values:
+        for (C character : node1.getLabel()) {
+            for (DataRow<C> dataRow : mapCharacterToDataRows.get(character)) {
+                C responseVariable = dataRow.getResponseVariable();
+                characterCountMap.put(responseVariable, 
+                                      characterCountMap
+                                              .getOrDefault(responseVariable, 0) 
+                                              + 1);
+            }
+        }
+        
+        for (C character : node2.getLabel()) {
+            for (DataRow<C> dataRow : mapCharacterToDataRows.get(character)) {
+                C responseVariable = dataRow.getResponseVariable();
+                characterCountMap.put(responseVariable, 
+                                      characterCountMap
+                                              .getOrDefault(responseVariable, 0) 
+                                              + 1);
             }
         }
         
@@ -287,7 +288,6 @@ extends AbstractParsimoniousContextTreeLearner<C> {
                      Math.log(((double) entry.getValue()) / count);
         }
         
-        characterCountMap.clear();
         return score;
     }
     
