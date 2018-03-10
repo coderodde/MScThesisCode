@@ -30,6 +30,8 @@ public class Main {
     // PCT3: datagen-pct3 <alphabetSize> <order> <lines> <lineLength> <beta>
     // Example: datagen-pct2 26 2 908 19
     public static void main(String[] args) {
+        debug1();
+        System.exit(0);
         if (args.length == 0) {
             benchmark();
             return;
@@ -659,5 +661,30 @@ public class Main {
             final double baselineScore = tree2.getScore();
 
         }
+    }
+    
+    private static void debug1() {
+        List<DataRow<Integer>> dataRows = new ArrayList<>();
+        
+        dataRows.add(new DataRow<>(1, 2));
+        dataRows.add(new DataRow<>(2, 3));
+        dataRows.add(new DataRow<>(1, 1));
+        dataRows.add(new DataRow<>(3, 1));
+        dataRows.add(new DataRow<>(2, 2));
+        
+        BasicParsimoniousContextTreeLearner<Integer> basicLearner = 
+                new BasicParsimoniousContextTreeLearner<>();
+        
+        HeuristicParsimoniousContextTreeLearner<Integer> heuristicLearner = 
+                new HeuristicParsimoniousContextTreeLearner<>();
+        
+        ParsimoniousContextTree<Integer> basicTree = 
+                basicLearner.learn(dataRows);
+        
+        ParsimoniousContextTree<Integer> heuristicTree = 
+                heuristicLearner.learn(dataRows);
+        
+        System.out.println(basicTree);
+        System.out.println(heuristicTree);
     }
 }
