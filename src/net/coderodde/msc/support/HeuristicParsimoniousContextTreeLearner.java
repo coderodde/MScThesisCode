@@ -258,8 +258,12 @@ extends AbstractParsimoniousContextTreeLearner<C> {
         characterCountMap.clear();
         
         // Get the data row count:
-        for (List<DataRow<C>> dataRows : mapCharacterToDataRows.values()) {
-            count += dataRows.size();
+        for (C character : node1.getLabel()) {
+            count += mapCharacterToDataRows.get(character).size();
+        }
+        
+        for (C character : node2.getLabel()) {
+            count += mapCharacterToDataRows.get(character).size();
         }
         
         // Build the N_{V_a} values:
