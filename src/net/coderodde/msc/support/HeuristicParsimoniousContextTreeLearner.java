@@ -147,10 +147,6 @@ extends AbstractParsimoniousContextTreeLearner<C> {
     private void build(ParsimoniousContextTreeNode<C> parent,
                        int currentDepth,
                        List<DataRow<C>> dataRows) {
-        if (currentDepth == 0) {
-            return;
-        }
-        
         // Create the children list fo the parent node.
         List<ParsimoniousContextTreeNode<C>> childrenList = createChildren();
         parent.setChildren(new HashSet<>(childrenList)); 
@@ -206,6 +202,11 @@ extends AbstractParsimoniousContextTreeLearner<C> {
             }
             
             if (!improved) {
+                if (currentDepth == 1) {
+                    // Don't build any deeper:
+                    return;
+                }
+                
                 Map<ParsimoniousContextTreeNode<C>, 
                     List<DataRow<C>>> nodeToDataRowsMap = new HashMap<>();
                 Map<C, ParsimoniousContextTreeNode<C>> charToNodeMap = 

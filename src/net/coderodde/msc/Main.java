@@ -30,8 +30,8 @@ public class Main {
     // PCT3: datagen-pct3 <alphabetSize> <order> <lines> <lineLength> <beta>
     // Example: datagen-pct2 26 2 908 19
     public static void main(String[] args) {
-        debug1();
-        System.exit(0);
+        //debug1();
+        //System.exit(0);
         if (args.length == 0) {
             benchmark();
             return;
@@ -666,13 +666,22 @@ public class Main {
     private static void debug1() {
         List<DataRow<Integer>> dataRows = new ArrayList<>();
         
-        dataRows.add(new DataRow<>(1, 2));
-        dataRows.add(new DataRow<>(2, 3));
-        dataRows.add(new DataRow<>(1, 1));
-        dataRows.add(new DataRow<>(3, 1));
-        dataRows.add(new DataRow<>(2, 2));
-        dataRows.add(new DataRow<>(3, 3));
-        dataRows.add(new DataRow<>(1, 3));
+        //dataRows.add(new DataRow<>(1, 2));
+        //dataRows.add(new DataRow<>(2, 3));
+        //dataRows.add(new DataRow<>(1, 1));
+        //dataRows.add(new DataRow<>(3, 1));
+        //dataRows.add(new DataRow<>(2, 2));
+        //dataRows.add(new DataRow<>(3, 3));
+        //dataRows.add(new DataRow<>(1, 3));
+        dataRows.add(new DataRow<>(3, 2, 3));
+        dataRows.add(new DataRow<>(3, 1, 1));
+        dataRows.add(new DataRow<>(2, 2, 1));
+        dataRows.add(new DataRow<>(1, 2, 1));
+        dataRows.add(new DataRow<>(1, 3, 3));
+        dataRows.add(new DataRow<>(1, 1, 2));
+        dataRows.add(new DataRow<>(1, 3, 3));
+        dataRows.add(new DataRow<>(2, 2, 3));
+        dataRows.add(new DataRow<>(3, 3, 3));
         
         BasicParsimoniousContextTreeLearner<Integer> basicLearner = 
                 new BasicParsimoniousContextTreeLearner<>();
