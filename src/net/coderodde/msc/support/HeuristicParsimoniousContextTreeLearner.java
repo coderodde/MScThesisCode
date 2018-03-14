@@ -120,11 +120,15 @@ extends AbstractParsimoniousContextTreeLearner<C> {
                     mapCharToCounterMap.get(child.getLabel().iterator().next());
             
             double score = -k;
+            int count = 0;
+            
+            for (Map.Entry<C, Integer> entry : characterCountMap.entrySet()) {
+                count += entry.getValue();
+            }
             
             for (Map.Entry<C, Integer> entry : characterCountMap.entrySet()) {
                 score += entry.getValue() * 
-                         Math.log(((double) entry.getValue()) / 
-                                  characterCountMap.size());
+                         Math.log(((double) entry.getValue()) / count);
             }
             
             child.setScore(score);
@@ -171,6 +175,9 @@ extends AbstractParsimoniousContextTreeLearner<C> {
             mapCharToDataRows.get(currentCharacter).add(dataRow);
         }
         
+        double bestParentScore = parent.getScore();
+        double bestMergedScore = Double.NaN;
+        
         while (true) {
             boolean improved = false;
             // Try pairwise merging.
@@ -188,8 +195,9 @@ extends AbstractParsimoniousContextTreeLearner<C> {
                                               - child1.getScore()
                                               - child2.getScore();
                     
-                    if (parent.getScore() < candidateScore) {
-                        parent.setScore(candidateScore);
+                    if (bestParentScore < candidateScore) {
+                        bestParentScore = candidateScore;
+                        bestMergedScore = mergedScore;
                         improved = true;
                         bestChild1 = child1;
                         bestChild2 = child2;
@@ -242,6 +250,17 @@ extends AbstractParsimoniousContextTreeLearner<C> {
                 childrenList.remove(bestChild2);
                 // Reuse bestChild1:
                 bestChild1.getLabel().addAll(bestChild2.getLabel());
+                bestChild1.setScore(bestMergedScore);
+                
+                // Update the parent score:
+                double parentScore = 0.0; 
+                
+                for (ParsimoniousContextTreeNode<C> child 
+                        : parent.getChildren()) {
+                    parentScore += child.getScore();
+                }
+                
+                parent.setScore(parentScore);
             }
         }
     }

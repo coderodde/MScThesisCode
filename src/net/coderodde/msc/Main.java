@@ -671,6 +671,8 @@ public class Main {
         dataRows.add(new DataRow<>(1, 1));
         dataRows.add(new DataRow<>(3, 1));
         dataRows.add(new DataRow<>(2, 2));
+        dataRows.add(new DataRow<>(3, 3));
+        dataRows.add(new DataRow<>(1, 3));
         
         BasicParsimoniousContextTreeLearner<Integer> basicLearner = 
                 new BasicParsimoniousContextTreeLearner<>();
