@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Scanner;
+import java.util.stream.IntStream;
 import net.coderodde.msc.support.BasicParsimoniousContextTreeLearner;
 import net.coderodde.msc.support.HeuristicParsimoniousContextTreeLearner;
 import net.coderodde.msc.support.IndependenceModelParsimoniousContextTreeLearner;
@@ -20,6 +21,28 @@ import net.coderodde.msc.support.RandomParsimoniousContextTreeLearner;
 import net.coderodde.msc.support.RandomParsimoniousContextTreeLearner2;
 
 public class Main {
+    
+    private static final int DEPTH_BENCHMARK_TREE_MINIMUM_DEPTH = 1;
+    private static final int DEPTH_BENCHMARK_TREE_MAXIMUM_DEPTH = 6;
+    private static final int DEPTH_BENCHMARK_DATA_SET_ALPHABET_SIZE = 4;
+    private static final int DEPTH_BENCHMARK_DATA_SET_LINE_LENGTH = 7;
+    private static final int DEPTH_BENCHMARK_DATA_SET_SIZE = 1000;
+    
+    private static final String SEPARATION_BAR;
+    private static final Character SEPARATION_BAR_CHARACTER = '-';
+    private static final int SEPARATION_BAR_LENGTH = 80;
+    
+    static {
+        SEPARATION_BAR = createSeparationBar(SEPARATION_BAR_LENGTH);
+    }
+    
+    private static final String createSeparationBar(int separationBarLength) {
+        StringBuilder stringBuilder = new StringBuilder(separationBarLength);
+        IntStream.of(separationBarLength).forEach((i) -> {
+            stringBuilder.append(SEPARATION_BAR_CHARACTER);
+        });
+        return stringBuilder.toString();
+    }
 
     // Commands for generating MC-data:
     // MC: datagen-mc /Users/rodionefremov/Desktop/WarAndPeace.txt /Users/rodionefremov/Desktop/ProGradu/alphabetReduction6 3 908 19
@@ -33,7 +56,8 @@ public class Main {
         //debug1();
         //System.exit(0);
         if (args.length == 0) {
-            benchmark();
+            // benchmark();
+            heuristicSearchBenchmark();
             return;
         }
 
@@ -104,9 +128,9 @@ public class Main {
 //                        "lineLength = " + lineLength);
 
                 generateDataViaPCT2(alphabetSize,
-                        order,
-                        lines,
-                        lineLength);
+                                    order,
+                                    lines,
+                                    lineLength);
                 return;
             }
         }
@@ -697,5 +721,145 @@ public class Main {
         
         System.out.println(basicTree);
         System.out.println(heuristicTree);
+    }
+    
+    // This static method benchmarks the heuristic search.
+    // Basically, we have a discrete, 3-dimensional scalar field. The dimensions
+    // are: alphabet size, tree depth, number of data points. The scalar value 
+    // is a concrete time needed to process a tree with prespecified parameters.
+    private static void heuristicSearchBenchmark() {
+        heuristicSearchBenchmarkAlphabetSize();
+        heuristicSearchBenchmarkDataPoints();
+        heuristicSearchBenchmarkDepth();
+    }
+    
+    // Performs the actual benchmarking of heuristic search against the baseline
+    // learner. The alphabet size and the tree depth is up to the data set.
+    private static double doBenchmark(
+            AbstractParsimoniousContextTreeLearner<Character> learner,
+            List<DataRow<Character>> dataSet) {
+        long startTime = System.currentTimeMillis();
+        ParsimoniousContextTree<Character> tree = learner.learn(dataSet);
+        long endTime = System.currentTimeMillis();
+        double treeScore = tree.getScore();
+        
+        System.out.print(learner.getClass().getSimpleName());
+        System.out.print(" in ");
+        System.out.print(endTime - startTime);
+        System.out.print(" milliseconds, tree score: ");
+        System.out.println(treeScore);
+        return treeScore;
+    }
+    
+    private static Map<Integer, List<DataRow<Character>>> 
+        createDepthDataSetMap() {
+        Map<Integer, List<DataRow<Character>>> mapDepthToDataSet =
+                new HashMap<>();
+    
+        for (int depth = DEPTH_BENCHMARK_TREE_MINIMUM_DEPTH; 
+                depth <= DEPTH_BENCHMARK_TREE_MAXIMUM_DEPTH;
+                depth++) {
+            mapDepthToDataSet.put(depth, createDataSetWithDepth(depth));
+        }
+        
+        return mapDepthToDataSet;
+    }
+        
+    private static List<DataRow<Character>> createDataSetWithDepth(int depth) {
+        List<DataRow<Character>> dataPoint =
+                new ArrayList<>(DEPTH_BENCHMARK_DATA_SET_SIZE);
+        
+        
+        
+        return dataPoint;
+    }
+    
+    // Compares the baseline learner against heuristic search when tree depth 
+    // grows.
+    private static void heuristicSearchBenchmarkDepth() {
+        System.out.println("=== DEPTH ===");
+        BasicParsimoniousContextTreeLearner<Character> basicLearner;
+        HeuristicParsimoniousContextTreeLearner<Character> heuristicLearner;
+        IndependenceModelParsimoniousContextTreeLearner<Character> 
+                independenceModelLearner;
+        
+        basicLearner = new BasicParsimoniousContextTreeLearner<>();
+        heuristicLearner = new HeuristicParsimoniousContextTreeLearner<>();
+        independenceModelLearner = 
+                new IndependenceModelParsimoniousContextTreeLearner<>();
+        
+        Map<Integer, List<DataRow<Character>>> mapDepthToDataSet = 
+                createDepthDataSetMap();
+        
+        // Basic learner:
+        for (int depth = DEPTH_BENCHMARK_TREE_MINIMUM_DEPTH;
+                depth <= DEPTH_BENCHMARK_TREE_MINIMUM_DEPTH;
+                depth++) {
+            System.out.println("Depth = " + depth);
+            List<DataRow<Character>> dataSet = mapDepthToDataSet.get(depth);
+            double treeScoreBasicLearner = doBenchmark(basicLearner, dataSet);
+            double treeScoreHeuristicLearner = 
+                    doBenchmark(heuristicLearner, dataSet);
+            double treeScoreIndependenceModel =
+                    doBenchmark(independenceModelLearner, dataSet);
+            printPlausibility(treeScoreBasicLearner,
+                              treeScoreHeuristicLearner,
+                              treeScoreIndependenceModel);
+        }
+    }
+    
+    private static void printPlausibility(double treeScoreBasicLearner,
+                                          double treeScoreHeuristicLearner,
+                                          double treeScoreIndependenceModel) {
+        if (treeScoreBasicLearner == treeScoreIndependenceModel) {
+            if (treeScoreHeuristicLearner == treeScoreBasicLearner) {
+                System.out.print("1.0");
+            } else {
+                System.out.print("below independence model");
+            }
+        } else {
+            double plausibility = 
+                    computePlausibility(treeScoreBasicLearner,
+                                        treeScoreHeuristicLearner,
+                                        treeScoreIndependenceModel);
+            System.out.print(plausibility);
+        }
+    }
+    
+    private static double computePlausibility(
+            double treeScoreBasicLearner,
+            double treeScoreHeuristicLearner,
+            double treeScoreIndependenceModel) {
+        double numerator;
+        double denominator;
+        
+        numerator = treeScoreHeuristicLearner - treeScoreIndependenceModel;
+        denominator = treeScoreBasicLearner - treeScoreIndependenceModel;
+        
+        return numerator / denominator;
+    }
+    
+    // Compares the baseline learner against heuristic search when the alphabet
+    // size grows.
+    private static void heuristicSearchBenchmarkAlphabetSize() {
+        BasicParsimoniousContextTreeLearner<Character> basicLearner =
+                new BasicParsimoniousContextTreeLearner<>();
+        
+        HeuristicParsimoniousContextTreeLearner<Character> heuristicLearner = 
+                new HeuristicParsimoniousContextTreeLearner<>();
+        
+        
+    }
+    
+    // Compares the baseline learner against heuristic search when the data set
+    // grows.
+    private static void heuristicSearchBenchmarkDataPoints() {
+        BasicParsimoniousContextTreeLearner<Character> basicLearner =
+                new BasicParsimoniousContextTreeLearner<>();
+        
+        HeuristicParsimoniousContextTreeLearner<Character> heuristicLearner = 
+                new HeuristicParsimoniousContextTreeLearner<>();
+        
+        
     }
 }

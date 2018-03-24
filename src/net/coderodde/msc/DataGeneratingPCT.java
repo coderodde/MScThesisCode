@@ -15,12 +15,35 @@ import de.jstacs.utils.random.DirichletMRGParams;
 
 public final class DataGeneratingPCT {
     
+    /**
+     * Implements actual nodes of a data generating PCT.
+     */
     private static final class PCTNode {
+        
+        /**
+         * The label of this node.
+         */
         Set<Character> label;
+        
+        /**
+         * The set of child nodes unless this node is a leaf.
+         */
         Set<PCTNode> children;
+        
+        
         List<Character> characters;
+        
+        /**
+         * TODO: ?
+         */
         double[] characterWeights;
         
+        /**
+         * Randomly samples a character.
+         * 
+         * @param random the random number generator.
+         * @return a single, randomly selected character.
+         */
         Character sample(Random random) {
             double coin = random.nextDouble();
             
@@ -36,13 +59,30 @@ public final class DataGeneratingPCT {
         }
     }
     
+    /**
+     * The parameters for the Dirichelet distribution.
+     */
     private final DirichletMRGParams params;
+    
+    /**
+     * The alphabet.
+     */
     private final Alphabet<Character> alphabet;
+    
+    /**
+     * Maps an integer to a alphabet partition. TODO: ?
+     */
     private final Map<Integer, List<List<Set<Character>>>> partitionMap = 
             new HashMap<>();
     
+    /**
+     * TODO: ?
+     */
     private final int depth;
     
+    /**
+     * The root node of this tree.
+     */
     private PCTNode root;
     private final double[] weights;
     private final Random random = new Random();
@@ -58,6 +98,7 @@ public final class DataGeneratingPCT {
         
         double sum = DoubleStream.of(weights).sum();
         
+        // Normalize weights:
         for (int i = 0; i < weights.length; ++i) {
             weights[i] /= sum;
         }
@@ -72,7 +113,7 @@ public final class DataGeneratingPCT {
             chars[i] = c++;
         }
         
-        this.alphabet = new Alphabet<Character>(chars);
+        this.alphabet = new Alphabet<>(chars);
         this.params = new DirichletMRGParams(0.5, this.alphabet.size());
         
         for (int blocks = 1; blocks <= alphabet.size(); ++blocks) {
@@ -95,7 +136,7 @@ public final class DataGeneratingPCT {
     
     private void buildTree() {
         this.root = new PCTNode();
-        int blocks = getBlocks();
+        int blocks = getNumberOfBlocks();
         
         List<List<Set<Character>>> all = partitionMap.get(blocks);
         List<Set<Character>> childNodeLabels = choose(all);
@@ -122,7 +163,7 @@ public final class DataGeneratingPCT {
             return;
         }
         
-        int blocks = getBlocks();
+        int blocks = getNumberOfBlocks();
         
         List<List<Set<Character>>> all = partitionMap.get(blocks);
         List<Set<Character>> childNodeLabels = choose(all);
@@ -137,7 +178,7 @@ public final class DataGeneratingPCT {
         }
     }
     
-    private int getBlocks() {
+    private int getNumberOfBlocks() {
         double coin = random.nextDouble();
         int i = 0;
         
