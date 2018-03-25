@@ -13,7 +13,20 @@ import net.coderodde.msc.support.PartitionIterable;
 import de.jstacs.utils.random.DirichletMRG;
 import de.jstacs.utils.random.DirichletMRGParams;
 
+/**
+ * This class implements a data generating PCT of a prespecified depth
+ * <code>d</code>. When sampling this PCT, a string of length <code>d</code> is
+ * required. Then, this PCT is traversed according to the input string which 
+ * will lead to a leaf node. There, a single character is sampled according to
+ * the (Dirichlet) distribution of that leaf.
+ */
 public final class DataGeneratingPCT {
+    
+    /**
+     * The value for all concentration parameters for the Dirichlet 
+     * distribution.
+     */
+    private static final double DIRICHLET_CONCENTRATION_PARAMETER = 0.5;
     
     /**
      * Implements actual nodes of a data generating PCT.
@@ -30,19 +43,21 @@ public final class DataGeneratingPCT {
          */
         Set<PCTNode> children;
         
-        
+        /**
+         * The list of alphabet characters. Used for sampling at the leafs.
+         */
         List<Character> characters;
         
         /**
-         * TODO: ?
+         * The array of character weights. Used for sampling at the leafs.
          */
         double[] characterWeights;
         
         /**
-         * Randomly samples a character.
+         * Performs the actual sampling of a leaf.
          * 
          * @param random the random number generator.
-         * @return a single, randomly selected character.
+         * @return a randomly selected character.
          */
         Character sample(Random random) {
             double coin = random.nextDouble();
@@ -70,13 +85,16 @@ public final class DataGeneratingPCT {
     private final Alphabet<Character> alphabet;
     
     /**
-     * Maps an integer to a alphabet partition. TODO: ?
+     * Maps a number of blocks {@code B} in the alphabet to a list of alphabet 
+     * partitions consisting of exactly {@code B} blocks. Other names for blocks
+     * are <i>parts</i> or <i>cells</i>.
      */
     private final Map<Integer, List<List<Set<Character>>>> partitionMap = 
             new HashMap<>();
     
     /**
-     * TODO: ?
+     * The depth of this PCT. Each instance of this class requires a 
+     * <code>depth</code>-string in order to sample a new character.
      */
     private final int depth;
     
@@ -114,15 +132,16 @@ public final class DataGeneratingPCT {
         }
         
         this.alphabet = new Alphabet<>(chars);
-        this.params = new DirichletMRGParams(0.5, this.alphabet.size());
+        this.params = new DirichletMRGParams(DIRICHLET_CONCENTRATION_PARAMETER, 
+                                             this.alphabet.size());
         
         for (int blocks = 1; blocks <= alphabet.size(); ++blocks) {
-            PartitionIterable<Character> pi = 
+            PartitionIterable<Character> partitionIterable = 
                     new PartitionIterable<>(alphabet.getCharacters(), blocks);
             
             partitionMap.put(blocks, new ArrayList<>());
             
-            for (List<Set<Character>> partition : pi) {
+            for (List<Set<Character>> partition : partitionIterable) {
                 partitionMap.get(blocks).add(partition);
             }
         }
@@ -134,7 +153,9 @@ public final class DataGeneratingPCT {
         return alphabet.getCharacters();
     }
     
+    // Builds the entire data sampling PCT.
     private void buildTree() {
+        // Build the root:
         this.root = new PCTNode();
         int blocks = getNumberOfBlocks();
         
@@ -143,7 +164,9 @@ public final class DataGeneratingPCT {
         
         this.root.label = Collections.emptySet();
         this.root.children = new HashSet<>(childNodeLabels.size());
+        // Here, the root is set up.
         
+        // Recur to build the children:
         for (Set<Character> label : childNodeLabels) {
             PCTNode childNode = new PCTNode();
             childNode.label = label;
@@ -152,8 +175,12 @@ public final class DataGeneratingPCT {
         }
     }
     
+    // This method is responsible for building the PCT. An input node is 
+    // continued if it is not a leaf node. Otherwise, we attach to a leaf node
+    // a Dirichlet distribution with all concentration parameters set to 0.5.
     private void buildTree(PCTNode node, int depth) {
         if (depth == 0) {
+            // Deal with a leaf:
             node.characters = alphabet.getCharacters();
             node.characterWeights = new double[node.characters.size()];
             DirichletMRG.DEFAULT_INSTANCE.generate(node.characterWeights, 
@@ -163,6 +190,7 @@ public final class DataGeneratingPCT {
             return;
         }
         
+        // Not a leaf, keep building:
         int blocks = getNumberOfBlocks();
         
         List<List<Set<Character>>> all = partitionMap.get(blocks);
@@ -171,6 +199,7 @@ public final class DataGeneratingPCT {
         node.children = new HashSet<>(childNodeLabels.size());
         
         for (Set<Character> label : childNodeLabels) {
+            // Deal with the children:
             PCTNode childNode = new PCTNode();
             childNode.label = label;
             buildTree(childNode, depth - 1);
@@ -178,6 +207,7 @@ public final class DataGeneratingPCT {
         }
     }
     
+    // Randomly and uniformly selects a number of blocks. (TODO: What blocks?)
     private int getNumberOfBlocks() {
         double coin = random.nextDouble();
         int i = 0;
@@ -189,6 +219,16 @@ public final class DataGeneratingPCT {
         return i + 1;
     }
 
+    /**
+     * Given an input string {@code string}, traverses this PCT starting from
+     * the root node and going to a leaf node according to the input string. 
+     * When a leaf node is reached, that node is sampled and a single character
+     * is returned. The idea is that, the input string is continued according to
+     * distribution.
+     * 
+     * @param string the input string
+     * @return 
+     */
     public Character sampleNext(String string) {
         if (string.length() != depth) {
             throw new IllegalArgumentException(
@@ -212,10 +252,22 @@ public final class DataGeneratingPCT {
         return currentNode.sample(random);
     }
     
+    /**
+     * Randomly and uniformly chooses an element in {@code list} and returns it.
+     * 
+     * @param <T>  the list element type.
+     * @param list the list to choose from.
+     * @return a randomly chosen list element.
+     */
     private <T> T choose(List<T> list) {
         return list.get(random.nextInt(list.size()));
     }
     
+    /**
+     * Returns a textual representation of this data generating PCT.
+     * 
+     * @return a textual representation of this PCT.
+     */
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -229,6 +281,8 @@ public final class DataGeneratingPCT {
         return sb.toString();
     }
     
+    // Implements the conversion from a data-generating PCT to textual 
+    // represenation.
     private void toString(PCTNode node, 
                           StringBuilder sb, 
                           String separator) {

@@ -11,12 +11,43 @@ import java.util.Set;
 
 public final class DataGeneratingPCT2 {
     
+    /**
+     * The value for all concentration parameters for the Dirichlet 
+     * distribution.
+     */
+    private static final double DIRICHLET_CONCENTRATION_PARAMETER = 0.5;
+    
+    /**
+     * Implements actual nodes of a data generating PCT.
+     */
     private static final class PCTNode {
+        
+        /**
+         * The label of this node.
+         */
         Set<Character> label;
+        
+        /**
+         * The set of child nodes unless this node is a leaf.
+         */
         Set<PCTNode> children;
+        
+        /**
+         * The list of alphabet characters. Used for sampling at the leafs.
+         */
         List<Character> characters;
+        
+        /**
+         * The array of character weights. Used for sampling at the leafs.
+         */
         double[] characterWeights;
         
+        /**
+         * Performs the actual sampling of a leaf.
+         * 
+         * @param random the random number generator.
+         * @return a randomly selected character.
+         */
         Character sample(Random random) {
             double coin = random.nextDouble();
             
@@ -32,7 +63,14 @@ public final class DataGeneratingPCT2 {
         }
     }
     
+    /**
+     * The parameters for the Dirichelet distribution.
+     */
     private final DirichletMRGParams params;
+    
+    /**
+     * The alphabet.
+     */
     private final Alphabet<Character> alphabet;
     private final List<Character> characterList;
     private final int depth;
@@ -54,7 +92,8 @@ public final class DataGeneratingPCT2 {
         this.depth = depth;
         this.alphabet = new Alphabet<>(chars);
         this.characterList = this.alphabet.getCharacters();
-        this.params = new DirichletMRGParams(0.5, this.alphabet.size());
+        this.params = new DirichletMRGParams(DIRICHLET_CONCENTRATION_PARAMETER, 
+                                             this.alphabet.size());
         
         buildTree();
     }
@@ -99,6 +138,7 @@ public final class DataGeneratingPCT2 {
         for (int i = 0; i < children; ++i) {
             childrenLabels.add(new HashSet<>());
         }
+        
         
         for (Character c : characterList) {
             int childIndex = random.nextInt(childrenLabels.size());
