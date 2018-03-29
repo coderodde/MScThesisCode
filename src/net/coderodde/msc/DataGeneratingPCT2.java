@@ -83,7 +83,7 @@ public final class DataGeneratingPCT2 {
         }
         
         Character[] chars = new Character[alphabetSize];
-        char c = '0';
+        char c = 'a';
         
         for (int i = 0; i < alphabetSize; ++i) {
             chars[i] = c++;
@@ -139,17 +139,18 @@ public final class DataGeneratingPCT2 {
             childrenLabels.add(new HashSet<>());
         }
         
-        
         for (Character c : characterList) {
             int childIndex = random.nextInt(childrenLabels.size());
             childrenLabels.get(childIndex).add(c);
         }
         
         for (Set<Character> label : childrenLabels) {
-            PCTNode childNode = new PCTNode();
-            childNode.label = label;
-            buildTree(childNode, depth - 1);
-            this.root.children.add(childNode);
+            if (!label.isEmpty()) {
+                PCTNode childNode = new PCTNode();
+                childNode.label = label;
+                buildTree(childNode, depth - 1);
+                this.root.children.add(childNode);
+            }
         }
     }
     
@@ -179,10 +180,12 @@ public final class DataGeneratingPCT2 {
         node.children = new HashSet<>(childrenLabels.size());
         
         for (Set<Character> label : childrenLabels) {
-            PCTNode childNode = new PCTNode();
-            childNode.label = label;
-            buildTree(childNode, depth - 1);
-            node.children.add(childNode);
+            if (!label.isEmpty()) {
+                PCTNode childNode = new PCTNode();
+                childNode.label = label;
+                buildTree(childNode, depth - 1);
+                node.children.add(childNode);
+            }
         }
     }
     
@@ -213,5 +216,10 @@ public final class DataGeneratingPCT2 {
                 toString(child, sb, separator + "  ");
             }
         }
+    }
+    
+    public static void main(String[] args) {
+        DataGeneratingPCT2 pct = new DataGeneratingPCT2(3, 4);
+        System.out.println(pct);
     }
 }

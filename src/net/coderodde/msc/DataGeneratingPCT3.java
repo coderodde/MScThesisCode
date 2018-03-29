@@ -52,7 +52,7 @@ public final class DataGeneratingPCT3 {
         checkBeta(beta);
         
         Character[] chars = new Character[alphabetSize];
-        char c = '0';
+        char c = 'a';
         
         for (int i = 0; i < alphabetSize; ++i) {
             chars[i] = c++;
@@ -96,10 +96,12 @@ public final class DataGeneratingPCT3 {
         }
         
         for (Set<Character> label : childrenLabels) {
-            PCTNode childNode = new PCTNode();
-            childNode.label = label;
-            buildTree(childNode, depth - 1);
-            this.root.children.add(childNode);
+            if (!label.isEmpty()) {
+                PCTNode childNode = new PCTNode();
+                childNode.label = label;
+                buildTree(childNode, depth - 1);
+                this.root.children.add(childNode);
+            }
         }
     }
     
@@ -129,10 +131,12 @@ public final class DataGeneratingPCT3 {
         node.children = new HashSet<>(childrenLabels.size());
         
         for (Set<Character> label : childrenLabels) {
-            PCTNode childNode = new PCTNode();
-            childNode.label = label;
-            buildTree(childNode, depth - 1);
-            node.children.add(childNode);
+            if (!label.isEmpty()) {
+                PCTNode childNode = new PCTNode();
+                childNode.label = label;
+                buildTree(childNode, depth - 1);
+                node.children.add(childNode);
+            }
         }
     }
     
@@ -198,5 +202,10 @@ public final class DataGeneratingPCT3 {
         if (beta <= 0.0 || beta >= 1.0) {
             throw new IllegalArgumentException("beta = " + beta);
         }
+    }
+    
+    public static void main(String[] args) {
+        DataGeneratingPCT3 pct = new DataGeneratingPCT3(3, 4, 0.9);
+        System.out.println(pct);
     }
 }

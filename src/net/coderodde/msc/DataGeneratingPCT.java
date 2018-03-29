@@ -299,10 +299,10 @@ public final class DataGeneratingPCT {
         }
     }
     
-    public static void mainOld(String[] args) {
-        double[] weights = { 2.0, 2, 2.0, 2.0, 2, 2.0 };
+    public static void main(String[] args) {
+        double[] weights = { 2.0, 4.0, 6.0, 4.0 };
         
-        DataGeneratingPCT pct = new DataGeneratingPCT(2, 6, weights);
+        DataGeneratingPCT pct = new DataGeneratingPCT(3, 4, weights);
         System.out.println(pct);
     }
 }
