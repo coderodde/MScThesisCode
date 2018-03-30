@@ -52,7 +52,23 @@ public class Main {
     // PCT2: datagen-pct2 <alphabetSize> <order> <lines> <lineLength>
     // PCT3: datagen-pct3 <alphabetSize> <order> <lines> <lineLength> <beta>
     // Example: datagen-pct2 26 2 908 19
+    //
+    // Benchmark data generation:
+    // generate-depth-data: Generates the 4-char alphabet data with 1000 rows
+    //                      suitable for benchmarking perforamance with
+    //                      increasing depth.
     public static void main(String[] args) {
+        if (args.length == 1 && args[0].equals("generate-depth-data")) {
+            List<DataRow<Character>> dataSet =
+                    BenchmarkDataGenerator.generateDepthData();
+            
+            for (DataRow<Character> dataRow : dataSet) {
+                System.out.println(dataRow);
+            }
+            
+            return;
+        }
+        
         //debug1();
         //System.exit(0);
         if (args.length == 0) {
