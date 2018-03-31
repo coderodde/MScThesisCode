@@ -110,11 +110,11 @@ public class Main {
         
         //debug1();
         //System.exit(0);
-        if (args.length == 0) {
-            // benchmark();
-            heuristicSearchBenchmark();
-            return;
-        }
+//        if (args.length == 0) {
+//            // benchmark();
+//            heuristicSearchBenchmark();
+//            return;
+//        }
 
         if (args.length == 2 && args[0].equals("check")) {
             File file = new File(args[1]);
@@ -198,21 +198,21 @@ public class Main {
             return;
         }
 
-        int depth = Integer.MIN_VALUE;
-
-        try {
-            depth = Integer.parseInt(args[2]);
-        } catch (NumberFormatException ex) {
-            System.err.println(args[2] + ": not an integer.");
-            System.exit(1);
-        }
-
         int start = Integer.MIN_VALUE;
 
         try {
             start = Integer.parseInt(args[1]);
         } catch (NumberFormatException ex) {
             System.err.println(args[1] + ": not an integer.");
+            System.exit(1);
+        }
+
+        int depth = Integer.MIN_VALUE;
+
+        try {
+            depth = Integer.parseInt(args[2]);
+        } catch (NumberFormatException ex) {
+            System.err.println(args[2] + ": not an integer.");
             System.exit(1);
         }
 
@@ -241,7 +241,7 @@ public class Main {
 
 //        benchmark1(dataRows, getLargeAlphabetRows(start, depth));
 //        System.exit(0);
-
+        System.out.println("--- Comparing all the PCT learners ---");
         long seed = System.currentTimeMillis();
         System.out.println("Seed = " + seed);
         final int iterations = 1000;

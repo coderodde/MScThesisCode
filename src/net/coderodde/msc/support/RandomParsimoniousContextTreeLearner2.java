@@ -17,13 +17,14 @@ import net.coderodde.msc.util.AbstractProbabilityDistribution;
 import net.coderodde.msc.util.support.BinaryTreeProbabilityDistribution;
 
 // Beta-driven number of children. One child with prob. beta, two childs with 
-// prob. pow(beta,2), and so on.
+// prob. pow(beta,2), and so on. When a number of children is chosen, the 
+// alphabet characters are redistributed to them randomly.
 /**
  * In this learner, the probability of having <code>n</code> children is 
  * <code>pow(beta,n)</code>.
  * 
- * @author rodionefremov
- * @param <C> 
+ * @author Rodion "rodde" Efremov
+ * @param <C> the character type.
  */
 public final class RandomParsimoniousContextTreeLearner2<C>
 extends AbstractParsimoniousContextTreeLearner<C> {
@@ -70,6 +71,13 @@ extends AbstractParsimoniousContextTreeLearner<C> {
         return new ParsimoniousContextTree<>(state.root);
     }
     
+    /**
+     * Creates a probability distribution. Given a positive parameter 
+     * {@code beta}, the probability of one child is [@code beta}, the 
+     * probability of two children is {@code beta^2}, and so on.
+     * 
+     * @return the probability distribution.
+     */
     private AbstractProbabilityDistribution<Integer> 
         createBucketSizeDistribution() {
         AbstractProbabilityDistribution<Integer> distribution = 
@@ -85,7 +93,10 @@ extends AbstractParsimoniousContextTreeLearner<C> {
         
         return distribution;
     }
-    
+        
+    /**
+     * Computes the scores of all the nodes in the PCT.
+     */
     private void computeScores() {
         int treeDepth = dataRows.get(0).getNumberOfExplanatoryVariables();
         computeScores(root,
@@ -94,6 +105,11 @@ extends AbstractParsimoniousContextTreeLearner<C> {
                       treeDepth);
     }
     
+    /**
+     * Builds the entire PCT.
+     * 
+     * @return the root node of the created PCT.
+     */
     private ParsimoniousContextTreeNode<C> buildTree() {
         int depth = dataRows.get(0).getNumberOfExplanatoryVariables();
         ParsimoniousContextTreeNode<C> root = 
@@ -105,6 +121,12 @@ extends AbstractParsimoniousContextTreeLearner<C> {
         return root;
     }
     
+    /**
+     * Creates a set of child PCT nodes of a node at depth {@code depth}.
+     * 
+     * @param depth the depth of the node whose children to create.
+     * @return a set of child PCT nodes.
+     */
     private Set<ParsimoniousContextTreeNode<C>> createChildren(int depth) {
         Set<ParsimoniousContextTreeNode<C>> children = new HashSet<>();
         // Generate children set:
@@ -126,6 +148,14 @@ extends AbstractParsimoniousContextTreeLearner<C> {
         return children;
     }
     
+    /**
+     * Creates an alphabet partition. The number of blocks in the resulting 
+     * partition is sampled according to the {@code beta} parameter. After that,
+     * the alphabet characters are randomly distributed over all partition 
+     * blocks.
+     * 
+     * @return an alphabet partition.
+     */
     private List<Set<C>> createRandomLabelSet() {
         int buckets = bucketSizeDistribution.sampleElement();
         List<Set<C>> labelList = new ArrayList<>();
@@ -142,6 +172,12 @@ extends AbstractParsimoniousContextTreeLearner<C> {
         return labelList;
     }
     
+    /**
+     * Computes the BIC score over the input data set.
+     * 
+     * @param dataRows the data rows to consider.
+     * @return a BIC score.
+     */
     private double computeBIC(List<DataRow<C>> dataRows) {
         double score = -this.k;
         Map<C, Integer> characterToCountMap = new HashMap<>();
@@ -161,6 +197,14 @@ extends AbstractParsimoniousContextTreeLearner<C> {
         return score;
     }
     
+    /**
+     * Computes the score for the PCT node {@code node}.
+     * 
+     * @param node         the node whose score to compute.
+     * @param dataRows     the list of relevant data rows.
+     * @param currentDepth the depth of the input PCT node.
+     * @param totalDepth   the total depth of the PCT being built.
+     */
     private void computeScores(ParsimoniousContextTreeNode<C> node,
                                List<DataRow<C>> dataRows,
                                int currentDepth,

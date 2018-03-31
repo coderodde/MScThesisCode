@@ -34,10 +34,10 @@ extends AbstractParsimoniousContextTreeLearner<C>{
     
     private Random random;
     
-    private int maximumLabelsPerNode;
+    private int maximumChildrenPerNode;
     
     public void setMaximumLabelsPerNode(int maximumLabelsPerNode) {
-        this.maximumLabelsPerNode = maximumLabelsPerNode;
+        this.maximumChildrenPerNode = maximumLabelsPerNode;
     }
     
     public void setRandom(Random random) {
@@ -58,7 +58,7 @@ extends AbstractParsimoniousContextTreeLearner<C>{
         state.alphabet = getAlphabet(listOfDataRows);
         state.k = 0.5 * (state.alphabet.size() - 1) * 
                          Math.log(listOfDataRows.size());
-        state.maximumLabelsPerNode = maximumLabelsPerNode;
+        state.maximumChildrenPerNode = maximumChildrenPerNode;
         state.root = state.buildTree();
         state.computeScoresV2();
         return new ParsimoniousContextTree<>(state.root);
@@ -74,9 +74,18 @@ extends AbstractParsimoniousContextTreeLearner<C>{
         return root;
     }
     
+    /**
+     * Creates a set of child nodes for the depth {@code depth}. First, the 
+     * number of children nodes is randomly and uniformly chosen. Then the 
+     * minimum of that number and the maximum child count is taken. Finally, the
+     * alphabet characters are redistributed over child nodes randomly.
+     * 
+     * @param depth the depth.
+     * @return a set of child PCT nodes.
+     */
     private Set<ParsimoniousContextTreeNode<C>> createChildren(int depth) {
         int childCount = random.nextInt(alphabet.size()) + 1;
-        childCount = Math.min(childCount, maximumLabelsPerNode);
+        childCount = Math.min(childCount, maximumChildrenPerNode);
         Set<ParsimoniousContextTreeNode<C>> children = 
                 new HashSet<>(childCount);
         

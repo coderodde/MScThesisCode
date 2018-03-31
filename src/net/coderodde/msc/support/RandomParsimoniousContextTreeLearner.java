@@ -18,7 +18,10 @@ import net.coderodde.msc.util.AbstractProbabilityDistribution;
 import net.coderodde.msc.util.support.BinaryTreeProbabilityDistribution;
 
 /**
- * In this learner each children configuration is equally probable.
+ * In this learner each children configuration is equally probable. The 
+ * procedure for creating an alphabet partition randomly samples the labels
+ * until the sum of all characters equals the alphabet size, and then checks
+ * that the set of labels is a partition.
  * 
  * @author Rodion "rodde" Efremov
  * @param <C> the actual character type.
@@ -63,6 +66,9 @@ extends AbstractParsimoniousContextTreeLearner<C> {
         return new ParsimoniousContextTree<>(state.root);
     }
     
+    /**
+     * Computes the scores for all nodes of the PCT.
+     */
     private void computeScores() {
         int treeDepth = dataRows.get(0).getNumberOfExplanatoryVariables();
         computeScores(root,
@@ -71,6 +77,12 @@ extends AbstractParsimoniousContextTreeLearner<C> {
                       treeDepth);
     }
     
+    /**
+     * Computes the BIC over the input data rows.
+     * 
+     * @param dataRows the list of rows to consider.
+     * @return the BIC score.
+     */
     private double computeBIC(List<DataRow<C>> dataRows) {
         double score = -this.k;
         Map<C, Integer> characterToCountMap = new HashMap<>();
@@ -90,11 +102,20 @@ extends AbstractParsimoniousContextTreeLearner<C> {
         return score;
     }
     
+    /**
+     * Computes the score for the {@code node}.
+     * 
+     * @param node         the node whose score to compute.
+     * @param dataRows     the list of relevant data rows.
+     * @param currentDepth the current depth of {@code node}.
+     * @param totalDepth   the total depth of the entire PCT.
+     */
     private void computeScores(ParsimoniousContextTreeNode<C> node,
                                List<DataRow<C>> dataRows,
                                int currentDepth,
                                int totalDepth) {
         if (node.getChildren() == null) {
+            // If here, 'node' is a leaf node. Compute and set the BIC.
             node.setScore(computeBIC(dataRows));
             return;
         }
@@ -138,6 +159,13 @@ extends AbstractParsimoniousContextTreeLearner<C> {
         node.setScore(score);
     }
     
+    /**
+     * Creates a uniform probability distribution over all possible alphabet
+     * subsets.
+     * 
+     * @param alphabet the target alphabet.
+     * @return a probability distribution of alphabet subsets.
+     */
     private AbstractProbabilityDistribution<Set<C>> 
             createProbabilityDistribution(Alphabet<C> alphabet) {
         List<Set<C>> labels = alphabet.getAllPossibleLabels();
@@ -151,6 +179,11 @@ extends AbstractParsimoniousContextTreeLearner<C> {
         return probabilityDistribution;
     }
     
+    /**
+     * Builds the entire PCT.
+     * 
+     * @return the root of the resulting PCT.
+     */
     private ParsimoniousContextTreeNode<C> buildTree() {
         int depth = dataRows.get(0).getNumberOfExplanatoryVariables();
         ParsimoniousContextTreeNode<C> root = 
@@ -162,10 +195,16 @@ extends AbstractParsimoniousContextTreeLearner<C> {
         return root;
     }
     
+    /**
+     * Creates a set of child PCT nodes at depth {@code depth}.
+     * 
+     * @param depth the target depth.
+     * @return a set of children.
+     */
     private Set<ParsimoniousContextTreeNode<C>> createChildren(int depth) {
         Set<ParsimoniousContextTreeNode<C>> children = new HashSet<>();
         // Generate children set:
-        Set<Set<C>> labels = createRandomLabelSet();
+        Set<Set<C>> labels = createRandomChildLabelPartition();
         
         for (Set<C> label : labels) {
             ParsimoniousContextTreeNode<C> node = 
@@ -183,7 +222,12 @@ extends AbstractParsimoniousContextTreeLearner<C> {
         return children;
     }
     
-    private Set<Set<C>> createRandomLabelSet() {
+    /**
+     * Creates randomly a partition of the alphabet.
+     * 
+     * @return an alphabet partition.
+     */
+    private Set<Set<C>> createRandomChildLabelPartition() {
         Set<Set<C>> labelSet = new HashSet<>();
         Set<C> filter = new HashSet<>(alphabet.size());
         
@@ -193,7 +237,7 @@ extends AbstractParsimoniousContextTreeLearner<C> {
             labelSet.add(label);
             
             if (filter.size() == alphabet.size()) {
-                if (isPartition(labelSet)) {
+                if (isAlphabetPartition(labelSet)) {
                     return labelSet;
                 }
                 
@@ -203,10 +247,18 @@ extends AbstractParsimoniousContextTreeLearner<C> {
         }
     }
     
-    private boolean isPartition(Set<Set<C>> labelSet) {
+    /**
+     * Checks that the input label set comprises a partition of the alphabet.
+     * 
+     * @param labelSet the label set to check.
+     * @return {@code true] only if {@code labelSet} is a valid alphabet 
+     *         partiion.
+     */
+    private boolean isAlphabetPartition(Set<Set<C>> labelSet) {
         List<Set<C>> labelList = new ArrayList<>(labelSet);
         int labelListSize = labelList.size();
         
+        // Checks that all labels are disjoint:
         for (int i = 0; i < labelListSize; ++i) {
             Set<C> label1 = labelList.get(i);
             
@@ -219,6 +271,7 @@ extends AbstractParsimoniousContextTreeLearner<C> {
             }
         }
         
+        // Check that the label set covers the alphabet:
         Set<C> filter = new HashSet<>();
         
         for (Set<C> label : labelList) {
