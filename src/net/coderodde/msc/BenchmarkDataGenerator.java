@@ -17,6 +17,23 @@ public final class BenchmarkDataGenerator {
         private static final int ALPHABET_SIZE = 4;
         private static final int PCT_DEPTH = 3;
         private static final int DATA_ROW_LENGTH = 10;
+        private static final double[] WEIGHTS = { 1.5, 2.0, 2.0, 1.0 };
+        private static final double BETA = 0.9132432;
+    }
+    
+    private static final class AlphabetSizeData {
+        private static final int DATA_ROWS = 1000;
+        private static final int MINIMUM_ALPHABET_SIZE = 2;
+        private static final int MAXIMUM_ALPHABET_SIZE = 6;
+        private static final int PCT_DEPTH = 3;
+    }
+    
+    private static final class DataSetSizeData {
+        private static final int STARTING_NUMBER_OF_DATA_ROWS = 1000;
+        private static final int DATA_ROWS_INCREMENT = 1000;
+        private static final int DATA_SETS = 10;
+        private static final int PCT_DEPTH = 3;
+        private static final int ALPHABET_SIZE = 4;
     }
     
     private static final Random RANDOM = new Random();
@@ -28,11 +45,69 @@ public final class BenchmarkDataGenerator {
                                        DepthData.ALPHABET_SIZE);
         
         for (int i = 0; i < DepthData.DATA_ROWS; i++) {
-            DataRow<Character> dataRow = generateDataRow(dataGeneratingPCT);
+            DataRow<Character> dataRow = 
+                    generateDataRow(dataGeneratingPCT,
+                                    DepthData.ALPHABET_SIZE,
+                                    DepthData.PCT_DEPTH);
             dataSet.add(dataRow);
         }
         
         return dataSet;
+    }
+    
+    public static List<List<DataRow<Character>>> generateAlphabetSizeData() {
+        List<List<DataRow<Character>>> dataSets = new ArrayList<>();
+        
+        for (int alphabetSize = AlphabetSizeData.MINIMUM_ALPHABET_SIZE; 
+                alphabetSize <= AlphabetSizeData.MAXIMUM_ALPHABET_SIZE;
+                alphabetSize++) {
+            List<DataRow<Character>> dataSet = 
+                    new ArrayList<>(AlphabetSizeData.DATA_ROWS);
+            
+            DataGeneratingPCT2 dataGeneratingPCT = 
+                    new DataGeneratingPCT2(AlphabetSizeData.PCT_DEPTH,
+                                           alphabetSize);
+            
+            for (int i = 0; i < AlphabetSizeData.DATA_ROWS; i++) {
+                DataRow<Character> dataRow = 
+                        generateDataRow(dataGeneratingPCT,
+                                        alphabetSize,
+                                        AlphabetSizeData.PCT_DEPTH);
+                dataSet.add(dataRow);
+            }
+            
+            dataSets.add(dataSet);
+        }
+        
+        return dataSets;
+    }
+    
+    public static List<List<DataRow<Character>>> generateDataSetSizeData() {
+        List<List<DataRow<Character>>> dataSets = new ArrayList<>();
+        
+        for (int dataSetSize = DataSetSizeData.STARTING_NUMBER_OF_DATA_ROWS,
+                 dataSetIndex = 0;
+                dataSetIndex < DataSetSizeData.DATA_SETS;
+                dataSetIndex++,
+                dataSetSize += DataSetSizeData.DATA_ROWS_INCREMENT) {
+            List<DataRow<Character>> dataSet = new ArrayList<>(dataSetSize);
+            
+            DataGeneratingPCT2 dataGeneratingPCT = 
+                    new DataGeneratingPCT2(DataSetSizeData.PCT_DEPTH,
+                                           DataSetSizeData.ALPHABET_SIZE);
+            
+            for (int i = 0; i < dataSetSize; i++) {
+                DataRow<Character> dataRow= 
+                        generateDataRow(dataGeneratingPCT,
+                                        DataSetSizeData.ALPHABET_SIZE,
+                                        DataSetSizeData.PCT_DEPTH);
+                dataSet.add(dataRow);
+            }
+            
+            dataSets.add(dataSet);
+        }
+        
+        return dataSets;
     }
     
     /**
@@ -42,8 +117,10 @@ public final class BenchmarkDataGenerator {
      * @return a data row.
      */
     private static DataRow<Character> 
-        generateDataRow(DataGeneratingPCT2 dataGeneratingPCT) {
-        String string = getInitialString();
+        generateDataRow(DataGeneratingPCT2 dataGeneratingPCT,
+                        int alphabetSize,
+                        int pctDepth) {
+        String string = getInitialString(alphabetSize, pctDepth);
         StringBuilder stringBuilder = 
                 new StringBuilder(DepthData.DATA_ROW_LENGTH);
         stringBuilder.append(string);
@@ -84,12 +161,12 @@ public final class BenchmarkDataGenerator {
      * 
      * @return initial sampling string.
      */
-    private static String getInitialString() {
-        StringBuilder stringBuilder = 
-                new StringBuilder(DepthData.PCT_DEPTH);
+    private static String getInitialString(int alphabetSize,
+                                           int pctDepth) {
+        StringBuilder stringBuilder = new StringBuilder(pctDepth);
         
-        for (int i = 0; i < DepthData.PCT_DEPTH; i++) {
-            char character = getRandomCharacter();
+        for (int i = 0; i < pctDepth; i++) {
+            char character = getRandomCharacter(alphabetSize);
             stringBuilder.append(character);
         }
         
@@ -102,7 +179,7 @@ public final class BenchmarkDataGenerator {
      * 
      * @return a randomly and uniformly chosen character.
      */
-    private static char getRandomCharacter() {
-        return (char)('A' + RANDOM.nextInt(DepthData.ALPHABET_SIZE));
+    private static char getRandomCharacter(int alphabetSize) {
+        return (char)('a' + RANDOM.nextInt(alphabetSize));
     }
 }

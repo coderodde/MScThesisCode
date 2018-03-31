@@ -57,13 +57,52 @@ public class Main {
     // generate-depth-data: Generates the 4-char alphabet data with 1000 rows
     //                      suitable for benchmarking perforamance with
     //                      increasing depth.
+    // generate-alphabet-data: Generates several data files. In each file, each
+    //                         row consists of three explanatory variable and a
+    //                         response variable. The categorical difference 
+    //                         between the files is the alphabet size. The 
+    //                         alphabet size are 2, 3, ..., ??.
+    // generate-dataset-size-data: Generates multiple data sets. All data sets
+    //                             will have the same depth 3, and alphabet size
+    //                             4, but will have different number of rows in
+    //                             each file.
     public static void main(String[] args) {
         if (args.length == 1 && args[0].equals("generate-depth-data")) {
             List<DataRow<Character>> dataSet =
                     BenchmarkDataGenerator.generateDepthData();
             
             for (DataRow<Character> dataRow : dataSet) {
-                System.out.println(dataRow);
+                System.out.println(convertDataRowToRawString(dataRow));
+            }
+            
+            return;
+        }
+        
+        if (args.length == 1 && args[0].equals("generate-alphabet-data")) {
+            List<List<DataRow<Character>>> dataSets = 
+                    BenchmarkDataGenerator.generateAlphabetSizeData();
+            
+            for (List<DataRow<Character>> dataSet : dataSets) {
+                System.out.println("---");
+                
+                for (DataRow<Character> dataRow : dataSet) {
+                    System.out.println(convertDataRowToRawString(dataRow));
+                }
+            }
+            
+            return;
+        }
+        
+        if (args.length == 1 && args[0].equals("generate-dataset-size-data")) {
+            List<List<DataRow<Character>>> dataSets =
+                    BenchmarkDataGenerator.generateDataSetSizeData();
+            
+            for (List<DataRow<Character>> dataSet : dataSets) {
+                System.out.println("---");
+                
+                for (DataRow<Character> dataRow : dataSet) {
+                    System.out.println(convertDataRowToRawString(dataRow));
+                }
             }
             
             return;
@@ -877,5 +916,18 @@ public class Main {
                 new HeuristicParsimoniousContextTreeLearner<>();
         
         
+    }
+    
+    private static String 
+        convertDataRowToRawString(DataRow<Character> dataRow) {
+        int dataRowLength = dataRow.getNumberOfExplanatoryVariables() + 1;
+        StringBuilder stringBuilder = new StringBuilder(dataRowLength);
+        
+        for (int i = 0; i < dataRowLength - 1; i++) {
+            stringBuilder.append(dataRow.getExplanatoryVariable(i));
+        }
+        
+        stringBuilder.append(dataRow.getResponseVariable());
+        return stringBuilder.toString();
     }
 }
