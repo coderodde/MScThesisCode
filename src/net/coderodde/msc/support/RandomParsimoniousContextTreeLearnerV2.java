@@ -16,19 +16,24 @@ import net.coderodde.msc.ParsimoniousContextTreeNode;
 import net.coderodde.msc.util.AbstractProbabilityDistribution;
 import net.coderodde.msc.util.support.BinaryTreeProbabilityDistribution;
 
-// Beta-driven number of children. One child with prob. beta, two childs with 
-// prob. pow(beta,2), and so on. When a number of children is chosen, the 
-// alphabet characters are redistributed to them randomly.
 /**
  * In this learner, the probability of having <code>n</code> children is 
- * <code>pow(beta,n)</code>.
+ * <code>pow(beta,n)</code>. When the number of children is chosen according to
+ * that very distribution, the alphabet characters are redistributed over 
+ * child nodes randomly.
  * 
  * @author Rodion "rodde" Efremov
  * @param <C> the character type.
  */
-public final class RandomParsimoniousContextTreeLearner2<C>
+public final class RandomParsimoniousContextTreeLearnerV2<C>
 extends AbstractParsimoniousContextTreeLearner<C> {
 
+    /**
+     * The default value for the Beta parameter. The alphabet characters are
+     * redistributed over the children randomly.
+     */
+    private static final double DEFAULT_BETA = 0.9;
+    
     private Alphabet<C> alphabet;
     
     private ParsimoniousContextTreeNode<C> root;
@@ -41,30 +46,31 @@ extends AbstractParsimoniousContextTreeLearner<C> {
     
     private Random random;
     
-    private final double beta;
+    private double beta = DEFAULT_BETA;
+    
+    public void setBeta(double beta) {
+        this.beta = beta;
+    }
     
     public void setRandom(Random random) {
         this.random = Objects.requireNonNull(random, "Random is null.");
     }
     
-    public RandomParsimoniousContextTreeLearner2(double beta) {
-        this.beta = beta;
-    }
-    
     @Override
-    public ParsimoniousContextTree<C> learn(List<DataRow<C>> listOfDataRows) {
-        Objects.requireNonNull(listOfDataRows, "The data row list is null.");
-        checkDataRowListNotEmpty(listOfDataRows);
-        checkDataRowListHasConstantNumberOfExplanatoryVariables(listOfDataRows);
+    public ParsimoniousContextTree<C> learn(List<DataRow<C>> dataRows) {
+        Objects.requireNonNull(dataRows, "The data row list is null.");
+        checkDataRowListNotEmpty(dataRows);
+        checkDataRowListHasConstantNumberOfExplanatoryVariables(dataRows);
     
-        RandomParsimoniousContextTreeLearner2<C> state = 
-                new RandomParsimoniousContextTreeLearner2<>(this.beta);
+        RandomParsimoniousContextTreeLearnerV2<C> state = 
+                new RandomParsimoniousContextTreeLearnerV2<>();
+        state.setBeta(beta);
         
         state.random = random;
-        state.dataRows = listOfDataRows;
-        state.alphabet = getAlphabet(listOfDataRows);
+        state.dataRows = dataRows;
+        state.alphabet = getAlphabet(dataRows);
         state.k = 0.5 * (state.alphabet.size() - 1)
-                      * Math.log(listOfDataRows.size());
+                      * Math.log(dataRows.size());
         state.bucketSizeDistribution = state.createBucketSizeDistribution();
         state.root = state.buildTree();
         state.computeScores();

@@ -19,14 +19,14 @@ import net.coderodde.msc.util.support.BinaryTreeProbabilityDistribution;
 
 /**
  * In this learner each children configuration is equally probable. The 
- * procedure for creating an alphabet partition randomly samples the labels
- * until the sum of all characters equals the alphabet size, and then checks
- * that the set of labels is a partition.
+ * procedure for creating an alphabet partition is a brute-force approach:
+ * randomly samples the labels until the sum of all characters equals the 
+ * alphabet size, and then checks that the set of labels is a partition.
  * 
  * @author Rodion "rodde" Efremov
  * @param <C> the actual character type.
  */
-public final class RandomParsimoniousContextTreeLearner<C>
+public final class RandomParsimoniousContextTreeLearnerV1<C>
 extends AbstractParsimoniousContextTreeLearner<C> {
 
     private Alphabet<C> alphabet;
@@ -51,8 +51,8 @@ extends AbstractParsimoniousContextTreeLearner<C> {
         checkDataRowListNotEmpty(listOfDataRows);
         checkDataRowListHasConstantNumberOfExplanatoryVariables(listOfDataRows);
     
-        RandomParsimoniousContextTreeLearner<C> state = 
-                new RandomParsimoniousContextTreeLearner<>();
+        RandomParsimoniousContextTreeLearnerV1<C> state = 
+                new RandomParsimoniousContextTreeLearnerV1<>();
         
         state.random = random;
         state.dataRows = listOfDataRows;

@@ -27,8 +27,9 @@ extends AbstractParsimoniousContextTreeLearner<C>{
     
     @Override
     public ParsimoniousContextTree<C> learn(List<DataRow<C>> listOfDataRows) {
-        RandomParsimoniousContextTreeLearner2<C> learner = 
-                new RandomParsimoniousContextTreeLearner2<>(beta);
+        RandomParsimoniousContextTreeLearnerV2<C> learner = 
+                new RandomParsimoniousContextTreeLearnerV2<>();
+        learner.setBeta(beta);
         learner.setRandom(random);
         
         double bestScore = Double.NEGATIVE_INFINITY;

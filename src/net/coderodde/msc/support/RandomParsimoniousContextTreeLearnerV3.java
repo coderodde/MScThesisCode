@@ -15,18 +15,26 @@ import net.coderodde.msc.ParsimoniousContextTree;
 import net.coderodde.msc.ParsimoniousContextTreeNode;
 
 /**
- * This is a basic iterative random learner for the Monte Carlo learners.
+ * This learner selects the number of children randomly from a uniform 
+ * distribution, but does not select more children than a given threshold.
  * 
  * @author Rodion "rodde" Efremov
  * @version 1.6 (Jan 14, 2018)
  * @param <C> the actual character type.
  */
-public final class BasicIterativeRandomLearner<C> 
+public final class RandomParsimoniousContextTreeLearnerV3<C> 
 extends AbstractParsimoniousContextTreeLearner<C>{
 
     private Alphabet<C> alphabet;
     
     private ParsimoniousContextTreeNode<C> root;
+    
+    /**
+     * The default number of maximum labels per node. The default value sets the
+     * maximum in question virtually to infinity.
+     */
+    private static final int DEFAULT_MAXIMUM_CHILDREN_PER_NODE = 
+            Integer.MAX_VALUE;
     
     private List<DataRow<C>> dataRows;
     
@@ -34,9 +42,9 @@ extends AbstractParsimoniousContextTreeLearner<C>{
     
     private Random random;
     
-    private int maximumChildrenPerNode;
+    private int maximumChildrenPerNode = DEFAULT_MAXIMUM_CHILDREN_PER_NODE;
     
-    public void setMaximumLabelsPerNode(int maximumLabelsPerNode) {
+    public void setMaximumChildrenPerNode(int maximumLabelsPerNode) {
         this.maximumChildrenPerNode = maximumLabelsPerNode;
     }
     
@@ -45,19 +53,19 @@ extends AbstractParsimoniousContextTreeLearner<C>{
     }
     
     @Override
-    public ParsimoniousContextTree<C> learn(List<DataRow<C>> listOfDataRows) {
-        Objects.requireNonNull(listOfDataRows);
-        checkDataRowListNotEmpty(listOfDataRows);
-        checkDataRowListHasConstantNumberOfExplanatoryVariables(listOfDataRows);
+    public ParsimoniousContextTree<C> learn(List<DataRow<C>> dataRows) {
+        Objects.requireNonNull(dataRows);
+        checkDataRowListNotEmpty(dataRows);
+        checkDataRowListHasConstantNumberOfExplanatoryVariables(dataRows);
         
-        BasicIterativeRandomLearner<C> state = 
-                new BasicIterativeRandomLearner<>();
+        RandomParsimoniousContextTreeLearnerV3<C> state = 
+                new RandomParsimoniousContextTreeLearnerV3<>();
         
         state.random = random;
-        state.dataRows = listOfDataRows;
-        state.alphabet = getAlphabet(listOfDataRows);
+        state.dataRows = dataRows;
+        state.alphabet = getAlphabet(dataRows);
         state.k = 0.5 * (state.alphabet.size() - 1) * 
-                         Math.log(listOfDataRows.size());
+                         Math.log(dataRows.size());
         state.maximumChildrenPerNode = maximumChildrenPerNode;
         state.root = state.buildTree();
         state.computeScoresV2();

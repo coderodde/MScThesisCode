@@ -17,8 +17,8 @@ import net.coderodde.msc.support.IterativeRandomParsimoniousContextTreeLearner;
 import net.coderodde.msc.support.IterativeRandomParsimoniousContextTreeLearner2;
 import net.coderodde.msc.support.IterativeRandomParsimoniousContextTreeLearner3B;
 import net.coderodde.msc.support.IterativeRandomParsimoniousContextTreeLearner3;
-import net.coderodde.msc.support.RandomParsimoniousContextTreeLearner;
-import net.coderodde.msc.support.RandomParsimoniousContextTreeLearner2;
+import net.coderodde.msc.support.RandomParsimoniousContextTreeLearnerV1;
+import net.coderodde.msc.support.RandomParsimoniousContextTreeLearnerV2;
 
 public class Main {
     
@@ -255,11 +255,11 @@ public class Main {
                 indepenendenceModelPCTLearner
                 = new IndependenceModelParsimoniousContextTreeLearner<>();
 
-        RandomParsimoniousContextTreeLearner<Character> randomPCTLearner1
-                = new RandomParsimoniousContextTreeLearner<>();
+        RandomParsimoniousContextTreeLearnerV1<Character> randomPCTLearner1
+                = new RandomParsimoniousContextTreeLearnerV1<>();
 
-        RandomParsimoniousContextTreeLearner2<Character> randomPCTLearner2
-                = new RandomParsimoniousContextTreeLearner2<>(beta);
+        RandomParsimoniousContextTreeLearnerV2<Character> randomPCTLearner2
+                = new RandomParsimoniousContextTreeLearnerV2<>();
 
         HeuristicParsimoniousContextTreeLearner<Character> heuristicPCTLearner = 
                 new HeuristicParsimoniousContextTreeLearner<>();
