@@ -52,7 +52,7 @@ public class Main {
     // PCT2: datagen-pct2 <alphabetSize> <order> <lines> <lineLength>
     // PCT3: datagen-pct3 <alphabetSize> <order> <lines> <lineLength> <beta>
     // Example: datagen-pct2 26 2 908 19
-    //
+    // -------------------------------------------------------------------------
     // Benchmark data generation:
     // generate-depth-data: Generates the 4-char alphabet data with 1000 rows
     //                      suitable for benchmarking perforamance with
@@ -66,6 +66,9 @@ public class Main {
     //                             will have the same depth 3, and alphabet size
     //                             4, but will have different number of rows in
     //                             each file.
+    // -------------------------------------------------------------------------
+    // Running benchmarks:
+    // run-benchmarks: Runs all the relevant benchmarks.
     public static void main(String[] args) {
         if (args.length == 1 && args[0].equals("generate-depth-data")) {
             List<DataRow<Character>> dataSet =
@@ -105,6 +108,14 @@ public class Main {
                 }
             }
             
+            return;
+        }
+        
+        if (args.length == 1 && args[0].equals("run-benchmarks")) {
+            AbstractParsimoniousContextTreeLearner<Character> heuristicLearner =
+                    new HeuristicParsimoniousContextTreeLearner<>();
+            
+            Benchmarks.benchmark(heuristicLearner);
             return;
         }
         
