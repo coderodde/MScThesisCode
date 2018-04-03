@@ -38,6 +38,7 @@ public final class Benchmarks {
         
         
         System.out.println("*** WARMED UP! ***");
+        System.out.println();
     }
     
     /**
@@ -60,21 +61,10 @@ public final class Benchmarks {
         for (int depth = DepthBenchmarkConfiguration.MINIMUM_DEPTH;
                 depth <= DepthBenchmarkConfiguration.MAXIMUM_DEPTH;
                 depth++) {
-            benchmarkDepthImpl(depth, learner);
+            DepthBenchmarkConfiguration.benchmarkDepthImpl(rawDataRows, 
+                                                           depth, 
+                                                           learner);
         }
-    }
-    
-    /**
-     * Implements the actual depth benchmark for the input learner using a 
-     * particular depth.
-     * 
-     * @param depth   the target PCT depth.
-     * @param learner the target learner to benchmark.
-     */
-    private static void benchmarkDepthImpl(
-            int depth, 
-            AbstractParsimoniousContextTreeLearner<Character> learner) {
-        
     }
     
     /**
@@ -122,6 +112,12 @@ public final class Benchmarks {
          */
         private static final int MAXIMUM_DEPTH = 4;
         
+        /**
+         * Reads the data file and returns its content as the list of raw data
+         * rows.
+         * 
+         * @return the list of raw data rows.
+         */
         private static List<String> readRawDataRows() {
             File file = new File(DEPTH_DATA_FILE_PATH);
             
@@ -142,6 +138,90 @@ public final class Benchmarks {
             }
             
             return rawDataRows;
+        }
+        
+        /**
+         * Implements the actual depth benchmark for the input learner using a 
+         * particular depth.
+         * 
+         * @param depth   the target PCT depth.
+         * @param learner the target learner to benchmark.
+         */
+        private static void benchmarkDepthImpl(
+                List<String> rawDataRows,
+                int depth, 
+                AbstractParsimoniousContextTreeLearner<Character> learner) {
+            List<DataRow<Character>> dataSet = 
+                    extractDataSet(rawDataRows, depth);
+            
+            int rowNumber = 1;
+            
+            for (DataRow<Character> dataRow : dataSet) {
+                System.out.printf("%4d: %s\n", rowNumber++, dataRow);
+            }
+        }
+        
+        /**
+         * Extracts the actual data set for depth {@code depth} from the input
+         * raw data rows.
+         * 
+         * @param rawDataRows the raw data rows.
+         * @param depth       the target depth.
+         * @return            the list of actual data rows.
+         */
+        private static List<DataRow<Character>> 
+        extractDataSet(List<String> rawDataRows, int depth) {
+            List<DataRow<Character>> dataRows = 
+                    new ArrayList<>(rawDataRows.size());
+            
+            for (String rawDataRow : rawDataRows) {
+                Character[] rawDataRowCharacters = 
+                        convertToRawDataRowCharacters(rawDataRow.toCharArray());
+                Character[] selectedRawDataRowCharacters = 
+                        selectRawDataRowCharacters(rawDataRowCharacters,
+                                                   depth);
+                dataRows.add(new DataRow<>(selectedRawDataRowCharacters));
+            }
+            
+            return dataRows;
+        }
+        
+        /**
+         * Selects a relevant part of the character array.
+         * 
+         * @param rawDataRowCharacters the array of characters.
+         * @param depth                the target depth of a PCT.
+         * @return                     selected characters.
+         */
+        private static Character[] 
+        selectRawDataRowCharacters(Character[] rawDataRowCharacters,
+                                   int depth) {
+            Character[] selectedRawDataRowCharacters = new Character[depth + 1];
+            System.arraycopy(rawDataRowCharacters,
+                             0,
+                             selectedRawDataRowCharacters,
+                             0, 
+                             depth);
+            
+            selectedRawDataRowCharacters[depth] = 
+                    rawDataRowCharacters[rawDataRowCharacters.length - 1];
+            return selectedRawDataRowCharacters;
+        }
+        
+        /**
+         * Converts a primitive character array to a boxed character array.
+         * 
+         * @param chars the array of primitive characters to convert.
+         * @return the boxed version of the input primitive character array.
+         */
+        private static Character[] convertToRawDataRowCharacters(char[] chars) {
+            Character[] result = new Character[chars.length];
+            
+            for (int i = 0; i < chars.length; i++) {
+                result[i] = chars[i];
+            }
+            
+            return result;
         }
     }
 }
