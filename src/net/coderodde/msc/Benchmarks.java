@@ -5,6 +5,8 @@ import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
+import net.coderodde.msc.support.BasicParsimoniousContextTreeLearner;
+import net.coderodde.msc.support.IndependenceModelParsimoniousContextTreeLearner;
 
 /**
  * This class contains all the code for performing benchmarks.
@@ -53,7 +55,7 @@ public final class Benchmarks {
         // The benchmarks for 'learner' begin:
         System.out.println(
                 "*** BENCHMARKING: " + learner.getClass().getSimpleName() +
-                " ***");
+                " FOR DEPTH ***");
         
         List<String> rawDataRows = 
                 DepthBenchmarkConfiguration.readRawDataRows();
@@ -61,6 +63,7 @@ public final class Benchmarks {
         for (int depth = DepthBenchmarkConfiguration.MINIMUM_DEPTH;
                 depth <= DepthBenchmarkConfiguration.MAXIMUM_DEPTH;
                 depth++) {
+            System.out.println("--- Depth = " + depth + " ---");
             DepthBenchmarkConfiguration.benchmarkDepthImpl(rawDataRows, 
                                                            depth, 
                                                            learner);
@@ -110,7 +113,7 @@ public final class Benchmarks {
         /**
          * The maximum depth of the benchmarked PCT learner.
          */
-        private static final int MAXIMUM_DEPTH = 4;
+        private static final int MAXIMUM_DEPTH = 6;
         
         /**
          * Reads the data file and returns its content as the list of raw data
@@ -154,10 +157,81 @@ public final class Benchmarks {
             List<DataRow<Character>> dataSet = 
                     extractDataSet(rawDataRows, depth);
             
-            int rowNumber = 1;
+            AbstractParsimoniousContextTreeLearner<Character> optimalLearner =
+                    new BasicParsimoniousContextTreeLearner<>();
             
-            for (DataRow<Character> dataRow : dataSet) {
-                System.out.printf("%4d: %s\n", rowNumber++, dataRow);
+            AbstractParsimoniousContextTreeLearner<Character>
+                    independenceModelLearner =
+                    new IndependenceModelParsimoniousContextTreeLearner<>();
+
+            // First, learn an optimal PCT:
+            long startTime = System.currentTimeMillis();
+            
+            ParsimoniousContextTree<Character> optimalPCT = 
+                    optimalLearner.learn(dataSet);
+            
+            long endTime = System.currentTimeMillis();
+            
+            System.out.println("Optimal PCT learner in " + 
+                               (endTime - startTime) + " milliseconds.");
+            System.out.println("Optimal PCT score: " + optimalPCT.getScore());
+            
+            // Second, learn an independence model:
+            startTime = System.currentTimeMillis();
+            
+            ParsimoniousContextTree<Character> independenceModel =
+                    independenceModelLearner.learn(dataSet);
+            
+            endTime = System.currentTimeMillis();
+            
+            System.out.println("Independence model learner in " +
+                               (endTime - startTime) + " milliseconds.");
+            System.out.println(
+                    "Independence model score: " + 
+                            independenceModel.getScore());
+            
+            // Finally, learn using the input learner:
+            startTime = System.currentTimeMillis();
+            
+            ParsimoniousContextTree<Character> targetLearnerPCT = 
+                    learner.learn(dataSet);
+            
+            endTime = System.currentTimeMillis();
+            
+            System.out.println("Target learner in " +
+                               (endTime - startTime) + " milliseconds.");
+            
+            double plausibility = 
+                    computePlausibility(optimalPCT.getScore(),
+                                        independenceModel.getScore(),
+                                        targetLearnerPCT.getScore());
+            
+            System.out.println(
+                    "Target learner score: " + targetLearnerPCT.getScore() + 
+                    ", plausibility: " + plausibility);
+        }
+        
+        /**
+         * Computes the plausibility score for the {@code targetPCTScore}.
+         * 
+         * @param optimalScore           the score of the optimal PCT.
+         * @param independenceModelScore the score of the independence model.
+         * @param targetPCTScore         the target score for which to compute
+         *                               plausibility score.
+         * @return                       the plausibility score.
+         */
+        private static double computePlausibility(
+                double optimalScore,
+                double independenceModelScore,
+                double targetPCTScore) {
+            if (optimalScore == independenceModelScore) {
+                return targetPCTScore == optimalScore ? 
+                        1.0 : 
+                        Double.NEGATIVE_INFINITY;
+            } else {
+                double numerator = targetPCTScore - independenceModelScore;
+                double denominator = optimalScore - independenceModelScore;
+                return numerator / denominator;
             }
         }
         
