@@ -23,4 +23,8 @@ public final class ParsimoniousContextTree<C> {
         root.convertToTextualRepresentation(stringBuilder, "", "  ");
         return stringBuilder.toString();
     }
+    
+    public int getNumberOfRootChildren() {
+        return root.getChildren().size();
+    }
 }

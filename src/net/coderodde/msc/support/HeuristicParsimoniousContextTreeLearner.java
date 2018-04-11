@@ -153,8 +153,8 @@ extends AbstractParsimoniousContextTreeLearner<C> {
         computeInitialScores(currentDepth, dataRows, parent);
         ParsimoniousContextTreeNode<C> bestChild1 = null;
         ParsimoniousContextTreeNode<C> bestChild2 = null;
-        ParsimoniousContextTreeNode<C> child1 = null;
-        ParsimoniousContextTreeNode<C> child2 = null;
+        ParsimoniousContextTreeNode<C> child1;
+        ParsimoniousContextTreeNode<C> child2;
         
         // Redistribute the data rows to their respective buckets:
         Map<C, List<DataRow<C>>> mapCharToDataRows = new HashMap<>();
@@ -194,9 +194,9 @@ extends AbstractParsimoniousContextTreeLearner<C> {
                     if (bestParentScore < candidateScore) {
                         bestParentScore = candidateScore;
                         bestMergedScore = mergedScore;
-                        improved = true;
                         bestChild1 = child1;
                         bestChild2 = child2;
+                        improved = true;
                     }
                 }
             }
@@ -205,6 +205,17 @@ extends AbstractParsimoniousContextTreeLearner<C> {
                 if (currentDepth == 1) {
                     // Don't build any deeper:
                     return;
+                }
+                
+                if (parent.getChildren().size() > 2) {
+                    // There is a chance that creating only one child with the
+                    // label that equals the entire alphabet, would improve the
+                    // score:
+                    System.out.println("Might improve.");
+                    double singleChildScore = 
+                            findSingleChildScore(currentDepth, dataRows);
+                    System.out.println("New score: " + singleChildScore);
+                    System.out.println("Parent score: " + parent.getScore());
                 }
                 
                 Map<ParsimoniousContextTreeNode<C>, 
@@ -266,7 +277,28 @@ extends AbstractParsimoniousContextTreeLearner<C> {
         }
     }
     
-     private double findMergedScore(
+    private double findSingleChildScore(int depth, List<DataRow<C>> dataRows) {
+        int count = dataRows.size();
+        double score = -k;
+        characterCountMap.clear();
+        
+        for (DataRow<C> dataRow : dataRows) {
+            C responseVariable = dataRow.getResponseVariable();
+            characterCountMap.put(responseVariable, 
+                                  characterCountMap
+                                          .getOrDefault(responseVariable, 0)
+                                          + 1);
+        }
+        
+        for (Map.Entry<C, Integer> entry : characterCountMap.entrySet()) {
+            score += entry.getValue() *
+                     Math.log(((double) entry.getValue()) / count);
+        }
+        
+        return score;
+    }
+    
+    private double findMergedScore(
              int depth,
              Map<C, List<DataRow<C>>> mapCharacterToDataRows,
              ParsimoniousContextTreeNode<C> node1,

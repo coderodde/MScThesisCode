@@ -17,6 +17,11 @@ import net.coderodde.msc.support.IndependenceModelParsimoniousContextTreeLearner
 public final class Benchmarks {
     
     /**
+     * If this is set to {@code true}, the benchmarks will not print the PCTs.
+     */
+    private static boolean dataGenerationMode = true;
+    
+    /**
      * This static method runs all benchmark for the input learner. The input
      * learner is compared to the optimal baseline learner and the independence
      * model learner.
@@ -52,10 +57,29 @@ public final class Benchmarks {
      */
     private static void benchmarkDepth(
             AbstractParsimoniousContextTreeLearner<Character> learner) {
-        // The benchmarks for 'learner' begin:
         System.out.println(
                 "*** BENCHMARKING: " + learner.getClass().getSimpleName() +
                 " FOR DEPTH ***");
+        
+        List<String> benchmarkDataFileNames = getDepthDataFileNameList();
+        
+        for (String benchmarkDataFileName : benchmarkDataFileNames) {
+            System.out.println("DEPTH DATA FILE: " + benchmarkDataFileName);
+            
+            File benchmarkDataFile = new File(benchmarkDataFileName);
+            List<String> rawDataRows = loadRawDataRows(benchmarkDataFile);
+            
+            for (int depth = DepthBenchmarkConfiguration.MINIMUM_DEPTH;
+                    depth <= DepthBenchmarkConfiguration.MAXIMUM_DEPTH;
+                    depth++) {
+                System.out.println("--- Depth = " + depth + " ---");
+                DepthBenchmarkConfiguration.benchmarkDepthImpl(rawDataRows,
+                                                               depth, 
+                                                               learner);
+            }
+        }
+        
+        // The benchmarks for 'learner' begin:
         
         List<String> rawDataRows = 
                 DepthBenchmarkConfiguration.readRawDataRows();
@@ -68,6 +92,26 @@ public final class Benchmarks {
                                                            depth, 
                                                            learner);
         }
+    }
+    
+    private static List<String> loadRawDataRows(File file) {
+        if (!file.exists() || !file.isFile()) {
+            throw new RuntimeException(
+                "The file \"" + file.getAbsolutePath() + "\" does not " +
+                "exist or is not a regular file.");
+        }
+
+        List<String> rawDataRows = new ArrayList<>();
+
+        try (Scanner scanner = new Scanner(file)) {
+            while (scanner.hasNextLine()) {
+                rawDataRows.add(scanner.nextLine());
+            }
+        } catch (FileNotFoundException ex) {
+            throw new RuntimeException(ex);
+        }
+            
+        return rawDataRows;
     }
     
     /**
@@ -98,12 +142,19 @@ public final class Benchmarks {
      * This class groups all the constants for the depth benchmark.
      */
     private static final class DepthBenchmarkConfiguration {
+        
+        /**
+         * The path to the directory that contains all the depth data files.
+         */
+        private static final String DEPTH_DATA_FILE_DIRECTORY = 
+                "C:\\Users\\rodde\\Documents\\ProGradu\\BenchmarkData";
+        
         /**
          * The full path to the data file used for PCT depth benchmarks.
          */
         private static final String DEPTH_DATA_FILE_PATH = 
                 "C:\\Users\\rodde\\Documents\\ProGradu\\BenchmarkData\\" +
-                "DepthData.txt";
+                "DepthData1.txt";
         
         /**
          * The minimum depth of the benchmarked PCT learner.
@@ -209,6 +260,13 @@ public final class Benchmarks {
             System.out.println(
                     "Target learner score: " + targetLearnerPCT.getScore() + 
                     ", plausibility: " + plausibility);
+            
+            if (dataGenerationMode == false) {
+                System.out.println("OPTIMAL");
+                System.out.println(optimalPCT);
+                System.out.println("HEURISTIC");
+                System.out.println(targetLearnerPCT);
+            }
         }
         
         /**
@@ -297,5 +355,23 @@ public final class Benchmarks {
             
             return result;
         }
+    }
+    
+    /**
+     * This static method returns the list of all file names containing data for
+     * depth benchmarks.
+     * 
+     * @return the list of file names.
+     */
+    private static List<String> getDepthDataFileNameList() {
+        List<String> fileNameList = new ArrayList<>();
+        
+        for (int i = 1; i <= 10; i++) {
+            fileNameList.add(
+                    DepthBenchmarkConfiguration.DEPTH_DATA_FILE_DIRECTORY + 
+                            "\\DepthData" + i + ".txt");
+        }
+        
+        return fileNameList;
     }
 }

@@ -172,6 +172,7 @@ extends AbstractParsimoniousContextTreeLearner<C> {
         
         int charIndex = totalDepth - currentDepth;
         
+        // Redistributes the input data rows over all the children nodes:
         for (DataRow<C> dataRow : dataRows) {
             C ch = dataRow.getExplanatoryVariable(charIndex);
             List<ParsimoniousContextTreeNode<C>> tmpNodes = 
@@ -182,6 +183,7 @@ extends AbstractParsimoniousContextTreeLearner<C> {
             }
         }
         
+        // Recur to build each child node:
         for (ParsimoniousContextTreeNode<C> child : children) {
             buildTree(child, 
                       currentDepth - 1,
@@ -190,7 +192,8 @@ extends AbstractParsimoniousContextTreeLearner<C> {
         }
         
         this.mapPartitionToScore.clear();
-        // Enumerate all valid partitions, Google. + (paper).
+        // Enumerate all valid partitions and compute the score of each 
+        // partition.
         for (List<Set<C>> alphabetPartition :
                 this.listOfAllAlphabetPartitions) {
             double score = 0.0;
@@ -227,22 +230,4 @@ extends AbstractParsimoniousContextTreeLearner<C> {
             }
         }
     }
-    
-//    public static void main(String[] args) {
-//        BasicParsimoniousContextTreeLearner<Integer> learner = 
-//                new BasicParsimoniousContextTreeLearner<>();
-//        
-//        BasicParsimoniousContextTreeLearnerV2<Integer> learnerV2 = 
-//                new BasicParsimoniousContextTreeLearnerV2<>();
-//        
-//        List<DataRow<Integer>> data = new ArrayList<>();
-//        data.add(new DataRow(1, 0, 1));
-//        data.add(new DataRow(0, 1, 0));
-//        data.add(new DataRow(1, 1, 0));
-//        data.add(new DataRow(1, 0, 1));
-//        data.add(new DataRow(1, 0, 1));
-//        data.add(new DataRow(0, 0, 0));
-//        System.out.println(learner.learn(data));
-//        System.out.println(learnerV2.learn(data));
-//    }
 }

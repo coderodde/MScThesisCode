@@ -66,6 +66,7 @@ public abstract class AbstractParsimoniousContextTreeLearner<C> {
 
         for (DataRow<C> dataRow : dataRows) {
             filter.addAll(dataRow.getAllExplantoryVariables());
+            filter.add(dataRow.getResponseVariable());
         }
 
         return new Alphabet<>((C[]) filter.toArray());

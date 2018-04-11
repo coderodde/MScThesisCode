@@ -55,7 +55,7 @@ public class Main {
     // -------------------------------------------------------------------------
     // Benchmark data generation:
     // generate-depth-data: Generates the 4-char alphabet data with 1000 rows
-    //                      suitable for benchmarking perforamance with
+    //                      suitable for benchmarking performance with
     //                      increasing depth.
     // generate-alphabet-data: Generates several data files. In each file, each
     //                         row consists of three explanatory variable and a
@@ -70,6 +70,9 @@ public class Main {
     // Running benchmarks:
     // run-benchmarks: Runs all the relevant benchmarks.
     public static void main(String[] args) {
+//        findDebugTree();
+//        System.exit(0);
+        
         if (args.length == 1 && args[0].equals("generate-depth-data")) {
             List<DataRow<Character>> dataSet =
                     BenchmarkDataGenerator.generateDepthData();
@@ -940,5 +943,50 @@ public class Main {
         
         stringBuilder.append(dataRow.getResponseVariable());
         return stringBuilder.toString();
+    }
+        
+    private static void findDebugTree() {
+        AbstractParsimoniousContextTreeLearner<Character> basicLearner = 
+                new BasicParsimoniousContextTreeLearner<>();
+        
+        AbstractParsimoniousContextTreeLearner<Character> heuristicLearner = 
+                new HeuristicParsimoniousContextTreeLearner<>();
+        
+        Random random = new Random(1);
+        
+        while (true) {
+            List<DataRow<Character>> dataSet = getRandomDataSet(random);
+            ParsimoniousContextTree<Character> tree1;
+            ParsimoniousContextTree<Character> tree2;
+            tree1 = basicLearner.learn(dataSet);
+            tree2 = heuristicLearner.learn(dataSet);
+            
+            int children1 = tree1.getNumberOfRootChildren();
+            int children2 = tree2.getNumberOfRootChildren();
+            
+            if (children1 == 1 && children2 > 2) {
+                System.out.println("Found!");
+                return;
+            }
+        } 
+    }
+    
+    private static List<DataRow<Character>> getRandomDataSet(Random random) {
+        List<DataRow<Character>> dataSet = new ArrayList<>();
+        
+        for (int i = 0; i < 51; i++) {
+            dataSet.add(getRandomDataRow(random));
+        }
+        
+        return dataSet;
+    }
+    
+    private static DataRow<Character> getRandomDataRow(Random random) {
+        Character[] chars = new Character[4];
+        chars[0] = (char)('1' + random.nextInt(5));
+        chars[1] = (char)('1' + random.nextInt(5));
+        chars[2] = (char)('1' + random.nextInt(5));
+        chars[3] = (char)('1' + random.nextInt(5));
+        return new DataRow<>(chars);
     }
 }
