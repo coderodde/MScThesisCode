@@ -26,6 +26,35 @@ public final class BasicParsimoniousContextTreeLearner<C>
 extends AbstractParsimoniousContextTreeLearner<C> {
 
     /**
+     * Specifies the maximum alphabet size at which the algorithm can switch to
+     * optimal search.
+     */
+    private static final int MAXIMUM_ALPHABET_SIZE = 13;
+    
+    /**
+     * Maps an index to a corresponding Bell number.
+     */
+    private static final int[] BELL_NUMBERS = 
+            new int[MAXIMUM_ALPHABET_SIZE + 1];
+    
+    static {
+        BELL_NUMBERS[0]  = 1;
+        BELL_NUMBERS[1]  = 1;
+        BELL_NUMBERS[2]  = 2;
+        BELL_NUMBERS[3]  = 5;
+        BELL_NUMBERS[4]  = 15;
+        BELL_NUMBERS[5]  = 52;
+        BELL_NUMBERS[6]  = 203;
+        BELL_NUMBERS[7]  = 877;
+        BELL_NUMBERS[8]  = 4140;
+        BELL_NUMBERS[9]  = 21147;
+        BELL_NUMBERS[10] = 115975;
+        BELL_NUMBERS[11] = 678570;
+        BELL_NUMBERS[12] = 4213597;
+        BELL_NUMBERS[13] = 27644437;
+    }
+    
+    /**
      * Maps a single character to its absolute frequency.
      */
     private Map<C, Integer> characterCountMap;
@@ -87,6 +116,13 @@ extends AbstractParsimoniousContextTreeLearner<C> {
         int depth = listOfDataRows.get(0).getNumberOfExplanatoryVariables();
         
         state.buildTree(state.root, depth, depth, listOfDataRows);
+        
+        long nodes = getNumberOfNodesInTree(depth, state.alphabet.size());
+        long workEstimatePerNode = getNodeWorkEstimate(MAXIMUM_ALPHABET_SIZE);
+        
+        System.out.println("DEBUG: nodes = " + nodes);
+        System.out.println("DEBUG: work estimate = " + workEstimatePerNode);
+        System.out.println("DEBUG: total work  = " + nodes * workEstimatePerNode);
         
         return new ParsimoniousContextTree<>(state.root);
     }
@@ -232,5 +268,27 @@ extends AbstractParsimoniousContextTreeLearner<C> {
                 iterator.remove();
             }
         }
+    }
+    
+    private static long getNumberOfNodesInTree(int depth, int alphabetSize) {
+        long numberOfAlphabetCombinations = myPow(2, alphabetSize) - 1;
+        long tmp = myPow(numberOfAlphabetCombinations, depth + 1);
+        return (1 - tmp) / (1 - numberOfAlphabetCombinations);
+    }
+    
+    private static long getNodeWorkEstimate(int alphabetSize) {
+        return alphabetSize * BELL_NUMBERS[alphabetSize] + 
+               alphabetSize * myPow(2, alphabetSize) +
+               myPow(2, alphabetSize);
+    }
+    
+    private static long myPow(long base, int exponent) {
+        int result = 1;
+        
+        for (int i = 0; i < exponent; i++)  {
+            result *= base;
+        }
+        
+        return result;
     }
 }
