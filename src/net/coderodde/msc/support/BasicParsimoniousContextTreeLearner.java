@@ -145,6 +145,7 @@ extends AbstractParsimoniousContextTreeLearner<C> {
         Map<ParsimoniousContextTreeNode<C>, 
             List<DataRow<C>>> nodeToDataMap = new HashMap<>();
         
+        // Iterates O(2^n) times where n is the alphabet size.
         for (Set<C> label : this.listOfAllPossibleNodeLabels) {
             ParsimoniousContextTreeNode<C> childNode =
                     new ParsimoniousContextTreeNode<>();
@@ -160,6 +161,8 @@ extends AbstractParsimoniousContextTreeLearner<C> {
         Map<C, List<ParsimoniousContextTreeNode<C>>> mapCharToNodes = 
                 new HashMap<>();
         
+        // Iterates in O(2^n) times, n = alphabet size.The inner loop runs in
+        // O(n 2^n) time.
         for (ParsimoniousContextTreeNode<C> tmpNode : children) {
             for (C ch : tmpNode.getLabel()) {
                 if (!mapCharToNodes.containsKey(ch)) {
@@ -193,7 +196,7 @@ extends AbstractParsimoniousContextTreeLearner<C> {
         
         this.mapPartitionToScore.clear();
         // Enumerate all valid partitions and compute the score of each 
-        // partition.
+        // partition. Runs in \sigma B_\sigma time.
         for (List<Set<C>> alphabetPartition :
                 this.listOfAllAlphabetPartitions) {
             double score = 0.0;
