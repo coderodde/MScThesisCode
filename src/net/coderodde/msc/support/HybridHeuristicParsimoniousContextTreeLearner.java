@@ -58,31 +58,55 @@ extends AbstractParsimoniousContextTreeLearner<C> {
         BELL_NUMBERS[13] = 27644437;
     }
     
+    /**
+     * The alphabet of the data set.
+     */
     private Alphabet<C> alphabet;
     
+    /**
+     * The alphabet size.
+     */
+    private int alphabetSize;
+    
+    /**
+     * The root node of the resulting tree.
+     */
+    private ParsimoniousContextTreeNode<C> root;
+    
+    /**
+     * The total depth of the tree.
+     */
+    private int totalDepth;
+    
+    /**
+     * The list of data rows.
+     */
+    private List<DataRow<C>> dataRows;
+    
     @Override
-    public ParsimoniousContextTree<C> learn(List<DataRow<C>> listOfDataRows) {
-        this.alphabet = getAlphabet(listOfDataRows);
+    public ParsimoniousContextTree<C> learn(List<DataRow<C>> dataRows) {
+        this.alphabet = getAlphabet(dataRows);
+        this.alphabetSize = this.alphabet.size();
         
-        if  (alphabet.size() > MAXIMUM_ALPHABET_SIZE) {
-            return heuristicLearner.learn(listOfDataRows);
+        if  (alphabetSize > MAXIMUM_ALPHABET_SIZE) {
+            return heuristicLearner.learn(dataRows);
         }
         
         int depthOfOptimalLearner = getDepthOfOptimalLearner();
+        System.out.println(
+                "DEBUG: depthOfOptimalLearner: " + depthOfOptimalLearner);
         
         if (depthOfOptimalLearner < 1) {
-            //TODO: Find out how to do.
-            return heuristicLearner.learn(listOfDataRows);
+            return heuristicLearner.learn(dataRows);
         }
         
         // Once here, we may benefit from optimal learning.
         return buildRoot();
     }
     
-    private ParsimoniousContextTreeNode<C> root;
-    private int alphabetSize;
     
     private ParsimoniousContextTree<C> buildRoot() {
+        totalDepth = dataRows.get(0).getNumberOfExplanatoryVariables();
         root = new ParsimoniousContextTreeNode<>();
         return new ParsimoniousContextTree<>(root);
     }

@@ -120,9 +120,9 @@ extends AbstractParsimoniousContextTreeLearner<C> {
         long nodes = getNumberOfNodesInTree(depth, state.alphabet.size());
         long workEstimatePerNode = getNodeWorkEstimate(MAXIMUM_ALPHABET_SIZE);
         
-        System.out.println("DEBUG: nodes = " + nodes);
-        System.out.println("DEBUG: work estimate = " + workEstimatePerNode);
-        System.out.println("DEBUG: total work  = " + nodes * workEstimatePerNode);
+//        System.out.println("DEBUG: nodes = " + nodes);
+//        System.out.println("DEBUG: work estimate = " + workEstimatePerNode);
+//        System.out.println("DEBUG: total work  = " + nodes * workEstimatePerNode);
         
         return new ParsimoniousContextTree<>(state.root);
     }

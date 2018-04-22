@@ -17,6 +17,10 @@ public final class ParsimoniousContextTree<C> {
         return root.getScore();
     }
     
+    public ParsimoniousContextTreeNode<C> getRoot() {
+        return root;
+    }
+    
     @Override
     public String toString() {
         StringBuilder stringBuilder = new StringBuilder();
