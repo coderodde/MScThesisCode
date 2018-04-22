@@ -56,6 +56,8 @@ extends AbstractParsimoniousContextTreeLearner<C> {
         computeScores();
     }
     
+    // We need to return the children in a list because we need to index them
+    // while trying to pair a child with another.
     private List<ParsimoniousContextTreeNode<C>> createChildren() {
         List<ParsimoniousContextTreeNode<C>> childrenList = 
                 new ArrayList<>(alphabet.size());
@@ -147,7 +149,7 @@ extends AbstractParsimoniousContextTreeLearner<C> {
     private void build(ParsimoniousContextTreeNode<C> parent,
                        int currentDepth,
                        List<DataRow<C>> dataRows) {
-        // Create the children list fo the parent node.
+        // Create the children list for the parent node.
         List<ParsimoniousContextTreeNode<C>> childrenList = createChildren();
         parent.setChildren(new HashSet<>(childrenList)); 
         computeInitialScores(currentDepth, dataRows, parent);
