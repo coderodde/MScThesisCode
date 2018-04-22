@@ -1,6 +1,7 @@
 package net.coderodde.msc.support;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -14,7 +15,8 @@ import net.coderodde.msc.ParsimoniousContextTree;
 import net.coderodde.msc.ParsimoniousContextTreeNode;
 
 /**
- * 
+ * This class implements the partial optimal PCT learner for the hybrid 
+ * heuristic search.
  * 
  * @author Rodion "rodde" Efremov
  * @version 1.6 (Apr 22, 2018)
@@ -78,23 +80,22 @@ extends AbstractParsimoniousContextTreeLearner<C> {
         state.characterCountMap = new HashMap<>();
         state.mapPartitionToScore = new HashMap<>();
         state.root = new ParsimoniousContextTreeNode<>();
+        state.root.setLabel(Collections.<C>emptySet());
         state.k = 0.5 * (state.alphabet.size() - 1) * Math.log(dataRows.size());
         state.generateAllAlphabetPartitions();
         state.buildTree(state.root, 
                         dataRows,
                         requestedStartDepthLevel,
-                        requestedTreeDepth,
-                        requestedStartDepthLevel);
+                        requestedStartDepthLevel + requestedTreeDepth);
         
         return new ParsimoniousContextTree<>(state.root);
     }
     
     private void buildTree(ParsimoniousContextTreeNode<C> node,
                            List<DataRow<C>> dataRows,
-                           int startDepth,
-                           int fullTreeDepth,
-                           int currentDepth) {
-        if (currentDepth == startDepth + fullTreeDepth) {
+                           int currentDepth,
+                           int totalDepth) {
+        if (currentDepth == totalDepth) {
             node.setScore(computeScore(dataRows));
             return;
         }
@@ -135,11 +136,8 @@ extends AbstractParsimoniousContextTreeLearner<C> {
             }
         }
         
-        // TODO: Debug this.
-        int charIndex = fullTreeDepth + startDepth - currentDepth;
-        
         for (DataRow<C> dataRow : dataRows) {
-            C ch = dataRow.getExplanatoryVariable(charIndex);
+            C ch = dataRow.getExplanatoryVariable(currentDepth);
             List<ParsimoniousContextTreeNode<C>> tmpNodes =
                     mapCharToNodes.get(ch);
             
@@ -149,11 +147,10 @@ extends AbstractParsimoniousContextTreeLearner<C> {
         }
         
         for (ParsimoniousContextTreeNode<C> child : children) {
-            buildTree(node,
+            buildTree(child,
                       nodeToDataMap.get(child),
-                      startDepth,
-                      fullTreeDepth,
-                      currentDepth - 1);
+                      currentDepth + 1,
+                      totalDepth);
         }
         
         this.mapPartitionToScore.clear();
@@ -182,7 +179,7 @@ extends AbstractParsimoniousContextTreeLearner<C> {
         
         node.setScore(bestScore);
         
-        Set<Set<C>> bestPartitionAsSet = new  HashSet<>(bestPartition);
+        Set<Set<C>> bestPartitionAsSet = new HashSet<>(bestPartition);
         Iterator<ParsimoniousContextTreeNode<C>> iterator = 
                 node.getChildren().iterator();
         
@@ -226,5 +223,24 @@ extends AbstractParsimoniousContextTreeLearner<C> {
         }
         
         return score;
+    }
+    
+    public static void main(String[] args) {
+        List<DataRow<Integer>> dataRows = new ArrayList<>();
+        dataRows.add(new DataRow<>(1, 1, 2, 3, 3));
+        dataRows.add(new DataRow<>(1, 2, 2, 1, 1));
+        dataRows.add(new DataRow<>(2, 3, 1, 2, 2));
+        dataRows.add(new DataRow<>(3, 1, 1, 2, 2));
+        dataRows.add(new DataRow<>(3, 3, 3, 3, 1));
+        
+        PartialBasicParsimoniousContextTreeLearner<Integer> learner = 
+                new PartialBasicParsimoniousContextTreeLearner<>();
+        
+        learner.setRequestedTreeDepth(2);
+        learner.setRequestedStartDepthLevel(1);
+        
+        ParsimoniousContextTree<Integer> tree = learner.learn(dataRows);
+        
+        System.out.println(tree);
     }
 }

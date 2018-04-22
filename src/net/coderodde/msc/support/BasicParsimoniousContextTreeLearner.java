@@ -291,4 +291,20 @@ extends AbstractParsimoniousContextTreeLearner<C> {
         
         return result;
     }
+    
+    public static void main(String[] args) {
+        List<DataRow<Integer>> dataRows = new ArrayList<>();
+        dataRows.add(new DataRow<>(1, 2, 3));
+        dataRows.add(new DataRow<>(2, 2, 1));
+        dataRows.add(new DataRow<>(3, 1, 2));
+        dataRows.add(new DataRow<>(1, 1, 2));
+        dataRows.add(new DataRow<>(3, 3, 1));
+        
+        AbstractParsimoniousContextTreeLearner<Integer> learner = 
+                new BasicParsimoniousContextTreeLearner<>();
+        
+        ParsimoniousContextTree<Integer> tree = learner.learn(dataRows);
+        
+        System.out.println(tree);
+    }
 }
