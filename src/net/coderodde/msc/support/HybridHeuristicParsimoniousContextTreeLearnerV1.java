@@ -32,7 +32,6 @@ extends AbstractParsimoniousContextTreeLearner<C> {
      */
     private static final int MAXIMUM_ALPHABET_SIZE = 13;
     
-    
     /**
      * The alphabet of the data set.
      */
@@ -72,13 +71,6 @@ extends AbstractParsimoniousContextTreeLearner<C> {
         
         return new InternalHeuristicParsimoniousContextTreeLearner<C>()
                   .learn(dataRows);
-    }
-    
-    
-    private ParsimoniousContextTree<C> buildRoot() {
-        totalDepth = dataRows.get(0).getNumberOfExplanatoryVariables();
-        root = new ParsimoniousContextTreeNode<>();
-        return new ParsimoniousContextTree<>(root);
     }
     
     private static final class 
@@ -230,6 +222,7 @@ extends AbstractParsimoniousContextTreeLearner<C> {
                         // Once here, we better extend 'parent' with 
                         // 'optimalTree'.
                         // TODO: Debug this.
+                        // System.out.println("Yeah!");
                         parent.setChildren(optimalTreeRoot.getChildren());
                     }
 
@@ -251,19 +244,20 @@ extends AbstractParsimoniousContextTreeLearner<C> {
 
                     // Build the children.
                     // First split the data row list.
-                    for (ParsimoniousContextTreeNode<C> node : childrenList) {
+                    for (ParsimoniousContextTreeNode<C> node 
+                            : parent.getChildren()) {
                         nodeToDataRowsMap.put(node, new ArrayList<>());
                     }
 
-                    for (ParsimoniousContextTreeNode<C> node : childrenList) {
+                    for (ParsimoniousContextTreeNode<C> node 
+                            : parent.getChildren()) {
                         for (C ch : node.getLabel()) {
                             charToNodeMap.put(ch, node);
                         }
                     }
 
-                    int charIndex = 
-                            dataRows.get(0).getNumberOfExplanatoryVariables() -
-                            currentDepth;
+                    // TODO: Use totalDepth.
+                    int charIndex = totalDepth - currentDepth;
 
                     for (DataRow<C> dataRow : dataRows) {
                         C ch = dataRow.getExplanatoryVariable(charIndex);
@@ -504,6 +498,22 @@ extends AbstractParsimoniousContextTreeLearner<C> {
 
             return score;
         }
+    }
+    
+    public static void main(String[] args) {
+        List<DataRow<Integer>> dataRows = new ArrayList<>();
+        dataRows.add(new DataRow<>(1, 1, 2, 3, 3));
+        dataRows.add(new DataRow<>(1, 2, 2, 1, 1));
+        dataRows.add(new DataRow<>(2, 3, 1, 2, 2));
+        dataRows.add(new DataRow<>(3, 1, 1, 2, 2));
+        dataRows.add(new DataRow<>(3, 3, 3, 3, 1));
+        
+        HybridHeuristicParsimoniousContextTreeLearnerV1<Integer> learner = 
+                new HybridHeuristicParsimoniousContextTreeLearnerV1<>();
+        
+        ParsimoniousContextTree<Integer> tree = learner.learn(dataRows);
+        
+        System.out.println(tree);
     }
 }
 

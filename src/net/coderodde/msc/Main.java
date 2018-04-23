@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,6 +13,7 @@ import java.util.Scanner;
 import java.util.stream.IntStream;
 import net.coderodde.msc.support.BasicParsimoniousContextTreeLearner;
 import net.coderodde.msc.support.HeuristicParsimoniousContextTreeLearner;
+import net.coderodde.msc.support.HybridHeuristicParsimoniousContextTreeLearnerV1;
 import net.coderodde.msc.support.IndependenceModelParsimoniousContextTreeLearner;
 import net.coderodde.msc.support.IterativeRandomParsimoniousContextTreeLearner;
 import net.coderodde.msc.support.IterativeRandomParsimoniousContextTreeLearner2;
@@ -118,7 +120,12 @@ public class Main {
             AbstractParsimoniousContextTreeLearner<Character> heuristicLearner =
                     new HeuristicParsimoniousContextTreeLearner<>();
             
-            Benchmarks.benchmark(heuristicLearner);
+            AbstractParsimoniousContextTreeLearner<Character> 
+                    hybridHeuristicLearner = 
+                    new HybridHeuristicParsimoniousContextTreeLearnerV1<>();
+            
+            Benchmarks.benchmark(Arrays.asList(heuristicLearner,
+                                               hybridHeuristicLearner));
             return;
         }
         

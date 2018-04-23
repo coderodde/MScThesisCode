@@ -26,14 +26,14 @@ public final class Benchmarks {
      * learner is compared to the optimal baseline learner and the independence
      * model learner.
      * 
-     * @param learner the PCT learner to benchmark.
+     * @param learners the list of PCT learner to benchmark.
      */
     public static void benchmark(
-            AbstractParsimoniousContextTreeLearner<Character> learner) {
+            List<AbstractParsimoniousContextTreeLearner<Character>> learners) {
         warmup();
-        benchmarkDepth(learner);
-        benchmarkAlphabetSize(learner);
-        benchmarkDataSetSize(learner);
+        benchmarkDepth(learners);
+        //benchmarkAlphabetSize(learner);
+        //benchmarkDataSetSize(learner);
     }
     
     /**
@@ -48,6 +48,21 @@ public final class Benchmarks {
         System.out.println();
     }
     
+    private static String getLearnersNames(
+            List<AbstractParsimoniousContextTreeLearner<Character>> learners) {
+        StringBuilder stringBuilder = new StringBuilder();
+        String separator = "";
+        
+        for (AbstractParsimoniousContextTreeLearner<Character> learner 
+                : learners) {
+            stringBuilder.append(separator);
+            stringBuilder.append(learner.getClass().getSimpleName());
+            separator = ", ";
+        }
+        
+        return stringBuilder.toString();
+    }
+    
     /**
      * This static method runs the benchmark where the PCT depth grows larger.
      * The input learner is compared against the optimal baseline learner and 
@@ -56,9 +71,9 @@ public final class Benchmarks {
      * @param learner the PCT learner to benchmark.
      */
     private static void benchmarkDepth(
-            AbstractParsimoniousContextTreeLearner<Character> learner) {
+            List<AbstractParsimoniousContextTreeLearner<Character>> learners) {
         System.out.println(
-                "*** BENCHMARKING: " + learner.getClass().getSimpleName() +
+                "*** BENCHMARKING: " + getLearnersNames(learners) + 
                 " FOR DEPTH ***");
         
         List<String> benchmarkDataFileNames = getDepthDataFileNameList();
@@ -75,12 +90,12 @@ public final class Benchmarks {
                 System.out.println("--- Depth = " + depth + " ---");
                 DepthBenchmarkConfiguration.benchmarkDepthImpl(rawDataRows,
                                                                depth, 
-                                                               learner);
+                                                               learners);
             }
         }
         
         // The benchmarks for 'learner' begin:
-        
+        /*
         List<String> rawDataRows = 
                 DepthBenchmarkConfiguration.readRawDataRows();
         
@@ -91,7 +106,7 @@ public final class Benchmarks {
             DepthBenchmarkConfiguration.benchmarkDepthImpl(rawDataRows, 
                                                            depth, 
                                                            learner);
-        }
+        }*/
     }
     
     private static List<String> loadRawDataRows(File file) {
@@ -146,8 +161,12 @@ public final class Benchmarks {
         /**
          * The path to the directory that contains all the depth data files.
          */
+        // Lenovo:
+        //private static final String DEPTH_DATA_FILE_DIRECTORY = 
+        //        "C:\\Users\\rodde\\Documents\\ProGradu\\BenchmarkData";
+        // Desktop:
         private static final String DEPTH_DATA_FILE_DIRECTORY = 
-                "C:\\Users\\rodde\\Documents\\ProGradu\\BenchmarkData";
+                "C:\\Users\\Rodion Efremov\\Documents\\ProGradu\\BenchmarkData";
         
         /**
          * The full path to the data file used for PCT depth benchmarks.
@@ -204,7 +223,8 @@ public final class Benchmarks {
         private static void benchmarkDepthImpl(
                 List<String> rawDataRows,
                 int depth, 
-                AbstractParsimoniousContextTreeLearner<Character> learner) {
+                List<AbstractParsimoniousContextTreeLearner<Character>> 
+                        learners) {
             List<DataRow<Character>> dataSet = 
                     extractDataSet(rawDataRows, depth);
             
@@ -241,31 +261,34 @@ public final class Benchmarks {
                     "Independence model score: " + 
                             independenceModel.getScore());
             
-            // Finally, learn using the input learner:
-            startTime = System.currentTimeMillis();
-            
-            ParsimoniousContextTree<Character> targetLearnerPCT = 
-                    learner.learn(dataSet);
-            
-            endTime = System.currentTimeMillis();
-            
-            System.out.println("Target learner in " +
-                               (endTime - startTime) + " milliseconds.");
-            
-            double plausibility = 
-                    computePlausibility(optimalPCT.getScore(),
-                                        independenceModel.getScore(),
-                                        targetLearnerPCT.getScore());
-            
-            System.out.println(
-                    "Target learner score: " + targetLearnerPCT.getScore() + 
-                    ", plausibility: " + plausibility);
-            
-            if (dataGenerationMode == false) {
-                System.out.println("OPTIMAL");
-                System.out.println(optimalPCT);
-                System.out.println("HEURISTIC");
-                System.out.println(targetLearnerPCT);
+            // Benchmark all the interesting learners:
+            for (AbstractParsimoniousContextTreeLearner<Character> learner
+                    : learners) {
+                startTime = System.currentTimeMillis();
+                ParsimoniousContextTree<Character> learnerPCT =
+                        learner.learn(dataSet);
+                endTime = System.currentTimeMillis();
+                
+                System.out.println(learner.getClass().getSimpleName() + 
+                                   " in " + (endTime - startTime) +
+                                   " millisecons.");
+                
+                double plausibility = 
+                        computePlausibility(optimalPCT.getScore(),
+                                            independenceModel.getScore(),
+                                            learnerPCT.getScore());
+                
+                System.out.println("Score: " + learnerPCT.getScore() + 
+                                   ", plausibility: " + plausibility);
+                
+                if (dataGenerationMode == false) {
+                    System.out.println("OPTIMAL");
+                    System.out.println(optimalPCT);
+                    System.out.println("HEURISTIC");
+                    System.out.println(learnerPCT);
+                }
+                
+                System.out.println("------");
             }
         }
         
