@@ -209,17 +209,6 @@ extends AbstractParsimoniousContextTreeLearner<C> {
                     return;
                 }
                 
-                if (parent.getChildren().size() > 2) {
-                    // There is a chance that creating only one child with the
-                    // label that equals the entire alphabet, would improve the
-                    // score:
-                    System.out.println("Might improve.");
-                    double singleChildScore = 
-                            findSingleChildScore(currentDepth, dataRows);
-                    System.out.println("New score: " + singleChildScore);
-                    System.out.println("Parent score: " + parent.getScore());
-                }
-                
                 Map<ParsimoniousContextTreeNode<C>, 
                     List<DataRow<C>>> nodeToDataRowsMap = new HashMap<>();
                 Map<C, ParsimoniousContextTreeNode<C>> charToNodeMap = 
@@ -277,27 +266,6 @@ extends AbstractParsimoniousContextTreeLearner<C> {
                 parent.setScore(parentScore);
             }
         }
-    }
-    
-    private double findSingleChildScore(int depth, List<DataRow<C>> dataRows) {
-        int count = dataRows.size();
-        double score = -k;
-        characterCountMap.clear();
-        
-        for (DataRow<C> dataRow : dataRows) {
-            C responseVariable = dataRow.getResponseVariable();
-            characterCountMap.put(responseVariable, 
-                                  characterCountMap
-                                          .getOrDefault(responseVariable, 0)
-                                          + 1);
-        }
-        
-        for (Map.Entry<C, Integer> entry : characterCountMap.entrySet()) {
-            score += entry.getValue() *
-                     Math.log(((double) entry.getValue()) / count);
-        }
-        
-        return score;
     }
     
     private double findMergedScore(
